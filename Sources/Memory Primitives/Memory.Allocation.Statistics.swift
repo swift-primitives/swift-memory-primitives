@@ -9,6 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
+#if !hasFeature(Embedded)
 #if canImport(Darwin)
 import Darwin
 #elseif canImport(Glibc)
@@ -17,6 +18,7 @@ import Glibc
 
 #if os(Linux)
 import CAllocationTracking
+#endif
 #endif
 
 extension Memory.Allocation {
@@ -117,7 +119,9 @@ extension Memory.Allocation.Statistics {
     ///
     /// - Returns: Current allocation statistics.
     public static func capture() -> Self {
-        #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+        #if hasFeature(Embedded)
+        return Self()
+        #elseif os(macOS) || os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
         return captureDarwin()
         #elseif os(Linux)
         return captureLinux()
@@ -126,6 +130,7 @@ extension Memory.Allocation.Statistics {
         #endif
     }
 
+    #if !hasFeature(Embedded)
     #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
     private static func captureDarwin() -> Self {
         var stats = malloc_statistics_t()
@@ -148,6 +153,7 @@ extension Memory.Allocation.Statistics {
             bytesAllocated: Int(stats.bytes_allocated)
         )
     }
+    #endif
     #endif
 }
 
@@ -174,6 +180,7 @@ extension Memory.Allocation.Statistics {
 
 // MARK: - Linux Tracking
 
+#if !hasFeature(Embedded)
 #if os(Linux)
 extension Memory.Allocation.Statistics {
     /// Start tracking allocations on Linux.
@@ -204,6 +211,7 @@ extension Memory.Allocation.Statistics {
     }
 }
 #endif
+#endif
 
 // MARK: - Tracking Setup
 
@@ -212,9 +220,9 @@ extension Memory.Allocation.Statistics {
     ///
     /// Call this before capturing statistics. On Darwin, allocation tracking
     /// is always available via malloc_zone_statistics. On Linux, this starts
-    /// the LD_PRELOAD-based tracking hooks.
+    /// the LD_PRELOAD-based tracking hooks. No-op in Embedded Swift.
     public static func ensureTracking() {
-        #if os(Linux)
+        #if !hasFeature(Embedded) && os(Linux)
         startTracking()
         #endif
     }
