@@ -134,7 +134,7 @@ extension Memory.Allocation.Statistics {
     #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
     private static func captureDarwin() -> Self {
         var stats = malloc_statistics_t()
-        malloc_zone_statistics(nil, &stats)
+        unsafe malloc_zone_statistics(nil, &stats)
 
         return Self(
             allocations: Int(stats.blocks_in_use),
