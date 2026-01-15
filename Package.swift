@@ -35,3 +35,10 @@ let package = Package(
     ],
     swiftLanguageModes: [.v6]
 )
+
+for target in package.targets where ![.system, .binary, .plugin].contains(target.type) {
+    let settings: [SwiftSetting] = [
+        .strictMemorySafety(),
+    ]
+    target.swiftSettings = (target.swiftSettings ?? []) + settings
+}
