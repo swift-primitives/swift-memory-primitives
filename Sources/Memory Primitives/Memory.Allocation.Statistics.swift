@@ -10,14 +10,15 @@
 // ===----------------------------------------------------------------------===//
 
 #if !hasFeature(Embedded)
-#if canImport(Darwin)
-import Darwin
-#elseif canImport(Glibc)
-import Glibc
-#endif
-
-#if os(Linux)
-import CAllocationTracking
+#if os(macOS) || os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+public import Darwin_Memory_Primitives
+import Darwin_Primitives
+#elseif os(Linux)
+public import Linux_Memory_Primitives
+import Linux_Primitives
+#elseif os(Windows)
+public import Windows_Memory_Primitives
+import Windows_Primitives
 #endif
 #endif
 
@@ -122,39 +123,30 @@ extension Memory.Allocation.Statistics {
         #if hasFeature(Embedded)
         return Self()
         #elseif os(macOS) || os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
-        return captureDarwin()
+        let stats = Darwin_Primitives.Darwin.Memory.Allocation.Statistics.capture()
+        return Self(
+            allocations: stats.allocations,
+            deallocations: stats.deallocations,
+            bytesAllocated: stats.bytesAllocated
+        )
         #elseif os(Linux)
-        return captureLinux()
+        let stats = Linux_Primitives.Linux.Memory.Allocation.Statistics.capture()
+        return Self(
+            allocations: stats.allocations,
+            deallocations: stats.deallocations,
+            bytesAllocated: stats.bytesAllocated
+        )
+        #elseif os(Windows)
+        let stats = Windows_Primitives.Windows.Memory.Allocation.Statistics.capture()
+        return Self(
+            allocations: stats.allocations,
+            deallocations: stats.deallocations,
+            bytesAllocated: stats.bytesAllocated
+        )
         #else
         return Self()
         #endif
     }
-
-    #if !hasFeature(Embedded)
-    #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
-    private static func captureDarwin() -> Self {
-        var stats = malloc_statistics_t()
-        unsafe malloc_zone_statistics(nil, &stats)
-
-        return Self(
-            allocations: Int(stats.blocks_in_use),
-            deallocations: 0,
-            bytesAllocated: Int(stats.size_in_use)
-        )
-    }
-    #endif
-
-    #if os(Linux)
-    private static func captureLinux() -> Self {
-        let stats = tracking_current()
-        return Self(
-            allocations: Int(stats.allocations),
-            deallocations: Int(stats.deallocations),
-            bytesAllocated: Int(stats.bytes_allocated)
-        )
-    }
-    #endif
-    #endif
 }
 
 // MARK: - Delta
@@ -188,18 +180,18 @@ extension Memory.Allocation.Statistics {
     /// This enables the LD_PRELOAD malloc/free hooks.
     /// Must be called before measuring allocations.
     public static func startTracking() {
-        tracking_start()
+        Linux_Primitives.Linux.Memory.Allocation.Statistics.startTracking()
     }
 
     /// Stop tracking allocations and return final statistics.
     ///
     /// - Returns: Final allocation statistics since startTracking().
     public static func stopTracking() -> Statistics {
-        let stats = tracking_stop()
+        let stats = Linux_Primitives.Linux.Memory.Allocation.Statistics.stopTracking()
         return Statistics(
-            allocations: Int(stats.allocations),
-            deallocations: Int(stats.deallocations),
-            bytesAllocated: Int(stats.bytes_allocated)
+            allocations: stats.allocations,
+            deallocations: stats.deallocations,
+            bytesAllocated: stats.bytesAllocated
         )
     }
 
@@ -207,7 +199,7 @@ extension Memory.Allocation.Statistics {
     ///
     /// Keeps tracking enabled but resets counters.
     public static func resetTracking() {
-        tracking_reset()
+        Linux_Primitives.Linux.Memory.Allocation.Statistics.resetTracking()
     }
 }
 #endif

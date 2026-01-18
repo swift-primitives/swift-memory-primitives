@@ -17,19 +17,27 @@ let package = Package(
             targets: ["Memory Primitives"]
         ),
     ],
-    dependencies: [],
+    dependencies: [
+        .package(path: "../swift-darwin-primitives"),
+        .package(path: "../swift-linux-primitives"),
+        .package(path: "../swift-windows-primitives"),
+    ],
     targets: [
-        .target(
-            name: "CAllocationTracking",
-            dependencies: [],
-            linkerSettings: [
-                .linkedLibrary("dl", .when(platforms: [.linux]))
-            ]
-        ),
         .target(
             name: "Memory Primitives",
             dependencies: [
-                .target(name: "CAllocationTracking", condition: .when(platforms: [.linux])),
+                .product(name: "Darwin Primitives", package: "swift-darwin-primitives",
+                         condition: .when(platforms: [.macOS, .iOS, .tvOS, .watchOS, .visionOS])),
+                .product(name: "Darwin Memory Primitives", package: "swift-darwin-primitives",
+                         condition: .when(platforms: [.macOS, .iOS, .tvOS, .watchOS, .visionOS])),
+                .product(name: "Linux Primitives", package: "swift-linux-primitives",
+                         condition: .when(platforms: [.linux])),
+                .product(name: "Linux Memory Primitives", package: "swift-linux-primitives",
+                         condition: .when(platforms: [.linux])),
+                .product(name: "Windows Primitives", package: "swift-windows-primitives",
+                         condition: .when(platforms: [.windows])),
+                .product(name: "Windows Memory Primitives", package: "swift-windows-primitives",
+                         condition: .when(platforms: [.windows])),
             ]
         ),
     ],
