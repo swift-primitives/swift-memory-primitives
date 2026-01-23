@@ -9,13 +9,10 @@
 //
 // ===----------------------------------------------------------------------===//
 
-/// Namespace for memory-related primitives.
-///
-/// Memory primitives provide fundamental abstractions for memory access patterns
-/// that other packages build upon.
-///
-/// ## Overview
-///
-/// - ``Memory/Contiguous``: Contiguous memory access patterns
-///   - ``Memory/Contiguous/Protocol``: Protocol for types with contiguous storage
-public enum Memory {}
+extension Memory {
+    /// Namespace for contiguous memory access patterns.
+    ///
+    /// Types with contiguous storage can conform to ``Protocol`` to provide
+    /// uniform access to their underlying memory.
+    public enum Contiguous {}
+}
