@@ -76,14 +76,14 @@ extension Memory {
             guard let pointer else { throw .null }
             unsafe self._rawPointer = UnsafeRawPointer(pointer)
         }
+    }
+}
 
-        // MARK: - Properties
-
-        /// The raw pointer value.
-        @inlinable
-        public var rawPointer: UnsafeRawPointer {
-            unsafe _rawPointer
-        }
+extension UnsafeRawPointer {
+    public init(
+        _ address: Memory.Address
+    ){
+        self = unsafe address._rawPointer
     }
 }
 
