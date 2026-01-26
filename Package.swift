@@ -17,10 +17,17 @@ let package = Package(
             targets: ["Memory Primitives"]
         ),
     ],
+    dependencies: [
+        .package(path: "../swift-index-primitives"),
+        .package(path: "../swift-range-primitives"),
+    ],
     targets: [
         .target(
             name: "Memory Primitives",
-            dependencies: []
+            dependencies: [
+                .product(name: "Index Primitives", package: "swift-index-primitives"),
+                .product(name: "Range Primitives", package: "swift-range-primitives"),
+            ]
         ),
     ],
     swiftLanguageModes: [.v6]

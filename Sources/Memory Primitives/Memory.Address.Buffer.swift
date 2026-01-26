@@ -9,6 +9,9 @@
 //
 // ===----------------------------------------------------------------------===//
 
+public import Index_Primitives
+public import Range_Primitives
+
 extension Memory.Address {
     /// A non-null raw buffer pointer to a contiguous region of bytes.
     ///
@@ -20,7 +23,7 @@ extension Memory.Address {
     ///
     /// ```swift
     /// let buffer: Memory.Address.Buffer = ...
-    /// let byte = buffer[5]
+    /// let byte = buffer[Index<UInt8>(5)]
     /// let count = buffer.count
     /// ```
     ///
@@ -60,8 +63,8 @@ extension Memory.Address {
         ///   - start: The base address of the buffer.
         ///   - count: The number of bytes in the buffer.
         @inlinable
-        public init(start: Memory.Address, count: Int) {
-            unsafe self._base = unsafe UnsafeRawBufferPointer(start: start._rawPointer, count: count)
+        public init(start: Memory.Address, count: Index<UInt8>.Count) {
+            unsafe self._base = unsafe UnsafeRawBufferPointer(start: start._rawPointer, count: count.rawValue)
         }
     }
 }
@@ -80,8 +83,8 @@ extension Memory.Address.Buffer {
 
     /// The number of bytes in the buffer.
     @inlinable
-    public var count: Int {
-        unsafe _base.count
+    public var count: Index<UInt8>.Count {
+        Index<UInt8>.Count(__unchecked: unsafe _base.count)
     }
 
     /// A Boolean value indicating whether the buffer is empty.
@@ -94,10 +97,10 @@ extension Memory.Address.Buffer {
 // MARK: - Element Access
 
 extension Memory.Address.Buffer {
-    /// Accesses the byte at the given offset.
+    /// Accesses the byte at the given index.
     @inlinable
-    public subscript(offset: Int) -> UInt8 {
-        unsafe _base[offset]
+    public subscript(index: Index<UInt8>) -> UInt8 {
+        unsafe _base[index.position.rawValue]
     }
 }
 
@@ -107,12 +110,12 @@ extension Memory.Address.Buffer {
     /// Reads a value of the specified type from the buffer.
     ///
     /// - Parameters:
-    ///   - offset: The offset in bytes from which to read.
+    ///   - offset: The byte offset from which to read.
     ///   - type: The type of value to read.
     /// - Returns: The value read from memory.
     @inlinable
-    public func load<T>(fromByteOffset offset: Int = 0, as type: T.Type) -> T {
-        unsafe _base.load(fromByteOffset: offset, as: type)
+    public func load<T>(fromByteOffset offset: Index<UInt8>.Offset = 0, as type: T.Type) -> T {
+        unsafe _base.load(fromByteOffset: offset.rawValue, as: type)
     }
 }
 
@@ -121,12 +124,12 @@ extension Memory.Address.Buffer {
 extension Memory.Address.Buffer {
     /// Returns a buffer over the bytes within the specified range.
     ///
-    /// - Parameter bounds: A range of byte offsets specifying the subregion.
+    /// - Parameter bounds: A lazy range of byte indices specifying the subregion.
     /// - Returns: A buffer over the specified range.
     @inlinable
-    public func extracting(_ bounds: Range<Int>) -> Self {
-        let start = unsafe _base.baseAddress.unsafelyUnwrapped.advanced(by: bounds.lowerBound)
-        return unsafe Self(UnsafeRawBufferPointer(start: start, count: bounds.count))
+    public func extracting(_ bounds: Range.Lazy<Index<UInt8>>) -> Self {
+        let startPtr = unsafe _base.baseAddress.unsafelyUnwrapped.advanced(by: bounds.start)
+        return unsafe Self(UnsafeRawBufferPointer(start: startPtr, count: bounds.count))
     }
 }
 

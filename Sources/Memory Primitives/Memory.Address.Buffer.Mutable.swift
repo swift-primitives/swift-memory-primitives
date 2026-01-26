@@ -9,6 +9,9 @@
 //
 // ===----------------------------------------------------------------------===//
 
+public import Index_Primitives
+public import Range_Primitives
+
 extension Memory.Address.Buffer {
     /// A non-null mutable raw buffer pointer to a contiguous region of bytes.
     ///
@@ -57,8 +60,8 @@ extension Memory.Address.Buffer {
         ///   - start: The base address of the buffer.
         ///   - count: The number of bytes in the buffer.
         @inlinable
-        public init(start: Memory.Address.Mutable, count: Int) {
-            unsafe self._base = unsafe UnsafeMutableRawBufferPointer(start: start._rawPointer, count: count)
+        public init(start: Memory.Address.Mutable, count: Index<UInt8>.Count) {
+            unsafe self._base = unsafe UnsafeMutableRawBufferPointer(start: start._rawPointer, count: count.rawValue)
         }
     }
 }
@@ -77,8 +80,8 @@ extension Memory.Address.Buffer.Mutable {
 
     /// The number of bytes in the buffer.
     @inlinable
-    public var count: Int {
-        unsafe _base.count
+    public var count: Index<UInt8>.Count {
+        Index<UInt8>.Count(__unchecked: unsafe _base.count)
     }
 
     /// A Boolean value indicating whether the buffer is empty.
@@ -98,8 +101,8 @@ extension Memory.Address.Buffer.Mutable {
     ///   - alignment: The alignment of the allocated memory, in bytes.
     /// - Returns: A buffer to the allocated memory (never null; allocation failure traps).
     @inlinable
-    public static func allocate(byteCount: Int, alignment: Int) -> Self {
-        unsafe Self(UnsafeMutableRawBufferPointer.allocate(byteCount: byteCount, alignment: alignment))
+    public static func allocate(byteCount: Index<UInt8>.Count, alignment: Index<UInt8>.Count) -> Self {
+        unsafe Self(UnsafeMutableRawBufferPointer.allocate(byteCount: byteCount.rawValue, alignment: alignment.rawValue))
     }
 
     /// Deallocates the memory referenced by this buffer.
@@ -112,11 +115,11 @@ extension Memory.Address.Buffer.Mutable {
 // MARK: - Element Access
 
 extension Memory.Address.Buffer.Mutable {
-    /// Accesses the byte at the given offset.
+    /// Accesses the byte at the given index.
     @inlinable
-    public subscript(offset: Int) -> UInt8 {
-        get { unsafe _base[offset] }
-        nonmutating set { unsafe _base[offset] = newValue }
+    public subscript(index: Index<UInt8>) -> UInt8 {
+        get { unsafe _base[index.position.rawValue] }
+        nonmutating set { unsafe _base[index.position.rawValue] = newValue }
     }
 }
 
@@ -126,23 +129,23 @@ extension Memory.Address.Buffer.Mutable {
     /// Reads a value of the specified type from the buffer.
     ///
     /// - Parameters:
-    ///   - offset: The offset in bytes from which to read.
+    ///   - offset: The byte offset from which to read.
     ///   - type: The type of value to read.
     /// - Returns: The value read from memory.
     @inlinable
-    public func load<T>(fromByteOffset offset: Int = 0, as type: T.Type) -> T {
-        unsafe _base.load(fromByteOffset: offset, as: type)
+    public func load<T>(fromByteOffset offset: Index<UInt8>.Offset = 0, as type: T.Type) -> T {
+        unsafe _base.load(fromByteOffset: offset.rawValue, as: type)
     }
 
     /// Stores a value of the specified type to the buffer.
     ///
     /// - Parameters:
     ///   - value: The value to store.
-    ///   - offset: The offset in bytes at which to store.
+    ///   - offset: The byte offset at which to store.
     ///   - type: The type of value to store.
     @inlinable
-    public func storeBytes<T>(of value: T, toByteOffset offset: Int = 0, as type: T.Type) {
-        unsafe _base.storeBytes(of: value, toByteOffset: offset, as: type)
+    public func storeBytes<T>(of value: T, toByteOffset offset: Index<UInt8>.Offset = 0, as type: T.Type) {
+        unsafe _base.storeBytes(of: value, toByteOffset: offset.rawValue, as: type)
     }
 }
 
@@ -168,7 +171,7 @@ extension Memory.Address.Buffer.Mutable {
     ///   - source: A collection of values to copy.
     /// - Returns: A tuple containing an iterator to remaining source elements and a typed buffer to initialized memory.
     @inlinable
-    public func initializeMemory<S: Sequence>(as type: S.Element.Type, from source: S) -> (unwritten: S.Iterator, initialized: UnsafeMutableBufferPointer<S.Element>) {
+    public func initializeMemory<S: Swift.Sequence>(as type: S.Element.Type, from source: S) -> (unwritten: S.Iterator, initialized: UnsafeMutableBufferPointer<S.Element>) {
         unsafe _base.initializeMemory(as: type, from: source)
     }
 }
@@ -206,12 +209,12 @@ extension Memory.Address.Buffer.Mutable {
 extension Memory.Address.Buffer.Mutable {
     /// Returns a mutable buffer over the bytes within the specified range.
     ///
-    /// - Parameter bounds: A range of byte offsets specifying the subregion.
+    /// - Parameter bounds: A lazy range of byte indices specifying the subregion.
     /// - Returns: A mutable buffer over the specified range.
     @inlinable
-    public func extracting(_ bounds: Range<Int>) -> Self {
-        let start = unsafe _base.baseAddress.unsafelyUnwrapped.advanced(by: bounds.lowerBound)
-        return unsafe Self(UnsafeMutableRawBufferPointer(start: start, count: bounds.count))
+    public func extracting(_ bounds: Range.Lazy<Index<UInt8>>) -> Self {
+        let startPtr = unsafe _base.baseAddress.unsafelyUnwrapped.advanced(by: bounds.start)
+        return unsafe Self(UnsafeMutableRawBufferPointer(start: startPtr, count: bounds.count))
     }
 }
 
