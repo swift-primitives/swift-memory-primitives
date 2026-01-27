@@ -226,7 +226,7 @@ extension MemoryAddressBufferTests.Integration {
 
     @Test("withRebound temporarily binds to different type")
     func withRebound() {
-        var values: [UInt32] = [0x01020304, 0x05060708]
+        let values: [UInt32] = [0x01020304, 0x05060708]
         unsafe values.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Address.Buffer(rawBuffer)
             unsafe buffer.withRebound(to: UInt8.self) { typedBuffer in
@@ -240,17 +240,16 @@ extension MemoryAddressBufferTests.Integration {
 
 extension MemoryAddressBufferTests.Performance {
     @Test("sequential read")
-    func sequentialRead() throws {
+    func sequentialRead() {
         let size = 10000
         let data = [UInt8](repeating: 42, count: size)
-        unsafe try data.withUnsafeBytes { rawBuffer in
+        unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Address.Buffer(rawBuffer)
 
             // Warmup
             for _ in 0..<10 {
                 var sum: UInt = 0
-                for i in 0..<size {
-                    let idx: Index<UInt8> = try Index<UInt8>(i)
+                (Index<UInt8>.zero..<buffer.count).forEach { idx in
                     sum += UInt(buffer[idx])
                 }
                 _ = sum
@@ -259,8 +258,7 @@ extension MemoryAddressBufferTests.Performance {
             // Measured
             for _ in 0..<100 {
                 var sum: UInt = 0
-                for i in 0..<size {
-                    let idx: Index<UInt8> = try Index<UInt8>(i)
+                (Index<UInt8>.zero..<buffer.count).forEach { idx in
                     sum += UInt(buffer[idx])
                 }
                 _ = sum

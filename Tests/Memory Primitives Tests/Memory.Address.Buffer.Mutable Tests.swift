@@ -124,16 +124,17 @@ extension MemoryAddressBufferMutableTests.EdgeCase {
     }
 
     @Test("slice succeeds for valid bounds")
-    func sliceValid() throws {
+    func sliceValid() {
         let count: Index<UInt8>.Count = 10
         let alignment: Index<UInt8>.Count = 1
         let buffer = Memory.Address.Buffer.Mutable.allocate(count: count, alignment: alignment)
         defer { buffer.deallocate() }
 
         // Initialize buffer
-        for i in 0..<10 {
-            let idx = try Index<UInt8>(i)
-            buffer[idx] = UInt8(i * 10)
+        var i: UInt8 = 0
+        (Index<UInt8>.zero..<count).forEach { idx in
+            buffer[idx] = i * 10
+            i += 1
         }
 
         let sliceCount: Index<UInt8>.Count = 5
@@ -146,9 +147,9 @@ extension MemoryAddressBufferMutableTests.EdgeCase {
     }
 
     @Test("copy from immutable buffer")
-    func copyFromImmutable() throws {
+    func copyFromImmutable() {
         let sourceData: [UInt8] = [1, 2, 3, 4, 5]
-        unsafe try sourceData.withUnsafeBytes { rawBuffer in
+        unsafe sourceData.withUnsafeBytes { rawBuffer in
             let source = unsafe Memory.Address.Buffer(rawBuffer)
             let count: Index<UInt8>.Count = 5
             let alignment: Index<UInt8>.Count = 1
@@ -157,9 +158,10 @@ extension MemoryAddressBufferMutableTests.EdgeCase {
 
             dest.copy(from: source)
 
-            for i in 0..<5 {
-                let idx = try Index<UInt8>(i)
-                #expect(dest[idx] == UInt8(i + 1))
+            var expected: UInt8 = 1
+            (Index<UInt8>.zero..<count).forEach { idx in
+                #expect(dest[idx] == expected)
+                expected += 1
             }
         }
     }
@@ -206,7 +208,7 @@ extension MemoryAddressBufferMutableTests.Integration {
     }
 
     @Test("initialize with repeating value")
-    func initializeRepeating() throws {
+    func initializeRepeating() {
         let count: Index<UInt8>.Count = 100
         let alignment: Index<UInt8>.Count = 1
         let buffer = Memory.Address.Buffer.Mutable.allocate(count: count, alignment: alignment)
@@ -214,8 +216,7 @@ extension MemoryAddressBufferMutableTests.Integration {
 
         _ = unsafe buffer.initialize(as: UInt8.self, repeating: 0xFF)
 
-        for i in 0..<100 {
-            let idx = try Index<UInt8>(i)
+        (Index<UInt8>.zero..<count).forEach { idx in
             #expect(buffer[idx] == 0xFF)
         }
     }
@@ -225,7 +226,7 @@ extension MemoryAddressBufferMutableTests.Integration {
 
 extension MemoryAddressBufferMutableTests.Performance {
     @Test("sequential write")
-    func sequentialWrite() throws {
+    func sequentialWrite() {
         let count: Index<UInt8>.Count = 10000
         let alignment: Index<UInt8>.Count = 1
         let buffer = Memory.Address.Buffer.Mutable.allocate(count: count, alignment: alignment)
@@ -233,17 +234,19 @@ extension MemoryAddressBufferMutableTests.Performance {
 
         // Warmup
         for _ in 0..<10 {
-            for i in 0..<10000 {
-                let idx = try Index<UInt8>(i)
-                buffer[idx] = UInt8(truncatingIfNeeded: i)
+            var value: UInt8 = 0
+            (Index<UInt8>.zero..<count).forEach { idx in
+                buffer[idx] = value
+                value &+= 1
             }
         }
 
         // Measured
         for _ in 0..<100 {
-            for i in 0..<10000 {
-                let idx = try Index<UInt8>(i)
-                buffer[idx] = UInt8(truncatingIfNeeded: i)
+            var value: UInt8 = 0
+            (Index<UInt8>.zero..<count).forEach { idx in
+                buffer[idx] = value
+                value &+= 1
             }
         }
     }

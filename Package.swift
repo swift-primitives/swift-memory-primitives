@@ -36,6 +36,7 @@ let package = Package(
             dependencies: [
                 .target(name: "Memory Primitives"),
                 .product(name: "Index Primitives Test Support", package: "swift-index-primitives"),
+                .product(name: "Range Primitives Test Support", package: "swift-range-primitives"),
             ],
             path: "Tests/Support"
         ),
