@@ -36,10 +36,10 @@ extension Memory {
         /// Creates an arena with the specified capacity.
         ///
         /// - Parameter capacity: Total capacity in bytes. Must be > 0.
-        /// - Precondition: `capacity.rawValue > 0`
+        /// - Precondition: `capacity.count.rawValue > 0`
         @inlinable
         public init(capacity: Index<UInt8>.Count) {
-            precondition(capacity.rawValue > 0, "Arena capacity must be > 0")
+            precondition(capacity.count.rawValue > 0, "Arena capacity must be > 0")
 
             self._buffer = Address.Buffer.Mutable.allocate(
                 count: capacity,
@@ -59,13 +59,13 @@ extension Memory {
         /// The number of bytes currently allocated.
         @inlinable
         public var allocated: Index<UInt8>.Count {
-            Index<UInt8>.Count(UInt(_offset.rawValue))
+            Index<UInt8>.Count(UInt(_offset.vector.rawValue))
         }
 
         /// The number of bytes remaining.
         @inlinable
         public var remaining: Index<UInt8>.Count {
-            Index<UInt8>.Count(UInt(Int(capacity.rawValue) - _offset.rawValue))
+            Index<UInt8>.Count(UInt(Int(capacity.count.rawValue) - _offset.vector.rawValue))
         }
 
         /// Resets the arena, invalidating all previous allocations.
@@ -88,17 +88,17 @@ extension Memory {
             alignment: Index<UInt8>.Count
         ) -> Address.Mutable? {
             // Alignment must be power of 2
-            let alignValue = Int(alignment.rawValue)
+            let alignValue = Int(alignment.count.rawValue)
             precondition(alignValue > 0 && (alignValue & (alignValue - 1)) == 0,
                          "Alignment must be power of 2")
 
             // Align the current offset
             let alignMask = alignValue - 1
-            let alignedOffset = (_offset.rawValue + alignMask) & ~alignMask
+            let alignedOffset = (_offset.vector.rawValue + alignMask) & ~alignMask
 
             // Check if allocation fits
-            let endOffset = alignedOffset + Int(count.rawValue)
-            guard endOffset <= Int(capacity.rawValue) else {
+            let endOffset = alignedOffset + Int(count.count.rawValue)
+            guard endOffset <= Int(capacity.count.rawValue) else {
                 return nil
             }
 

@@ -262,7 +262,7 @@ extension Memory.Address.Mutable {
     /// Subtracts a byte offset from an address.
     @inlinable
     public static func - (lhs: Self, rhs: Index<UInt8>.Offset) -> Self {
-        lhs.advanced(by: Index<UInt8>.Offset(-rhs.rawValue))
+        lhs.advanced(by: Index<UInt8>.Offset(-rhs.vector.rawValue))
     }
 
     /// Returns the byte distance between two addresses.
@@ -286,7 +286,7 @@ extension Memory.Address.Mutable {
         from offset: Index<UInt8>.Offset = .zero,
         as type: T.Type
     ) -> T {
-        unsafe _rawPointer.load(fromByteOffset: offset.rawValue, as: type)
+        unsafe _rawPointer.load(fromByteOffset: offset.vector.rawValue, as: type)
     }
 
     /// Stores a value of the specified type to memory.
@@ -301,7 +301,7 @@ extension Memory.Address.Mutable {
         at offset: Index<UInt8>.Offset = .zero,
         as type: T.Type
     ) {
-        unsafe _rawPointer.storeBytes(of: value, toByteOffset: offset.rawValue, as: type)
+        unsafe _rawPointer.storeBytes(of: value, toByteOffset: offset.vector.rawValue, as: type)
     }
 }
 

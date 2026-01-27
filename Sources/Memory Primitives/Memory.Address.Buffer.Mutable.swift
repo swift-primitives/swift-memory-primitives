@@ -104,7 +104,7 @@ extension Memory.Address.Buffer.Mutable {
 
     /// A Boolean value indicating whether the buffer is empty.
     @inlinable
-    public var isEmpty: Bool { _count.rawValue == 0 }
+    public var isEmpty: Bool { _count.count.rawValue == 0 }
 }
 
 // MARK: - Interop Views
@@ -121,7 +121,7 @@ extension Memory.Address.Buffer.Mutable {
         }
         return unsafe UnsafeMutableRawBufferPointer(
             start: _start._rawPointer,
-            count: Int(_count.rawValue)
+            count: Int(_count.count.rawValue)
         )
     }
 
@@ -133,7 +133,7 @@ extension Memory.Address.Buffer.Mutable {
     public var baseNonNull: UnsafeMutableRawBufferPointer {
         unsafe UnsafeMutableRawBufferPointer(
             start: _start._rawPointer,
-            count: Int(_count.rawValue)
+            count: Int(_count.count.rawValue)
         )
     }
 }
@@ -195,7 +195,7 @@ extension Memory.Address.Buffer.Mutable {
         from offset: Index<UInt8>.Offset = .zero,
         as type: T.Type
     ) -> T {
-        unsafe _start._rawPointer.load(fromByteOffset: offset.rawValue, as: type)
+        unsafe _start._rawPointer.load(fromByteOffset: offset.vector.rawValue, as: type)
     }
 
     /// Stores a value of the specified type to the buffer.
@@ -206,7 +206,7 @@ extension Memory.Address.Buffer.Mutable {
     ///   - type: The type of value to store.
     @inlinable
     public func store<T>(_ value: T, at offset: Index<UInt8>.Offset = .zero, as type: T.Type) {
-        unsafe _start._rawPointer.storeBytes(of: value, toByteOffset: offset.rawValue, as: type)
+        unsafe _start._rawPointer.storeBytes(of: value, toByteOffset: offset.vector.rawValue, as: type)
     }
 }
 
@@ -278,7 +278,7 @@ extension Memory.Address.Buffer.Mutable {
         let newStart = unsafe Memory.Address.Mutable(
             _start._rawPointer.advanced(by: Int(bounds.start.position.rawValue))
         )
-        let newCount = Index<UInt8>.Count(bounds.count.rawValue)
+        let newCount = Index<UInt8>.Count(bounds.count.count)
         return Self(start: newStart, count: newCount)
     }
 }
@@ -303,9 +303,9 @@ extension Memory.Address.Buffer.Mutable {
         offset: Index<UInt8>.Offset,
         count sliceCount: Index<UInt8>.Count
     ) -> Self? {
-        let offsetValue = offset.rawValue
-        let countValue = Int(_count.rawValue)
-        let sliceCountValue = Int(sliceCount.rawValue)
+        let offsetValue = offset.vector.rawValue
+        let countValue = Int(_count.count.rawValue)
+        let sliceCountValue = Int(sliceCount.count.rawValue)
 
         // Bounds check: offset must be non-negative and within buffer
         guard offsetValue >= 0, offsetValue <= countValue else {
@@ -361,7 +361,7 @@ extension Memory.Address.Buffer.Mutable {
 
 extension Memory.Address.Buffer.Mutable: CustomStringConvertible {
     public var description: String {
-        "Memory.Address.Buffer.Mutable(start: \(_start), count: \(_count.rawValue))"
+        "Memory.Address.Buffer.Mutable(start: \(_start), count: \(_count.count.rawValue))"
     }
 }
 
@@ -369,7 +369,7 @@ extension Memory.Address.Buffer.Mutable: CustomStringConvertible {
 
 extension Memory.Address.Buffer.Mutable: CustomDebugStringConvertible {
     public var debugDescription: String {
-        "Memory.Address.Buffer.Mutable(start: \(_start), count: \(_count.rawValue))"
+        "Memory.Address.Buffer.Mutable(start: \(_start), count: \(_count.count.rawValue))"
     }
 }
 
@@ -389,6 +389,6 @@ extension Memory.Address.Buffer.Mutable {
     @inlinable
     public func hash(into hasher: inout Hasher) {
         hasher.combine(unsafe Int(bitPattern: _start._rawPointer))
-        hasher.combine(_count.rawValue)
+        hasher.combine(_count.count.rawValue)
     }
 }
