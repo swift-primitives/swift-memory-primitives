@@ -110,3 +110,5 @@ extension Memory {
         }
     }
 }
+
+extension Memory.Arena: @unchecked Sendable {}

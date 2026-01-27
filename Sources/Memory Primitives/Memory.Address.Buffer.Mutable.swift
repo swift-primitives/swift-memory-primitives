@@ -12,10 +12,13 @@
 public import Index_Primitives
 public import Range_Primitives
 
-/// Mutable sentinel (cast from immutable, safe since never dereferenced).
+/// Mutable sentinel re-exported from Memory.Address.Buffer.swift.
+///
+/// Uses the canonical mutable sentinel directly—no cast needed.
+/// See `_emptyBufferSentinelMutable` in Memory.Address.Buffer.swift for invariants.
 @usableFromInline
 nonisolated(unsafe) let _emptyMutableBufferSentinel: UnsafeMutableRawPointer =
-    unsafe UnsafeMutableRawPointer(mutating: _emptyBufferSentinel)
+    _emptyBufferSentinelMutable
 
 extension Memory.Address.Buffer {
     /// A mutable raw buffer with guaranteed non-null start address.

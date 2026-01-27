@@ -24,7 +24,7 @@ extension Memory.Allocator {
     /// Allocators that don't need it can ignore the parameter.
     public protocol `Protocol`: ~Copyable {
         /// Error type for allocation failures.
-        associatedtype AllocationError: Swift.Error
+        associatedtype Error: Swift.Error
 
         /// Allocates memory for the specified count and alignment.
         ///
@@ -32,11 +32,11 @@ extension Memory.Allocator {
         ///   - count: Number of bytes to allocate.
         ///   - alignment: Required alignment in bytes (must be power of 2).
         /// - Returns: A mutable address to the allocated memory.
-        /// - Throws: `AllocationError` if allocation fails.
+        /// - Throws: `Error` if allocation fails.
         mutating func allocate(
             count: Index<UInt8>.Count,
             alignment: Index<UInt8>.Count
-        ) throws(AllocationError) -> Memory.Address.Mutable
+        ) throws(Error) -> Memory.Address.Mutable
 
         /// Deallocates previously allocated memory.
         ///

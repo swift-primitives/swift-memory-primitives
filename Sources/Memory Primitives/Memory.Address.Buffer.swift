@@ -12,23 +12,31 @@
 public import Index_Primitives
 public import Range_Primitives
 
-/// Global sentinel for empty buffers.
+/// Mutable singleton sentinel for empty buffers.
 ///
 /// ## Invariants
 ///
-/// - Non-null (bitPattern 0x1000)
-/// - Page-aligned as an address value (4096)
-/// - Must NEVER be dereferenced
+/// - Allocated once at startup, never deallocated
+/// - Page-aligned (4096 bytes) to maintain prior address invariant
+/// - Provenance-correct: backed by real allocation, valid for pointer arithmetic
+/// - Must NEVER be dereferenced (valid only as a sentinel address)
 /// - Valid for empty buffers where count == 0
 ///
 /// This approach:
-/// - Avoids platform-specific allocation calls
-/// - Has no failure mode
-/// - Has no early-runtime dependencies
-/// - Cannot leak (nothing allocated)
+/// - Provides valid pointer provenance for Swift 6.2+ strict memory safety
+/// - Has no failure mode (allocation failure traps)
+/// - Minimal overhead (single 1-byte allocation per process)
+@usableFromInline
+nonisolated(unsafe) let _emptyBufferSentinelMutable: UnsafeMutableRawPointer = {
+    UnsafeMutableRawPointer.allocate(byteCount: 1, alignment: 4096)
+}()
+
+/// Immutable singleton sentinel derived from mutable sentinel.
+///
+/// See `_emptyBufferSentinelMutable` for invariants.
 @usableFromInline
 nonisolated(unsafe) let _emptyBufferSentinel: UnsafeRawPointer =
-    unsafe UnsafeRawPointer(bitPattern: 0x1000)!
+    UnsafeRawPointer(_emptyBufferSentinelMutable)
 
 extension Memory.Address {
     /// A raw buffer with guaranteed non-null start address.
