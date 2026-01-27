@@ -278,7 +278,7 @@ extension Memory.Address.Buffer.Mutable {
         let newStart = unsafe Memory.Address.Mutable(
             _start._rawPointer.advanced(by: Int(bounds.start.position.rawValue))
         )
-        let newCount = Index<UInt8>.Count(bounds.count.count)
+        let newCount = bounds.count.retag(UInt8.self)
         return Self(start: newStart, count: newCount)
     }
 }
