@@ -10,6 +10,7 @@
 // ===----------------------------------------------------------------------===//
 
 public import Index_Primitives
+public import Property_Primitives
 
 extension Memory.Address {
     /// A non-null mutable memory address.
@@ -112,7 +113,7 @@ extension Memory.Address.Mutable {
     /// - Returns: A typed pointer to the initialized memory.
     @inlinable
     @discardableResult
-    public func initializeMemory<T>(
+    public func initialize<T>(
         as type: T.Type,
         repeating value: T,
         count: Index<T>.Count
@@ -129,7 +130,7 @@ extension Memory.Address.Mutable {
     /// - Returns: A typed pointer to the initialized memory.
     @inlinable
     @discardableResult
-    public func initializeMemory<T>(
+    public func initialize<T>(
         as type: T.Type,
         from source: UnsafePointer<T>,
         count: Index<T>.Count
@@ -138,9 +139,22 @@ extension Memory.Address.Mutable {
     }
 }
 
-// MARK: - Move Operations
+// MARK: - Initialize Accessor
 
 extension Memory.Address.Mutable {
+    /// Tag type for initialization operations accessed via property accessor.
+    public enum Initialize {}
+
+    /// Property accessor for move-initialization operations.
+    ///
+    /// Use `.move(as:from:count:)` to initialize memory by moving values from a source.
+    @inlinable
+    public var initialize: Property<Initialize, Self> {
+        Property(self)
+    }
+}
+
+extension Property where Tag == Memory.Address.Mutable.Initialize, Base == Memory.Address.Mutable {
     /// Initializes memory as the specified type by moving values from a source.
     ///
     /// The source memory becomes uninitialized after this operation.
@@ -152,12 +166,12 @@ extension Memory.Address.Mutable {
     /// - Returns: A typed pointer to the initialized memory.
     @inlinable
     @discardableResult
-    public func moveInitializeMemory<T>(
+    public func move<T>(
         as type: T.Type,
         from source: UnsafeMutablePointer<T>,
         count: Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
-        unsafe _rawPointer.moveInitializeMemory(as: type, from: source, count: count)
+        unsafe base._rawPointer.moveInitializeMemory(as: type, from: source, count: count)
     }
 }
 
@@ -172,22 +186,39 @@ extension Memory.Address.Mutable {
     /// - Returns: A typed pointer to the bound memory.
     @inlinable
     @discardableResult
-    public func bindMemory<T>(
+    public func bind<T>(
         to type: T.Type,
         capacity: Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
         unsafe _rawPointer.bindMemory(to: type, capacity: capacity)
     }
+}
 
+// MARK: - Assuming Accessor
+
+extension Memory.Address.Mutable {
+    /// Tag type for assumption-based operations accessed via property accessor.
+    public enum Assuming {}
+
+    /// Property accessor for assumption-based operations.
+    ///
+    /// Use `.bound(to:)` to get a typed pointer assuming the memory is already bound.
+    @inlinable
+    public var assuming: Property<Assuming, Self> {
+        Property(self)
+    }
+}
+
+extension Property where Tag == Memory.Address.Mutable.Assuming, Base == Memory.Address.Mutable {
     /// Returns a typed pointer assuming the memory is already bound to the specified type.
     ///
     /// - Parameter type: The type the memory is assumed to be bound to.
     /// - Returns: A typed pointer to the memory.
     @inlinable
-    public func assumingMemoryBound<T>(
+    public func bound<T>(
         to type: T.Type
     ) -> UnsafeMutablePointer<T> {
-        unsafe _rawPointer.assumingMemoryBound(to: type)
+        unsafe base._rawPointer.assumingMemoryBound(to: type)
     }
 }
 
@@ -241,7 +272,7 @@ extension Memory.Address.Mutable {
     }
 }
 
-// MARK: - Load and Store
+// MARK: - Read and Store
 
 extension Memory.Address.Mutable {
     /// Reads a value of the specified type from memory.
@@ -251,7 +282,7 @@ extension Memory.Address.Mutable {
     ///   - type: The type of value to read.
     /// - Returns: The value read from memory.
     @inlinable
-    public func load<T>(
+    public func read<T>(
         from offset: Index<UInt8>.Offset = .zero,
         as type: T.Type
     ) -> T {
@@ -265,9 +296,9 @@ extension Memory.Address.Mutable {
     ///   - offset: The byte offset at which to store.
     ///   - type: The type of value to store.
     @inlinable
-    public func storeBytes<T>(
-        of value: T,
-        toByteOffset offset: Index<UInt8>.Offset = .zero,
+    public func store<T>(
+        _ value: T,
+        at offset: Index<UInt8>.Offset = .zero,
         as type: T.Type
     ) {
         unsafe _rawPointer.storeBytes(of: value, toByteOffset: offset.rawValue, as: type)
@@ -283,7 +314,7 @@ extension Memory.Address.Mutable {
     ///   - source: The source address to copy from.
     ///   - count: The number of bytes to copy.
     @inlinable
-    public func copyMemory(
+    public func copy(
         from source: Memory.Address,
         count: Index<UInt8>.Count
     ) {
@@ -296,7 +327,7 @@ extension Memory.Address.Mutable {
     ///   - source: The source address to copy from.
     ///   - count: The number of bytes to copy.
     @inlinable
-    public func copyMemory(
+    public func copy(
         from source: Self,
         count: Index<UInt8>.Count
     ) {

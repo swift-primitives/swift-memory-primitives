@@ -71,12 +71,12 @@ extension Memory.Address.Buffer {
 // MARK: - Properties
 
 extension Memory.Address.Buffer.Mutable {
-    /// The base address of the buffer.
+    /// The start address of the buffer.
     ///
     /// The returned address is guaranteed non-null since this buffer type
     /// enforces a non-null invariant.
     @inlinable
-    public var baseAddress: Memory.Address.Mutable {
+    public var start: Memory.Address.Mutable {
         unsafe Memory.Address.Mutable(_base.baseAddress.unsafelyUnwrapped)
     }
 
@@ -130,7 +130,7 @@ extension Memory.Address.Buffer.Mutable {
     }
 }
 
-// MARK: - Load and Store
+// MARK: - Read and Store
 
 extension Memory.Address.Buffer.Mutable {
     /// Reads a value of the specified type from the buffer.
@@ -140,7 +140,7 @@ extension Memory.Address.Buffer.Mutable {
     ///   - type: The type of value to read.
     /// - Returns: The value read from memory.
     @inlinable
-    public func load<T>(
+    public func read<T>(
         from offset: Index<UInt8>.Offset = .zero,
         as type: T.Type
     ) -> T {
@@ -154,7 +154,7 @@ extension Memory.Address.Buffer.Mutable {
     ///   - offset: The byte offset at which to store.
     ///   - type: The type of value to store.
     @inlinable
-    public func storeBytes<T>(of value: T, toByteOffset offset: Index<UInt8>.Offset = .zero, as type: T.Type) {
+    public func store<T>(_ value: T, at offset: Index<UInt8>.Offset = .zero, as type: T.Type) {
         unsafe _base.storeBytes(of: value, toByteOffset: offset.rawValue, as: type)
     }
 }
@@ -170,7 +170,7 @@ extension Memory.Address.Buffer.Mutable {
     /// - Returns: A typed buffer to the initialized memory.
     @inlinable
     @discardableResult
-    public func initializeMemory<T>(as type: T.Type, repeating value: T) -> UnsafeMutableBufferPointer<T> {
+    public func initialize<T>(as type: T.Type, repeating value: T) -> UnsafeMutableBufferPointer<T> {
         unsafe _base.initializeMemory(as: type, repeating: value)
     }
 
@@ -181,7 +181,7 @@ extension Memory.Address.Buffer.Mutable {
     ///   - source: A collection of values to copy.
     /// - Returns: A tuple containing an iterator to remaining source elements and a typed buffer to initialized memory.
     @inlinable
-    public func initializeMemory<S: Swift.Sequence>(as type: S.Element.Type, from source: S) -> (unwritten: S.Iterator, initialized: UnsafeMutableBufferPointer<S.Element>) {
+    public func initialize<S: Swift.Sequence>(as type: S.Element.Type, from source: S) -> (unwritten: S.Iterator, initialized: UnsafeMutableBufferPointer<S.Element>) {
         unsafe _base.initializeMemory(as: type, from: source)
     }
 }
@@ -193,7 +193,7 @@ extension Memory.Address.Buffer.Mutable {
     ///
     /// - Parameter source: The source buffer to copy from.
     @inlinable
-    public func copyMemory(from source: Memory.Address.Buffer) {
+    public func copy(from source: Memory.Address.Buffer) {
         unsafe _base.copyMemory(from: source._base)
     }
 
@@ -201,7 +201,7 @@ extension Memory.Address.Buffer.Mutable {
     ///
     /// - Parameter source: The source buffer to copy from.
     @inlinable
-    public func copyMemory(from source: UnsafeRawBufferPointer) {
+    public func copy(from source: UnsafeRawBufferPointer) {
         unsafe _base.copyMemory(from: source)
     }
 
@@ -209,7 +209,7 @@ extension Memory.Address.Buffer.Mutable {
     ///
     /// - Parameter source: A collection of bytes to copy.
     @inlinable
-    public func copyBytes<C: Collection>(from source: C) where C.Element == UInt8 {
+    public func copy<C: Collection>(bytes source: C) where C.Element == UInt8 {
         unsafe _base.copyBytes(from: source)
     }
 }
@@ -240,7 +240,7 @@ extension Memory.Address.Buffer.Mutable {
     ///   - body: A closure that receives the typed mutable buffer.
     /// - Returns: The return value of the closure.
     @inlinable
-    public func withMemoryRebound<T, Result>(
+    public func withRebound<T, Result>(
         to type: T.Type,
         _ body: (UnsafeMutableBufferPointer<T>) throws -> Result
     ) rethrows -> Result {

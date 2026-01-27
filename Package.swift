@@ -20,6 +20,7 @@ let package = Package(
     dependencies: [
         .package(path: "../swift-index-primitives"),
         .package(path: "../swift-range-primitives"),
+        .package(path: "../swift-property-primitives"),
     ],
     targets: [
         .target(
@@ -27,6 +28,7 @@ let package = Package(
             dependencies: [
                 .product(name: "Index Primitives", package: "swift-index-primitives"),
                 .product(name: "Range Primitives", package: "swift-range-primitives"),
+                .product(name: "Property Primitives", package: "swift-property-primitives"),
             ]
         ),
     ],

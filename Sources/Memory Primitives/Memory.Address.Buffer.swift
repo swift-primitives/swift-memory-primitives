@@ -72,12 +72,12 @@ extension Memory.Address {
 // MARK: - Properties
 
 extension Memory.Address.Buffer {
-    /// The base address of the buffer.
+    /// The start address of the buffer.
     ///
     /// The returned address is guaranteed non-null since this buffer type
     /// enforces a non-null invariant.
     @inlinable
-    public var baseAddress: Memory.Address {
+    public var start: Memory.Address {
         unsafe Memory.Address(_base.baseAddress.unsafelyUnwrapped)
     }
 
@@ -104,7 +104,7 @@ extension Memory.Address.Buffer {
     }
 }
 
-// MARK: - Load
+// MARK: - Read
 
 extension Memory.Address.Buffer {
     /// Reads a value of the specified type from the buffer.
@@ -114,7 +114,7 @@ extension Memory.Address.Buffer {
     ///   - type: The type of value to read.
     /// - Returns: The value read from memory.
     @inlinable
-    public func load<T>(fromByteOffset offset: Index<UInt8>.Offset = .zero, as type: T.Type) -> T {
+    public func read<T>(from offset: Index<UInt8>.Offset = .zero, as type: T.Type) -> T {
         unsafe _base.load(fromByteOffset: offset.rawValue, as: type)
     }
 }
@@ -143,7 +143,7 @@ extension Memory.Address.Buffer {
     ///   - body: A closure that receives the typed buffer.
     /// - Returns: The return value of the closure.
     @inlinable
-    public func withMemoryRebound<T, Result>(
+    public func withRebound<T, Result>(
         to type: T.Type,
         _ body: (UnsafeBufferPointer<T>) throws -> Result
     ) rethrows -> Result {
