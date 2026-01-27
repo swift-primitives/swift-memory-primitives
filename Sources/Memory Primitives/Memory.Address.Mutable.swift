@@ -118,7 +118,7 @@ extension Memory.Address.Mutable {
         repeating value: T,
         count: Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
-        unsafe _rawPointer.initializeMemory(as: type, repeating: value, count: count)
+        unsafe _rawPointer.memory.initialize(as: type, repeating: value, count: count)
     }
 
     /// Initializes memory as the specified type from a source buffer.
@@ -135,7 +135,7 @@ extension Memory.Address.Mutable {
         from source: UnsafePointer<T>,
         count: Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
-        unsafe _rawPointer.initializeMemory(as: type, from: source, count: count)
+        unsafe _rawPointer.memory.initialize(as: type, from: source, count: count)
     }
 }
 
@@ -171,7 +171,7 @@ extension Property where Tag == Memory.Address.Mutable.Initialize, Base == Memor
         from source: UnsafeMutablePointer<T>,
         count: Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
-        unsafe base._rawPointer.moveInitializeMemory(as: type, from: source, count: count)
+        unsafe base._rawPointer.memory.move.initialize(as: type, from: source, count: count)
     }
 }
 
@@ -190,7 +190,7 @@ extension Memory.Address.Mutable {
         to type: T.Type,
         capacity: Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
-        unsafe _rawPointer.bindMemory(to: type, capacity: capacity)
+        unsafe _rawPointer.memory.bind(to: type, capacity: capacity)
     }
 }
 
@@ -318,7 +318,7 @@ extension Memory.Address.Mutable {
         from source: Memory.Address,
         count: Index<UInt8>.Count
     ) {
-        unsafe _rawPointer.copyMemory(from: source._rawPointer, count: count)
+        unsafe _rawPointer.memory.copy(from: source._rawPointer, count: count)
     }
 
     /// Copies bytes from a source address (mutable variant).
@@ -331,7 +331,7 @@ extension Memory.Address.Mutable {
         from source: Self,
         count: Index<UInt8>.Count
     ) {
-        unsafe _rawPointer.copyMemory(
+        unsafe _rawPointer.memory.copy(
             from: UnsafeRawPointer(source._rawPointer),
             count: count
         )
