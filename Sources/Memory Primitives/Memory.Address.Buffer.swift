@@ -1,8 +1,8 @@
 // ===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-primitives open source project
+// This source file is part of the swift-memory-primitives open source project
 //
-// Copyright (c) 2024-2026 Coen ten Thije Boonkkamp and the swift-primitives project authors
+// Copyright (c) 2024-2026 Coen ten Thije Boonkkamp and the swift-memory-primitives project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE for license information
@@ -12,18 +12,42 @@
 public import Index_Primitives
 public import Range_Primitives
 
+/// Global sentinel for empty buffers.
+///
+/// ## Invariants
+///
+/// - Non-null (bitPattern 0x1000)
+/// - Page-aligned as an address value (4096)
+/// - Must NEVER be dereferenced
+/// - Valid for empty buffers where count == 0
+///
+/// This approach:
+/// - Avoids platform-specific allocation calls
+/// - Has no failure mode
+/// - Has no early-runtime dependencies
+/// - Cannot leak (nothing allocated)
+@usableFromInline
+nonisolated(unsafe) let _emptyBufferSentinel: UnsafeRawPointer =
+    unsafe UnsafeRawPointer(bitPattern: 0x1000)!
+
 extension Memory.Address {
-    /// A non-null raw buffer pointer to a contiguous region of bytes.
+    /// A raw buffer with guaranteed non-null start address.
     ///
-    /// `Memory.Address.Buffer` wraps `Swift.UnsafeRawBufferPointer`,
-    /// providing a primitives-ecosystem type for read-only raw buffer access
-    /// with a **non-null guarantee**.
+    /// `Memory.Address.Buffer` provides a primitives-ecosystem type for
+    /// read-only raw buffer access with a **non-null guarantee**.
+    ///
+    /// ## Invariants
+    ///
+    /// - `start` is always non-null (even for empty buffers)
+    /// - Memory is only valid to access within `0..<count`
+    /// - For empty buffers, `start` points to a sentinel; do not dereference
+    /// - Subscript access MUST be within bounds (undefined behavior otherwise)
     ///
     /// ## Usage
     ///
     /// ```swift
     /// let buffer: Memory.Address.Buffer = ...
-    /// let byte = buffer[Index<UInt8>(5)]
+    /// let byte = buffer[Index<UInt8>(5)]  // Valid if 5 < count
     /// let count = buffer.count
     /// ```
     ///
@@ -32,8 +56,8 @@ extension Memory.Address {
     /// For read-write access, use `Memory.Address.Buffer.Mutable`:
     ///
     /// ```swift
-    /// var mutableBuffer: Memory.Address.Buffer.Mutable = .allocate(byteCount: 100, alignment: 8)
-    /// mutableBuffer.copyMemory(from: source)
+    /// var mutableBuffer: Memory.Address.Buffer.Mutable = .allocate(count: 100, alignment: 8)
+    /// mutableBuffer.copy(from: source)
     /// mutableBuffer.deallocate()
     /// ```
     @safe
@@ -41,30 +65,41 @@ extension Memory.Address {
 
         // MARK: - Stored Properties
 
-        /// The underlying Swift stdlib buffer pointer, guaranteed non-null.
+        /// Non-null start address. For empty buffers, points to sentinel.
         @usableFromInline
-        internal let _base: UnsafeRawBufferPointer
+        internal let _start: Memory.Address
 
-        /// The underlying stdlib buffer pointer.
-        @inlinable
-        public var base: UnsafeRawBufferPointer { unsafe _base }
+        /// Byte count.
+        @usableFromInline
+        internal let _count: Index<UInt8>.Count
 
         // MARK: - Initialization
 
-        /// Creates a buffer from an UnsafeRawBufferPointer.
-        @inlinable
-        public init(_ buffer: UnsafeRawBufferPointer) {
-            unsafe self._base = unsafe buffer
-        }
-
         /// Creates a buffer from a start address and byte count.
-        ///
-        /// - Parameters:
-        ///   - start: The base address of the buffer.
-        ///   - count: The number of bytes in the buffer.
         @inlinable
         public init(start: Memory.Address, count: Index<UInt8>.Count) {
-            unsafe self._base = unsafe UnsafeRawBufferPointer(start: start._rawPointer, count: count)
+            self._start = start
+            self._count = count
+        }
+
+        /// Creates an empty buffer.
+        @inlinable
+        public init() {
+            unsafe self._start = Memory.Address(_emptyBufferSentinel)
+            self._count = .zero
+        }
+
+        /// Creates a buffer from an UnsafeRawBufferPointer.
+        ///
+        /// If the source buffer is empty (nil baseAddress), uses sentinel.
+        @inlinable
+        public init(_ buffer: UnsafeRawBufferPointer) {
+            if let baseAddress = buffer.baseAddress {
+                unsafe self._start = Memory.Address(baseAddress)
+            } else {
+                unsafe self._start = Memory.Address(_emptyBufferSentinel)
+            }
+            self._count = Index<UInt8>.Count(UInt(buffer.count))
         }
     }
 }
@@ -72,25 +107,50 @@ extension Memory.Address {
 // MARK: - Properties
 
 extension Memory.Address.Buffer {
-    /// The start address of the buffer.
+    /// The start address of the buffer (guaranteed non-null).
     ///
-    /// The returned address is guaranteed non-null since this buffer type
-    /// enforces a non-null invariant.
+    /// - Note: For empty buffers, this points to a sentinel address.
+    ///   Only access memory within `0..<count`.
     @inlinable
-    public var start: Memory.Address {
-        unsafe Memory.Address(_base.baseAddress.unsafelyUnwrapped)
-    }
+    public var start: Memory.Address { _start }
 
     /// The number of bytes in the buffer.
     @inlinable
-    public var count: Index<UInt8>.Count {
-        Index<UInt8>.Count(__unchecked: (), unsafe _base.count)
-    }
+    public var count: Index<UInt8>.Count { _count }
 
     /// A Boolean value indicating whether the buffer is empty.
     @inlinable
-    public var isEmpty: Bool {
-        unsafe _base.isEmpty
+    public var isEmpty: Bool { _count.rawValue == 0 }
+}
+
+// MARK: - Interop Views
+
+extension Memory.Address.Buffer {
+    /// The underlying stdlib buffer pointer (stdlib-normal form).
+    ///
+    /// For empty buffers, returns `(start: nil, count: 0)` per stdlib convention.
+    /// Use this for idiomatic Swift stdlib interop.
+    @inlinable
+    public var base: UnsafeRawBufferPointer {
+        if isEmpty {
+            return unsafe UnsafeRawBufferPointer(start: nil, count: 0)
+        }
+        return unsafe UnsafeRawBufferPointer(
+            start: _start._rawPointer,
+            count: Int(_count.rawValue)
+        )
+    }
+
+    /// The underlying stdlib buffer pointer with non-null start.
+    ///
+    /// For empty buffers, returns `(start: sentinel, count: 0)`.
+    /// Use this for C APIs that reject null pointers even with size 0.
+    @inlinable
+    public var baseNonNull: UnsafeRawBufferPointer {
+        unsafe UnsafeRawBufferPointer(
+            start: _start._rawPointer,
+            count: Int(_count.rawValue)
+        )
     }
 }
 
@@ -100,7 +160,7 @@ extension Memory.Address.Buffer {
     /// Accesses the byte at the given index.
     @inlinable
     public subscript(index: Index<UInt8>) -> UInt8 {
-        unsafe _base[index]
+        unsafe _start._rawPointer.load(fromByteOffset: Int(index.position.rawValue), as: UInt8.self)
     }
 }
 
@@ -115,7 +175,7 @@ extension Memory.Address.Buffer {
     /// - Returns: The value read from memory.
     @inlinable
     public func read<T>(from offset: Index<UInt8>.Offset = .zero, as type: T.Type) -> T {
-        unsafe _base.load(fromByteOffset: offset.rawValue, as: type)
+        unsafe _start._rawPointer.load(fromByteOffset: offset.rawValue, as: type)
     }
 }
 
@@ -128,8 +188,56 @@ extension Memory.Address.Buffer {
     /// - Returns: A buffer over the specified range.
     @inlinable
     public func extracting(_ bounds: Range.Lazy<Index<UInt8>>) -> Self {
-        let startPtr = unsafe _base.baseAddress.unsafelyUnwrapped.advanced(by: bounds.start)
-        return unsafe Self(UnsafeRawBufferPointer(start: startPtr, count: bounds.count))
+        // _start is always non-null (sentinel-backed), so pointer arithmetic is safe
+        let newStart = unsafe Memory.Address(
+            _start._rawPointer.advanced(by: Int(bounds.start.position.rawValue))
+        )
+        let newCount = Index<UInt8>.Count(bounds.count.rawValue)
+        return Self(start: newStart, count: newCount)
+    }
+}
+
+// MARK: - Safe Slicing
+
+extension Memory.Address.Buffer {
+    /// Returns a buffer slice if bounds are valid, nil otherwise.
+    ///
+    /// ## Bounds Validation
+    ///
+    /// - `offset` must be >= 0 and <= `count`
+    /// - `sliceCount` must be <= `count - offset`
+    /// - Overflow-safe arithmetic
+    ///
+    /// - Parameters:
+    ///   - offset: Starting offset in bytes.
+    ///   - sliceCount: Number of bytes in the slice.
+    /// - Returns: A buffer over the slice, or nil if bounds are invalid.
+    @inlinable
+    public func slice(
+        offset: Index<UInt8>.Offset,
+        count sliceCount: Index<UInt8>.Count
+    ) -> Self? {
+        let offsetValue = offset.rawValue
+        let countValue = Int(_count.rawValue)
+        let sliceCountValue = Int(sliceCount.rawValue)
+
+        // Bounds check: offset must be non-negative and within buffer
+        guard offsetValue >= 0, offsetValue <= countValue else {
+            return nil
+        }
+
+        // Bounds check: slice must fit (overflow-safe: check sliceCount <= remaining)
+        let remaining = countValue - offsetValue
+        guard sliceCountValue <= remaining else {
+            return nil
+        }
+
+        // Compute new start using pointer arithmetic
+        // _start is always non-null (sentinel-backed), so advanced(by:) is safe
+        let newStart = unsafe Memory.Address(
+            _start._rawPointer.advanced(by: offsetValue)
+        )
+        return Self(start: newStart, count: sliceCount)
     }
 }
 
@@ -147,7 +255,7 @@ extension Memory.Address.Buffer {
         to type: T.Type,
         _ body: (UnsafeBufferPointer<T>) throws -> Result
     ) rethrows -> Result {
-        try unsafe _base.withMemoryRebound(to: type) { typedBuffer in
+        try unsafe base.withMemoryRebound(to: type) { typedBuffer in
             try unsafe body(typedBuffer)
         }
     }
@@ -157,7 +265,7 @@ extension Memory.Address.Buffer {
 
 extension Memory.Address.Buffer: CustomStringConvertible {
     public var description: String {
-        unsafe "Memory.Address.Buffer(baseAddress: \(_base.baseAddress.unsafelyUnwrapped), count: \(_base.count))"
+        "Memory.Address.Buffer(start: \(_start), count: \(_count.rawValue))"
     }
 }
 
@@ -165,7 +273,7 @@ extension Memory.Address.Buffer: CustomStringConvertible {
 
 extension Memory.Address.Buffer: CustomDebugStringConvertible {
     public var debugDescription: String {
-        unsafe "Memory.Address.Buffer(base: \(_base))"
+        "Memory.Address.Buffer(start: \(_start), count: \(_count.rawValue))"
     }
 }
 
@@ -174,8 +282,8 @@ extension Memory.Address.Buffer: CustomDebugStringConvertible {
 extension Memory.Address.Buffer {
     @inlinable
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        unsafe Int(bitPattern: lhs._base.baseAddress) == Int(bitPattern: rhs._base.baseAddress)
-            && lhs._base.count == rhs._base.count
+        unsafe Int(bitPattern: lhs._start._rawPointer) == Int(bitPattern: rhs._start._rawPointer)
+            && lhs._count == rhs._count
     }
 }
 
@@ -184,7 +292,7 @@ extension Memory.Address.Buffer {
 extension Memory.Address.Buffer {
     @inlinable
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(unsafe Int(bitPattern: _base.baseAddress))
-        hasher.combine(unsafe _base.count)
+        hasher.combine(unsafe Int(bitPattern: _start._rawPointer))
+        hasher.combine(_count.rawValue)
     }
 }
