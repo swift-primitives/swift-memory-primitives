@@ -119,7 +119,7 @@ extension MemoryAddressBufferMutableTests.EdgeCase {
         defer { buffer.deallocate() }
 
         let sliceCount: Index<UInt8>.Count = 10
-        let result = buffer.slice(offset: Index<UInt8>.Offset(5), count: sliceCount)
+        let result = buffer.slice(start: 5, count: sliceCount)
         #expect(result == nil)
     }
 
@@ -138,7 +138,7 @@ extension MemoryAddressBufferMutableTests.EdgeCase {
         }
 
         let sliceCount: Index<UInt8>.Count = 5
-        let slice = buffer.slice(offset: Index<UInt8>.Offset(2), count: sliceCount)
+        let slice = buffer.slice(start: 2, count: sliceCount)
         #expect(slice != nil)
         if let slice = slice {
             let idx0: Index<UInt8> = 0

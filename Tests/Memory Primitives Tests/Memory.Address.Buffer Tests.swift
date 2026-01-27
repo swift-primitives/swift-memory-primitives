@@ -144,7 +144,7 @@ extension MemoryAddressBufferTests.EdgeCase {
         let data: [UInt8] = [1, 2, 3]
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Address.Buffer(rawBuffer)
-            let result = buffer.slice(offset: Index<UInt8>.Offset(10), count: 1)
+            let result = buffer.slice(start: 10, count: 1)
             #expect(result == nil)
         }
     }
@@ -154,7 +154,7 @@ extension MemoryAddressBufferTests.EdgeCase {
         let data: [UInt8] = [1, 2, 3]
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Address.Buffer(rawBuffer)
-            let result = buffer.slice(offset: Index<UInt8>.Offset(1), count: 10)
+            let result = buffer.slice(start: 1, count: 10)
             #expect(result == nil)
         }
     }
@@ -164,7 +164,7 @@ extension MemoryAddressBufferTests.EdgeCase {
         let data: [UInt8] = [1, 2, 3, 4, 5]
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Address.Buffer(rawBuffer)
-            let slice = buffer.slice(offset: Index<UInt8>.Offset(1), count: 3)
+            let slice = buffer.slice(start: 1, count: 3)
             #expect(slice != nil)
             #expect(slice?.count.rawValue == 3)
             if let slice = slice {
@@ -179,7 +179,7 @@ extension MemoryAddressBufferTests.EdgeCase {
         let data: [UInt8] = [1, 2, 3]
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Address.Buffer(rawBuffer)
-            let slice = buffer.slice(offset: Index<UInt8>.Offset(0), count: buffer.count)
+            let slice = buffer.slice(start: 0, count: buffer.count)
             #expect(slice != nil)
             #expect(slice?.count == buffer.count)
         }
@@ -188,7 +188,7 @@ extension MemoryAddressBufferTests.EdgeCase {
     @Test("slice empty from empty buffer succeeds")
     func sliceEmptyFromEmpty() {
         let buffer = Memory.Address.Buffer()
-        let slice = buffer.slice(offset: Index<UInt8>.Offset(0), count: 0)
+        let slice = buffer.slice(start: 0, count: 0)
         #expect(slice != nil)
         #expect(slice?.isEmpty == true)
     }
@@ -275,21 +275,19 @@ extension MemoryAddressBufferTests.Performance {
 
             // Warmup
             for _ in 0..<10 {
-                for i in 0..<100 {
-                    _ = buffer.slice(
-                        offset: Index<UInt8>.Offset(i * 10),
-                        count: sliceCount
-                    )
+                var start: Index<UInt8> = .zero
+                for _ in 0..<100 {
+                    _ = buffer.slice(start: start, count: sliceCount)
+                    start = start + sliceCount
                 }
             }
 
             // Measured
             for _ in 0..<100 {
-                for i in 0..<100 {
-                    _ = buffer.slice(
-                        offset: Index<UInt8>.Offset(i * 10),
-                        count: sliceCount
-                    )
+                var start: Index<UInt8> = .zero
+                for _ in 0..<100 {
+                    _ = buffer.slice(start: start, count: sliceCount)
+                    start = start + sliceCount
                 }
             }
         }

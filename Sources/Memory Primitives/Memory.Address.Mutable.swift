@@ -186,7 +186,7 @@ extension Memory.Address.Mutable {
     /// - Returns: A typed pointer to the bound memory.
     @inlinable
     @discardableResult
-    public func bind<T>(
+    public func bind<T: ~Copyable>(
         to type: T.Type,
         capacity: Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
@@ -215,7 +215,7 @@ extension Property where Tag == Memory.Address.Mutable.Assuming, Base == Memory.
     /// - Parameter type: The type the memory is assumed to be bound to.
     /// - Returns: A typed pointer to the memory.
     @inlinable
-    public func bound<T>(
+    public func bound<T: ~Copyable>(
         to type: T.Type
     ) -> UnsafeMutablePointer<T> {
         unsafe base._rawPointer.assumingMemoryBound(to: type)
@@ -262,7 +262,7 @@ extension Memory.Address.Mutable {
     /// Subtracts a byte offset from an address.
     @inlinable
     public static func - (lhs: Self, rhs: Index<UInt8>.Offset) -> Self {
-        lhs.advanced(by: Index<UInt8>.Offset(-rhs.vector.rawValue))
+        lhs.advanced(by: -rhs)
     }
 
     /// Returns the byte distance between two addresses.

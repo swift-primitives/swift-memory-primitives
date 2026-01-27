@@ -12,8 +12,6 @@
 extension Memory {
     /// Namespace for allocator-related types.
     public struct Allocator: Memory.Allocator.`Protocol`, Sendable {
-        public typealias Error = Never
-
         public init() {}
 
         @inlinable

@@ -86,3 +86,63 @@ extension UnsafeRawPointer {
         unsafe self = unsafe address._rawPointer
     }
 }
+
+// MARK: - Properties
+
+extension Memory.Address {
+    /// The raw pointer value.
+    @inlinable
+    public var rawPointer: UnsafeRawPointer {
+        unsafe _rawPointer
+    }
+}
+
+// MARK: - Pointer Arithmetic
+
+extension Memory.Address {
+    /// Returns an address offset by the specified number of bytes.
+    ///
+    /// - Parameter offset: The byte offset.
+    /// - Returns: A new address offset by the given bytes.
+    @inlinable
+    public func advanced(
+        by offset: Index<UInt8>.Offset
+    ) -> Self {
+        unsafe Self(_rawPointer.advanced(by: offset.vector.rawValue))
+    }
+
+    /// Returns the distance in bytes from this address to another.
+    ///
+    /// - Parameter other: The target address.
+    /// - Returns: The byte offset between this address and `other`.
+    @inlinable
+    public func distance(
+        to other: Self
+    ) -> Index<UInt8>.Offset {
+        unsafe Index<UInt8>.Offset(_rawPointer.distance(to: other._rawPointer))
+    }
+
+    /// Adds a byte offset to an address.
+    @inlinable
+    public static func + (lhs: Self, rhs: Index<UInt8>.Offset) -> Self {
+        lhs.advanced(by: rhs)
+    }
+
+    /// Adds a byte offset to an address.
+    @inlinable
+    public static func + (lhs: Index<UInt8>.Offset, rhs: Self) -> Self {
+        rhs.advanced(by: lhs)
+    }
+
+    /// Subtracts a byte offset from an address.
+    @inlinable
+    public static func - (lhs: Self, rhs: Index<UInt8>.Offset) -> Self {
+        lhs.advanced(by: -rhs)
+    }
+
+    /// Returns the byte distance between two addresses.
+    @inlinable
+    public static func - (lhs: Self, rhs: Self) -> Index<UInt8>.Offset {
+        lhs.distance(to: rhs)
+    }
+}

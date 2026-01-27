@@ -29,23 +29,23 @@ extension Memory {
         @usableFromInline
         internal var _buffer: Address.Buffer.Mutable
 
-        /// Current allocation offset.
+        /// Bytes currently allocated from the buffer.
         @usableFromInline
-        internal var _offset: Index<UInt8>.Offset
+        internal var _allocated: Index<UInt8>.Count
 
         /// Creates an arena with the specified capacity.
         ///
         /// - Parameter capacity: Total capacity in bytes. Must be > 0.
-        /// - Precondition: `capacity.count.rawValue > 0`
+        /// - Precondition: `capacity > .zero`
         @inlinable
         public init(capacity: Index<UInt8>.Count) {
-            precondition(capacity.count.rawValue > 0, "Arena capacity must be > 0")
+            precondition(capacity > .zero, "Arena capacity must be > 0")
 
             self._buffer = Address.Buffer.Mutable.allocate(
                 count: capacity,
                 alignment: Index<UInt8>.Count(UInt(MemoryLayout<Int>.alignment))
             )
-            self._offset = .zero
+            self._allocated = .zero
         }
 
         deinit {
@@ -58,14 +58,12 @@ extension Memory {
 
         /// The number of bytes currently allocated.
         @inlinable
-        public var allocated: Index<UInt8>.Count {
-            Index<UInt8>.Count(UInt(_offset.vector.rawValue))
-        }
+        public var allocated: Index<UInt8>.Count { _allocated }
 
         /// The number of bytes remaining.
         @inlinable
         public var remaining: Index<UInt8>.Count {
-            Index<UInt8>.Count(UInt(Int(capacity.count.rawValue) - _offset.vector.rawValue))
+            Index<UInt8>.Count(capacity.count.subtract.saturating(_allocated.count))
         }
 
         /// Resets the arena, invalidating all previous allocations.
@@ -73,7 +71,7 @@ extension Memory {
         /// - Warning: All pointers from this arena become invalid.
         @inlinable
         public mutating func reset() {
-            _offset = .zero
+            _allocated = .zero
         }
 
         /// Allocates memory from the arena.
@@ -87,26 +85,26 @@ extension Memory {
             count: Index<UInt8>.Count,
             alignment: Index<UInt8>.Count
         ) -> Address.Mutable? {
-            // Alignment must be power of 2
-            let alignValue = Int(alignment.count.rawValue)
+            let alignValue = alignment.count.rawValue
             precondition(alignValue > 0 && (alignValue & (alignValue - 1)) == 0,
                          "Alignment must be power of 2")
 
-            // Align the current offset
-            let alignMask = alignValue - 1
-            let alignedOffset = (_offset.vector.rawValue + alignMask) & ~alignMask
+            // Round up allocated to alignment boundary
+            let alignMask = alignValue &- 1
+            let alignedAllocated = (_allocated.count.rawValue &+ alignMask) & ~alignMask
 
-            // Check if allocation fits
-            let endOffset = alignedOffset + Int(count.count.rawValue)
-            guard endOffset <= Int(capacity.count.rawValue) else {
+            // Check if allocation fits (overflow-safe: use saturating add then compare)
+            let (endAllocated, overflow) = alignedAllocated.addingReportingOverflow(count.count.rawValue)
+            guard !overflow, endAllocated <= capacity.count.rawValue else {
                 return nil
             }
 
-            // Bump the pointer
-            _offset = Index<UInt8>.Offset(endOffset)
+            // Update allocated count
+            _allocated = Index<UInt8>.Count(Cardinal.Count(endAllocated))
 
-            // Return the allocated address (_buffer.start is guaranteed non-null)
-            return _buffer.start.advanced(by: Index<UInt8>.Offset(alignedOffset))
+            // Return the allocated address
+            // Convert Count to Offset at boundary for pointer arithmetic
+            return _buffer.start.advanced(by: Index<UInt8>.Offset(Int(alignedAllocated)))
         }
     }
 }

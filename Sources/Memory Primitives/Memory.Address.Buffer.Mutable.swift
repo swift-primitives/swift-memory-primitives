@@ -107,7 +107,7 @@ extension Memory.Address.Buffer.Mutable {
 
     /// A Boolean value indicating whether the buffer is empty.
     @inlinable
-    public var isEmpty: Bool { _count.count.rawValue == 0 }
+    public var isEmpty: Bool { _count == .zero }
 }
 
 // MARK: - Interop Views
@@ -293,38 +293,36 @@ extension Memory.Address.Buffer.Mutable {
     ///
     /// ## Bounds Validation
     ///
-    /// - `offset` must be >= 0 and <= `count`
-    /// - `sliceCount` must be <= `count - offset`
-    /// - Overflow-safe arithmetic
+    /// - `start` must be a valid endpoint (`start <= count`)
+    /// - `sliceCount` must fit: `start + sliceCount <= count`
     ///
     /// - Parameters:
-    ///   - offset: Starting offset in bytes.
+    ///   - start: Starting byte position within the buffer.
     ///   - sliceCount: Number of bytes in the slice.
     /// - Returns: A mutable buffer over the slice, or nil if bounds are invalid.
     @inlinable
     public func slice(
-        offset: Index<UInt8>.Offset,
+        start: Index<UInt8>,
         count sliceCount: Index<UInt8>.Count
     ) -> Self? {
-        let offsetValue = offset.vector.rawValue
-        let countValue = Int(_count.count.rawValue)
-        let sliceCountValue = Int(sliceCount.count.rawValue)
-
-        // Bounds check: offset must be non-negative and within buffer
-        guard offsetValue >= 0, offsetValue <= countValue else {
+        // Bounds check: start must be valid endpoint
+        guard start <= _count else {
             return nil
         }
 
-        // Bounds check: slice must fit (overflow-safe: check sliceCount <= remaining)
-        let remaining = countValue - offsetValue
-        guard sliceCountValue <= remaining else {
+        // Bounds check: slice must fit
+        // remaining = buffer count - start position
+        let startAsCount = Index<UInt8>.Count(start)
+        let remaining = _count.count.subtract.saturating(startAsCount.count)
+
+        guard sliceCount.count <= remaining else {
             return nil
         }
 
         // Compute new start using pointer arithmetic
         // _start is always non-null (sentinel-backed), so advanced(by:) is safe
         let newStart = unsafe Memory.Address.Mutable(
-            _start._rawPointer.advanced(by: offsetValue)
+            _start._rawPointer.advanced(by: Int(start.position.rawValue))
         )
         return Self(start: newStart, count: sliceCount)
     }
