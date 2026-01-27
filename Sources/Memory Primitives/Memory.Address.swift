@@ -53,7 +53,7 @@ extension Memory {
         /// - Throws: `Error.null` if the pointer is nil.
         @inlinable
         public init(_ pointer: UnsafeRawPointer?) throws(Error) {
-            guard let pointer else { throw .null }
+            guard let pointer = unsafe pointer else { throw .null }
             unsafe self._rawPointer = unsafe pointer
         }
 
@@ -63,7 +63,7 @@ extension Memory {
         /// - Throws: `Error.null` if the pointer is nil.
         @inlinable
         public init<T>(_ pointer: UnsafePointer<T>?) throws(Error) {
-            guard let pointer else { throw .null }
+            guard let pointer = unsafe pointer else { throw .null }
             unsafe self._rawPointer = UnsafeRawPointer(pointer)
         }
 
@@ -73,7 +73,7 @@ extension Memory {
         /// - Throws: `Error.null` if the pointer is nil.
         @inlinable
         public init<T>(_ pointer: UnsafeMutablePointer<T>?) throws(Error) {
-            guard let pointer else { throw .null }
+            guard let pointer = unsafe pointer else { throw .null }
             unsafe self._rawPointer = UnsafeRawPointer(pointer)
         }
     }
@@ -83,7 +83,7 @@ extension UnsafeRawPointer {
     public init(
         _ address: Memory.Address
     ){
-        self = unsafe address._rawPointer
+        unsafe self = unsafe address._rawPointer
     }
 }
 

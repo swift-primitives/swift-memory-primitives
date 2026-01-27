@@ -64,7 +64,7 @@ extension Memory.Address {
         ///   - count: The number of bytes in the buffer.
         @inlinable
         public init(start: Memory.Address, count: Index<UInt8>.Count) {
-            unsafe self._base = unsafe UnsafeRawBufferPointer(start: start._rawPointer, count: count.rawValue)
+            unsafe self._base = unsafe UnsafeRawBufferPointer(start: start._rawPointer, count: count)
         }
     }
 }
@@ -84,7 +84,7 @@ extension Memory.Address.Buffer {
     /// The number of bytes in the buffer.
     @inlinable
     public var count: Index<UInt8>.Count {
-        Index<UInt8>.Count(__unchecked: unsafe _base.count)
+        Index<UInt8>.Count(__unchecked: (), unsafe _base.count)
     }
 
     /// A Boolean value indicating whether the buffer is empty.
@@ -100,7 +100,7 @@ extension Memory.Address.Buffer {
     /// Accesses the byte at the given index.
     @inlinable
     public subscript(index: Index<UInt8>) -> UInt8 {
-        unsafe _base[index.position.rawValue]
+        unsafe _base[index]
     }
 }
 
@@ -114,7 +114,7 @@ extension Memory.Address.Buffer {
     ///   - type: The type of value to read.
     /// - Returns: The value read from memory.
     @inlinable
-    public func load<T>(fromByteOffset offset: Index<UInt8>.Offset = 0, as type: T.Type) -> T {
+    public func load<T>(fromByteOffset offset: Index<UInt8>.Offset = .zero, as type: T.Type) -> T {
         unsafe _base.load(fromByteOffset: offset.rawValue, as: type)
     }
 }
