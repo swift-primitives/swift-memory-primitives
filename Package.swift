@@ -31,6 +31,21 @@ let package = Package(
                 .product(name: "Property Primitives", package: "swift-property-primitives"),
             ]
         ),
+        .target(
+            name: "Memory Primitives Test Support",
+            dependencies: [
+                .target(name: "Memory Primitives"),
+                .product(name: "Index Primitives Test Support", package: "swift-index-primitives"),
+            ],
+            path: "Tests/Support"
+        ),
+        .testTarget(
+            name: "Memory Primitives Tests",
+            dependencies: [
+                .target(name: "Memory Primitives"),
+                .target(name: "Memory Primitives Test Support"),
+            ]
+        ),
     ],
     swiftLanguageModes: [.v6]
 )
