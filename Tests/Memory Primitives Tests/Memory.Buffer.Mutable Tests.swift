@@ -143,8 +143,7 @@ extension Memory.Buffer.Mutable.Test.EdgeCase {
         let slice = buffer.slice(start: 2, count: sliceCount)
         #expect(slice != nil)
         if let slice = slice {
-            let idx0: Index<Memory> = 0
-            #expect(slice[idx0] == 20)
+            #expect(slice[0] == 20)
         }
     }
 

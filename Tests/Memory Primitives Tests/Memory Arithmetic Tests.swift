@@ -45,7 +45,7 @@ extension Memory.Arithmetic.Basics {
     func mutableAddressFromRawPointer() {
         var value: UInt64 = 0xCAFEBABE
         unsafe withUnsafeMutablePointer(to: &value) { ptr in
-            let raw = unsafe UnsafeMutableRawPointer(ptr)
+            let raw = UnsafeMutableRawPointer(ptr)
             let address = unsafe Memory.Mutable.Address(raw)
             let back = unsafe UnsafeMutableRawPointer(address)
             #expect(unsafe back == raw)
@@ -55,13 +55,13 @@ extension Memory.Arithmetic.Basics {
     @Test("Memory.Address.Offset.zero is the additive identity")
     func offsetZero() {
         let zero: Memory.Address.Offset = .zero
-        #expect(zero.rawValue.rawValue == 0)
+        #expect(zero == .zero)
     }
 
     @Test("Memory.Address.Count.zero is the empty count")
     func countZero() {
         let zero: Memory.Address.Count = .zero
-        #expect(zero.rawValue.rawValue == 0)
+        #expect(zero == .zero)
     }
 
     @Test("Memory.Address round-trips through raw pointer")
@@ -84,7 +84,7 @@ extension Memory.Arithmetic.Offset {
         let values: [UInt8] = [10, 20, 30, 40, 50]
         unsafe values.withUnsafeBytes { rawBuffer in
             let base = unsafe Memory.Address(rawBuffer.baseAddress!)
-            let offset = Memory.Address.Offset(3)
+            let offset: Memory.Address.Offset = 3
             let advanced = base + offset
 
             #expect(advanced.rawValue.rawValue == base.rawValue.rawValue &+ 3)
@@ -96,7 +96,7 @@ extension Memory.Arithmetic.Offset {
         let values: [UInt8] = [10, 20, 30, 40, 50]
         unsafe values.withUnsafeBytes { rawBuffer in
             let base = unsafe Memory.Address(rawBuffer.baseAddress!.advanced(by: 4))
-            let offset = Memory.Address.Offset(-2)
+            let offset: Memory.Address.Offset = -2
             let retreated = base + offset
 
             #expect(retreated.rawValue.rawValue == base.rawValue.rawValue &- 2)
@@ -108,7 +108,7 @@ extension Memory.Arithmetic.Offset {
         let values: [UInt8] = [1, 2, 3, 4, 5, 6, 7, 8]
         unsafe values.withUnsafeBytes { rawBuffer in
             let base = unsafe Memory.Address(rawBuffer.baseAddress!)
-            let offset = Memory.Address.Offset(5)
+            let offset: Memory.Address.Offset = 5
 
             let lhs = base + offset
             let rhs = offset + base
@@ -122,7 +122,7 @@ extension Memory.Arithmetic.Offset {
         let values: [UInt8] = [1, 2, 3, 4, 5, 6, 7, 8]
         unsafe values.withUnsafeBytes { rawBuffer in
             let base = unsafe Memory.Address(rawBuffer.baseAddress!.advanced(by: 4))
-            let offset = Memory.Address.Offset(3)
+            let offset: Memory.Address.Offset = 3
             let result = base - offset
 
             #expect(result.rawValue.rawValue == base.rawValue.rawValue &- 3)
@@ -131,28 +131,28 @@ extension Memory.Arithmetic.Offset {
 
     @Test("Negate offset: -offset reverses direction")
     func negateOffset() {
-        let offset = Memory.Address.Offset(42)
+        let offset: Memory.Address.Offset = 42
         let negated = -offset
 
-        #expect(negated.rawValue.rawValue == -42)
+        #expect(negated == -42)
     }
 
     @Test("Offset + Offset yields combined displacement")
     func offsetAddition() {
-        let a = Memory.Address.Offset(10)
-        let b = Memory.Address.Offset(7)
+        let a: Memory.Address.Offset = 10
+        let b: Memory.Address.Offset = 7
         let sum = a + b
 
-        #expect(sum.rawValue.rawValue == 17)
+        #expect(sum == 17)
     }
 
     @Test("Offset - Offset yields differential displacement")
     func offsetSubtraction() {
-        let a = Memory.Address.Offset(10)
-        let b = Memory.Address.Offset(7)
+        let a: Memory.Address.Offset = 10
+        let b: Memory.Address.Offset = 7
         let diff = a - b
 
-        #expect(diff.rawValue.rawValue == 3)
+        #expect(diff == 3)
     }
 
     @Test("Mutable address advances by offset")
@@ -160,7 +160,7 @@ extension Memory.Arithmetic.Offset {
         var values: [UInt8] = [0, 0, 0, 0, 0, 0, 0, 0]
         unsafe values.withUnsafeMutableBytes { rawBuffer in
             let base = unsafe Memory.Mutable.Address(rawBuffer.baseAddress!)
-            let offset = Memory.Address.Offset(4)
+            let offset: Memory.Address.Offset = 4
             let advanced = base + offset
 
             #expect(advanced.rawValue.rawValue == base.rawValue.rawValue &+ 4)
@@ -172,7 +172,7 @@ extension Memory.Arithmetic.Offset {
         let values: [UInt8] = [1, 2, 3, 4, 5, 6, 7, 8]
         unsafe values.withUnsafeBytes { rawBuffer in
             let base = unsafe Memory.Address(rawBuffer.baseAddress!)
-            let offset = Memory.Address.Offset(6)
+            let offset: Memory.Address.Offset = 6
 
             #expect(base.advanced(by: offset) == base + offset)
         }
@@ -190,7 +190,7 @@ extension Memory.Arithmetic.Distance {
             let b = unsafe Memory.Address(rawBuffer.baseAddress!.advanced(by: 5))
 
             let distance = a.distance(to: b)
-            #expect(distance.rawValue.rawValue == 5)
+            #expect(distance == 5)
         }
     }
 
@@ -202,7 +202,7 @@ extension Memory.Arithmetic.Distance {
             let b = unsafe Memory.Address(rawBuffer.baseAddress!.advanced(by: 7))
 
             let distance = b - a
-            #expect(distance.rawValue.rawValue == 7)
+            #expect(distance == 7)
         }
     }
 
@@ -242,7 +242,7 @@ extension Memory.Arithmetic.Distance {
             let b = unsafe Memory.Mutable.Address(rawBuffer.baseAddress!.advanced(by: 3))
 
             let distance = a.distance(to: b)
-            #expect(distance.rawValue.rawValue == 3)
+            #expect(distance == 3)
             #expect(a + distance == b)
         }
     }
@@ -253,31 +253,31 @@ extension Memory.Arithmetic.Distance {
 extension Memory.Arithmetic.Count {
     @Test("Count from UInt preserves value")
     func countFromUInt() {
-        let count = Memory.Address.Count(UInt(256))
-        #expect(count.rawValue.rawValue == 256)
+        let count: Memory.Address.Count = 256
+        #expect(count == 256)
     }
 
     @Test("Count from Cardinal preserves value")
     func countFromCardinal() {
-        let count = Memory.Address.Count(Cardinal(64))
-        #expect(count.rawValue.rawValue == 64)
+        let count: Memory.Address.Count = .init(Cardinal(64))
+        #expect(count == 64)
     }
 
     @Test("Count comparison operators")
     func countComparison() {
-        let small = Memory.Address.Count(UInt(10))
-        let large = Memory.Address.Count(UInt(100))
+        let small: Memory.Address.Count = 10
+        let large: Memory.Address.Count = 100
 
         #expect(small < large)
         #expect(large > small)
         #expect(small != large)
-        #expect(small == Memory.Address.Count(UInt(10)))
+        #expect(small == 10)
     }
 
     @Test("Count as allocation size for Buffer.Mutable")
     func countAsAllocationSize() {
-        let count = Memory.Address.Count(UInt(64))
-        let alignment = Memory.Address.Count(UInt(8))
+        let count: Memory.Address.Count = 64
+        let alignment: Memory.Address.Count = 8
         let buffer = Memory.Buffer.Mutable.allocate(count: count, alignment: alignment)
 
         #expect(buffer.count == count)
@@ -287,16 +287,16 @@ extension Memory.Arithmetic.Count {
 
     @Test("Count in store/read with correct byte size")
     func countInStoreRead() {
-        let byteCount = Memory.Address.Count(UInt(MemoryLayout<UInt64>.size))
-        let alignment = Memory.Address.Count(UInt(MemoryLayout<UInt64>.alignment))
-        var arena = Memory.Arena(capacity: Memory.Address.Count(UInt(1024)))
+        let byteCount: Memory.Address.Count = .init(UInt(MemoryLayout<UInt64>.size))
+        let alignment: Memory.Address.Count = .init(UInt(MemoryLayout<UInt64>.alignment))
+        var arena: Memory.Arena = .init(capacity: 1024)
 
         guard let address = arena.allocate(count: byteCount, alignment: alignment) else {
             Issue.record("Allocation failed")
             return
         }
 
-        address.store(0xDEADBEEF as UInt64, as: UInt64.self)
+        address.store(0xDEADBEEF, as: UInt64.self)
         let loaded: UInt64 = address.read(as: UInt64.self)
         #expect(loaded == 0xDEADBEEF)
     }
@@ -307,8 +307,8 @@ extension Memory.Arithmetic.Count {
 extension Memory.Arithmetic.Ratio {
     @Test("Ratio scales element offset to byte offset")
     func ratioScalesOffset() {
-        let stride = Affine.Discrete.Ratio<Int, Memory>(MemoryLayout<Int>.stride)
-        let elementOffset = Index<Int>.Offset(3)
+        let stride: Affine.Discrete.Ratio<Int, Memory> = .init(MemoryLayout<Int>.stride)
+        let elementOffset: Index<Int>.Offset = 3
         let byteOffset: Memory.Address.Offset = elementOffset * stride
 
         #expect(byteOffset.rawValue.rawValue == 3 * MemoryLayout<Int>.stride)
@@ -316,8 +316,8 @@ extension Memory.Arithmetic.Ratio {
 
     @Test("Ratio scales element count to byte count")
     func ratioScalesCount() {
-        let stride = Affine.Discrete.Ratio<Int, Memory>(MemoryLayout<Int>.stride)
-        let elementCount = Index<Int>.Count(UInt(5))
+        let stride: Affine.Discrete.Ratio<Int, Memory> = .init(MemoryLayout<Int>.stride)
+        let elementCount: Index<Int>.Count = 5
         let byteCount: Memory.Address.Count = elementCount * stride
 
         #expect(byteCount.rawValue.rawValue == UInt(5 * MemoryLayout<Int>.stride))
@@ -325,8 +325,8 @@ extension Memory.Arithmetic.Ratio {
 
     @Test("Ratio scaling is commutative: offset * ratio == ratio * offset")
     func ratioCommutative() {
-        let stride = Affine.Discrete.Ratio<UInt32, Memory>(MemoryLayout<UInt32>.stride)
-        let offset = Index<UInt32>.Offset(7)
+        let stride: Affine.Discrete.Ratio<UInt32, Memory> = .init(MemoryLayout<UInt32>.stride)
+        let offset: Index<UInt32>.Offset = 7
 
         let lhs: Memory.Address.Offset = offset * stride
         let rhs: Memory.Address.Offset = stride * offset
@@ -337,8 +337,8 @@ extension Memory.Arithmetic.Ratio {
     @Test("Ratio composition: Ratio<A,B> * Ratio<B,C> → Ratio<A,C>")
     func ratioComposition() {
         // 1 UInt64 = 2 UInt32s, 1 UInt32 = 4 bytes
-        let r1 = Affine.Discrete.Ratio<UInt64, UInt32>(Int(2))
-        let r2 = Affine.Discrete.Ratio<UInt32, Memory>(MemoryLayout<UInt32>.stride)
+        let r1: Affine.Discrete.Ratio<UInt64, UInt32> = .init(Int(2))
+        let r2: Affine.Discrete.Ratio<UInt32, Memory> = .init(MemoryLayout<UInt32>.stride)
 
         let composed: Affine.Discrete.Ratio<UInt64, Memory> = r1 * r2
 
@@ -348,7 +348,7 @@ extension Memory.Arithmetic.Ratio {
     @Test("Identity ratio preserves values")
     func identityRatio() {
         let identity: Affine.Discrete.Ratio<Memory, Memory> = .identity
-        let offset = Memory.Address.Offset(42)
+        let offset: Memory.Address.Offset = 42
         let scaled = offset * identity
 
         #expect(scaled == offset)
@@ -362,8 +362,8 @@ extension Memory.Arithmetic.Composition {
     func stridedAccess() {
         var values: [UInt64] = [100, 200, 300, 400, 500]
         unsafe values.withUnsafeMutableBytes { rawBuffer in
-            let base = unsafe Memory.Mutable.Address(rawBuffer.baseAddress!)
-            let stride = Affine.Discrete.Ratio<UInt64, Memory>(MemoryLayout<UInt64>.stride)
+            let base: Memory.Mutable.Address = unsafe .init(rawBuffer.baseAddress!)
+            let stride: Affine.Discrete.Ratio<UInt64, Memory> = .init(MemoryLayout<UInt64>.stride)
 
             for i in 0..<5 {
                 let address = base + Index<UInt64>.Offset(i) * stride
@@ -377,18 +377,18 @@ extension Memory.Arithmetic.Composition {
     func arenaTypedStoreRead() {
         let intStride = MemoryLayout<Int>.stride
         let count = 4
-        var arena = Memory.Arena(
-            capacity: Memory.Address.Count(UInt(intStride * count + MemoryLayout<Int>.alignment))
+        var arena: Memory.Arena = .init(
+            capacity: .init(UInt(intStride * count + MemoryLayout<Int>.alignment))
         )
 
-        let alignment = Memory.Address.Count(UInt(MemoryLayout<Int>.alignment))
-        let byteCount = Memory.Address.Count(UInt(intStride * count))
+        let alignment: Memory.Address.Count = .init(UInt(MemoryLayout<Int>.alignment))
+        let byteCount: Memory.Address.Count = .init(UInt(intStride * count))
         guard let base = arena.allocate(count: byteCount, alignment: alignment) else {
             Issue.record("Allocation failed")
             return
         }
 
-        let stride = Affine.Discrete.Ratio<Int, Memory>(intStride)
+        let stride: Affine.Discrete.Ratio<Int, Memory> = .init(intStride)
 
         for i in 0..<count {
             let address = base + Index<Int>.Offset(i) * stride
@@ -405,20 +405,20 @@ extension Memory.Arithmetic.Composition {
     @Test("Struct field layout: compute addresses at known byte offsets")
     func structFieldLayout() {
         // Simulate a struct with two fields: UInt32 at offset 0, UInt64 at offset 8
-        let size = Memory.Address.Count(UInt(16))
-        let alignment = Memory.Address.Count(UInt(8))
-        var arena = Memory.Arena(capacity: Memory.Address.Count(UInt(1024)))
+        let size: Memory.Address.Count = 16
+        let alignment: Memory.Address.Count = 8
+        var arena: Memory.Arena = .init(capacity: 1024)
 
         guard let base = arena.allocate(count: size, alignment: alignment) else {
             Issue.record("Allocation failed")
             return
         }
 
-        let field0Offset = Memory.Address.Offset(0)
-        let field1Offset = Memory.Address.Offset(8)
+        let field0Offset: Memory.Address.Offset = 0
+        let field1Offset: Memory.Address.Offset = 8
 
-        (base + field0Offset).store(0x12345678 as UInt32, as: UInt32.self)
-        (base + field1Offset).store(0xDEADBEEFCAFEBABE as UInt64, as: UInt64.self)
+        (base + field0Offset).store(0x12345678, as: UInt32.self)
+        (base + field1Offset).store(0xDEADBEEFCAFEBABE, as: UInt64.self)
 
         let f0: UInt32 = (base + field0Offset).read(as: UInt32.self)
         let f1: UInt64 = (base + field1Offset).read(as: UInt64.self)
@@ -429,12 +429,12 @@ extension Memory.Arithmetic.Composition {
 
     @Test("Copy between addresses with computed byte counts")
     func copyWithComputedCounts() {
-        let stride = Affine.Discrete.Ratio<UInt64, Memory>(MemoryLayout<UInt64>.stride)
-        let elementCount = Index<UInt64>.Count(UInt(4))
+        let stride: Affine.Discrete.Ratio<UInt64, Memory> = .init(MemoryLayout<UInt64>.stride)
+        let elementCount: Index<UInt64>.Count = 4
         let byteCount: Memory.Address.Count = elementCount * stride
 
-        let alignment = Memory.Address.Count(UInt(MemoryLayout<UInt64>.alignment))
-        var arena = Memory.Arena(capacity: Memory.Address.Count(UInt(4096)))
+        let alignment: Memory.Address.Count = .init(UInt(MemoryLayout<UInt64>.alignment))
+        var arena: Memory.Arena = .init(capacity: 4096)
 
         guard let src = arena.allocate(count: byteCount, alignment: alignment),
               let dst = arena.allocate(count: byteCount, alignment: alignment) else {
@@ -459,10 +459,10 @@ extension Memory.Arithmetic.Composition {
     @Test("Index iteration with ratio-scaled addressing")
     func indexIterationRatioScaled() {
         var data: [UInt32] = [10, 20, 30, 40, 50, 60, 70, 80]
-        let stride = Affine.Discrete.Ratio<UInt32, Memory>(MemoryLayout<UInt32>.stride)
+        let stride: Affine.Discrete.Ratio<UInt32, Memory> = .init(MemoryLayout<UInt32>.stride)
 
         unsafe data.withUnsafeMutableBytes { rawBuffer in
-            let base = unsafe Memory.Mutable.Address(rawBuffer.baseAddress!)
+            let base: Memory.Mutable.Address = unsafe .init(rawBuffer.baseAddress!)
             var sum: UInt32 = 0
 
             for i in 0..<8 {
@@ -476,14 +476,14 @@ extension Memory.Arithmetic.Composition {
     @Test("Bidirectional traversal from midpoint")
     func bidirectionalTraversal() {
         var data: [Int32] = [1, 2, 3, 4, 5, 6, 7, 8]
-        let stride = Affine.Discrete.Ratio<Int32, Memory>(MemoryLayout<Int32>.stride)
+        let stride: Affine.Discrete.Ratio<Int32, Memory> = .init(MemoryLayout<Int32>.stride)
 
         unsafe data.withUnsafeMutableBytes { rawBuffer in
-            let base = unsafe Memory.Mutable.Address(rawBuffer.baseAddress!)
-            let mid = base + Index<Int32>.Offset(4) * stride
+            let base: Memory.Mutable.Address = unsafe .init(rawBuffer.baseAddress!)
+            let mid: Memory.Mutable.Address = base + 4 * stride
 
-            let forward: Int32 = (mid + Index<Int32>.Offset(2) * stride).read(as: Int32.self)
-            let backward: Int32 = (mid + Index<Int32>.Offset(-3) * stride).read(as: Int32.self)
+            let forward: Int32 = (mid + 2 * stride).read(as: Int32.self)
+            let backward: Int32 = (mid + -3 * stride).read(as: Int32.self)
 
             #expect(forward == 7)
             #expect(backward == 2)
@@ -497,17 +497,17 @@ extension Memory.Arithmetic.Composition {
 
         enum CacheLine {}
 
-        let lineToElement = Affine.Discrete.Ratio<CacheLine, UInt64>(Int(8))
-        let elementToByte = Affine.Discrete.Ratio<UInt64, Memory>(MemoryLayout<UInt64>.stride)
+        let lineToElement: Affine.Discrete.Ratio<CacheLine, UInt64> = .init(Int(8))
+        let elementToByte: Affine.Discrete.Ratio<UInt64, Memory> = .init(MemoryLayout<UInt64>.stride)
         let lineToByte: Affine.Discrete.Ratio<CacheLine, Memory> = lineToElement * elementToByte
 
-        let lineCount = Index<CacheLine>.Count(UInt(2))
+        let lineCount: Index<CacheLine>.Count = 2
         let totalBytes: Memory.Address.Count = lineCount * lineToByte
 
-        #expect(totalBytes.rawValue.rawValue == UInt(128))
+        #expect(totalBytes == 128)
 
-        var arena = Memory.Arena(capacity: Memory.Address.Count(UInt(4096)))
-        let alignment = Memory.Address.Count(UInt(64))
+        var arena: Memory.Arena = .init(capacity: 4096)
+        let alignment: Memory.Address.Count = 64
 
         guard let base = arena.allocate(count: totalBytes, alignment: alignment) else {
             Issue.record("Allocation failed")
@@ -515,21 +515,21 @@ extension Memory.Arithmetic.Composition {
         }
 
         // Write to element 3 of cache line 1 (absolute element index = 8 + 3 = 11)
-        let lineOffset = Index<CacheLine>.Offset(1) * lineToByte
-        let elemOffset = Index<UInt64>.Offset(3) * elementToByte
+        let lineOffset: Memory.Address.Offset = 1 * lineToByte
+        let elemOffset: Memory.Address.Offset = 3 * elementToByte
         let target = base + lineOffset + elemOffset
 
-        target.store(0xBEEF as UInt64, as: UInt64.self)
-        #expect(target.read(as: UInt64.self) == 0xBEEF as UInt64)
+        target.store(0xBEEF, as: UInt64.self)
+        #expect(target.read(as: UInt64.self) == 0xBEEF)
     }
 
     @Test("Interleaved access pattern: stride-2 read across elements")
     func interleavedAccess() {
         var data: [UInt32] = [10, 20, 30, 40, 50, 60, 70, 80]
-        let stride = Affine.Discrete.Ratio<UInt32, Memory>(MemoryLayout<UInt32>.stride)
+        let stride: Affine.Discrete.Ratio<UInt32, Memory> = .init(MemoryLayout<UInt32>.stride)
 
         unsafe data.withUnsafeMutableBytes { rawBuffer in
-            let base = unsafe Memory.Mutable.Address(rawBuffer.baseAddress!)
+            let base: Memory.Mutable.Address = unsafe .init(rawBuffer.baseAddress!)
 
             // Read every other element: indices 0, 2, 4, 6
             var evens: [UInt32] = []
