@@ -115,20 +115,6 @@ extension Tagged where Tag == Memory, RawValue == Ordinal {
 }
 
 
-// MARK: - Mutable Address Typealias
-
-extension Tagged where Tag == Memory, RawValue == Ordinal {
-    /// A mutable memory address.
-    ///
-    /// `Memory.Address.Mutable` has the same underlying representation as
-    /// `Memory.Address` (an ordinal position in memory), but carries type-level
-    /// information that permits mutation operations.
-    ///
-    /// For operations that read or write memory, use this type. For operations
-    /// that only need a position (e.g., arithmetic), use `Memory.Address`.
-    public typealias Mutable = Tagged<Memory.Mutable, Ordinal>
-}
-
 // MARK: - UnsafeRawPointer Interop
 
 extension UnsafeRawPointer {

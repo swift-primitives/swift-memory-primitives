@@ -13,7 +13,7 @@ import Testing
 @testable import Memory_Primitives
 import Memory_Primitives_Test_Support
 
-extension Memory.Address.Buffer {
+extension Memory.Buffer {
     @Suite
     struct Test {
         @Suite struct Unit {}
@@ -23,10 +23,10 @@ extension Memory.Address.Buffer {
     }
 }
 
-extension Memory.Address.Buffer.Test.Unit {
+extension Memory.Buffer.Test.Unit {
     @Test("init creates empty buffer with sentinel")
     func initEmpty() {
-        let buffer = Memory.Address.Buffer()
+        let buffer = Memory.Buffer()
         #expect(buffer.isEmpty)
         #expect(buffer.count == 0)
     }
@@ -38,7 +38,7 @@ extension Memory.Address.Buffer.Test.Unit {
             guard let baseAddress = ptr.baseAddress else { return }
             let start = unsafe Memory.Address(baseAddress)
             let count: Index<Memory>.Count = 5
-            let buffer = Memory.Address.Buffer(start: start, count: count)
+            let buffer = Memory.Buffer(start: start, count: count)
 
             #expect(!buffer.isEmpty)
             #expect(buffer.count == 5)
@@ -49,7 +49,7 @@ extension Memory.Address.Buffer.Test.Unit {
     func initFromUnsafeRawBufferPointer() {
         let data: [UInt8] = [10, 20, 30]
         unsafe data.withUnsafeBytes { rawBuffer in
-            let buffer = unsafe Memory.Address.Buffer(rawBuffer)
+            let buffer = unsafe Memory.Buffer(rawBuffer)
             #expect(buffer.count == 3)
         }
     }
@@ -57,7 +57,7 @@ extension Memory.Address.Buffer.Test.Unit {
     @Test("init from empty UnsafeRawBufferPointer uses sentinel")
     func initFromEmptyUnsafeRawBufferPointer() {
         let emptyBuffer = unsafe UnsafeRawBufferPointer(start: nil, count: 0)
-        let buffer = unsafe Memory.Address.Buffer(emptyBuffer)
+        let buffer = unsafe Memory.Buffer(emptyBuffer)
         #expect(buffer.isEmpty)
         #expect(buffer.count == 0)
     }
@@ -66,7 +66,7 @@ extension Memory.Address.Buffer.Test.Unit {
     func startProperty() {
         let data: [UInt8] = [1, 2, 3]
         unsafe data.withUnsafeBytes { rawBuffer in
-            let buffer = unsafe Memory.Address.Buffer(rawBuffer)
+            let buffer = unsafe Memory.Buffer(rawBuffer)
             _ = buffer.start
             #expect(true)
         }
@@ -76,14 +76,14 @@ extension Memory.Address.Buffer.Test.Unit {
     func countProperty() {
         let data: [UInt8] = [1, 2, 3, 4, 5, 6, 7]
         unsafe data.withUnsafeBytes { rawBuffer in
-            let buffer = unsafe Memory.Address.Buffer(rawBuffer)
+            let buffer = unsafe Memory.Buffer(rawBuffer)
             #expect(buffer.count == 7)
         }
     }
 
     @Test("isEmpty returns true for empty buffer")
     func isEmptyTrue() {
-        let buffer = Memory.Address.Buffer()
+        let buffer = Memory.Buffer()
         #expect(buffer.isEmpty)
     }
 
@@ -91,7 +91,7 @@ extension Memory.Address.Buffer.Test.Unit {
     func isEmptyFalse() {
         let data: [UInt8] = [1]
         unsafe data.withUnsafeBytes { rawBuffer in
-            let buffer = unsafe Memory.Address.Buffer(rawBuffer)
+            let buffer = unsafe Memory.Buffer(rawBuffer)
             #expect(!buffer.isEmpty)
         }
     }
@@ -100,7 +100,7 @@ extension Memory.Address.Buffer.Test.Unit {
     func subscriptAccess() {
         let data: [UInt8] = [10, 20, 30, 40, 50]
         unsafe data.withUnsafeBytes { rawBuffer in
-            let buffer = unsafe Memory.Address.Buffer(rawBuffer)
+            let buffer = unsafe Memory.Buffer(rawBuffer)
             let idx0: Index<Memory> = 0
             let idx2: Index<Memory> = 2
             let idx4: Index<Memory> = 4
@@ -115,7 +115,7 @@ extension Memory.Address.Buffer.Test.Unit {
     func read() {
         var value: UInt32 = 0x12345678
         unsafe withUnsafeBytes(of: &value) { rawBuffer in
-            let buffer = unsafe Memory.Address.Buffer(rawBuffer)
+            let buffer = unsafe Memory.Buffer(rawBuffer)
             let loaded: UInt32 = buffer.read(as: UInt32.self)
             #expect(loaded == 0x12345678)
         }
@@ -124,17 +124,17 @@ extension Memory.Address.Buffer.Test.Unit {
 
 // MARK: - Edge Case Tests
 
-extension Memory.Address.Buffer.Test.EdgeCase {
+extension Memory.Buffer.Test.EdgeCase {
     @Test("base returns nil for empty buffer (stdlib convention)")
     func baseEmptyReturnsNil() {
-        let buffer = Memory.Address.Buffer()
+        let buffer = Memory.Buffer()
         #expect(unsafe buffer.base.baseAddress == nil)
         #expect(unsafe buffer.base.count == 0)
     }
 
     @Test("baseNonNull returns sentinel for empty buffer")
     func baseNonNullEmpty() {
-        let buffer = Memory.Address.Buffer()
+        let buffer = Memory.Buffer()
         #expect(unsafe buffer.baseNonNull.baseAddress != nil)
         #expect(unsafe buffer.baseNonNull.count == 0)
     }
@@ -143,7 +143,7 @@ extension Memory.Address.Buffer.Test.EdgeCase {
     func sliceOutOfBoundsOffset() {
         let data: [UInt8] = [1, 2, 3]
         unsafe data.withUnsafeBytes { rawBuffer in
-            let buffer = unsafe Memory.Address.Buffer(rawBuffer)
+            let buffer = unsafe Memory.Buffer(rawBuffer)
             let result = buffer.slice(start: 10, count: 1)
             #expect(result == nil)
         }
@@ -153,7 +153,7 @@ extension Memory.Address.Buffer.Test.EdgeCase {
     func sliceOutOfBoundsCount() {
         let data: [UInt8] = [1, 2, 3]
         unsafe data.withUnsafeBytes { rawBuffer in
-            let buffer = unsafe Memory.Address.Buffer(rawBuffer)
+            let buffer = unsafe Memory.Buffer(rawBuffer)
             let result = buffer.slice(start: 1, count: 10)
             #expect(result == nil)
         }
@@ -163,7 +163,7 @@ extension Memory.Address.Buffer.Test.EdgeCase {
     func sliceValid() {
         let data: [UInt8] = [1, 2, 3, 4, 5]
         unsafe data.withUnsafeBytes { rawBuffer in
-            let buffer = unsafe Memory.Address.Buffer(rawBuffer)
+            let buffer = unsafe Memory.Buffer(rawBuffer)
             let slice = buffer.slice(start: 1, count: 3)
             #expect(slice != nil)
             #expect(slice?.count == 3)
@@ -178,7 +178,7 @@ extension Memory.Address.Buffer.Test.EdgeCase {
     func sliceFullBuffer() {
         let data: [UInt8] = [1, 2, 3]
         unsafe data.withUnsafeBytes { rawBuffer in
-            let buffer = unsafe Memory.Address.Buffer(rawBuffer)
+            let buffer = unsafe Memory.Buffer(rawBuffer)
             let slice = buffer.slice(start: 0, count: buffer.count)
             #expect(slice != nil)
             #expect(slice?.count == buffer.count)
@@ -187,7 +187,7 @@ extension Memory.Address.Buffer.Test.EdgeCase {
 
     @Test("slice empty from empty buffer succeeds")
     func sliceEmptyFromEmpty() {
-        let buffer = Memory.Address.Buffer()
+        let buffer = Memory.Buffer()
         let slice = buffer.slice(start: 0, count: 0)
         #expect(slice != nil)
         #expect(slice?.isEmpty == true)
@@ -196,13 +196,13 @@ extension Memory.Address.Buffer.Test.EdgeCase {
 
 // MARK: - Integration Tests
 
-extension Memory.Address.Buffer.Test.Integration {
+extension Memory.Buffer.Test.Integration {
     @Test("Equatable compares start and count")
     func equatable() {
         let data: [UInt8] = [1, 2, 3]
         unsafe data.withUnsafeBytes { rawBuffer in
-            let buffer1 = unsafe Memory.Address.Buffer(rawBuffer)
-            let buffer2 = unsafe Memory.Address.Buffer(rawBuffer)
+            let buffer1 = unsafe Memory.Buffer(rawBuffer)
+            let buffer2 = unsafe Memory.Buffer(rawBuffer)
             #expect(buffer1 == buffer2)
         }
     }
@@ -211,16 +211,16 @@ extension Memory.Address.Buffer.Test.Integration {
     func hashable() {
         let data: [UInt8] = [1, 2, 3]
         unsafe data.withUnsafeBytes { rawBuffer in
-            let buffer = unsafe Memory.Address.Buffer(rawBuffer)
+            let buffer = unsafe Memory.Buffer(rawBuffer)
             #expect(buffer.hashValue == buffer.hashValue)
         }
     }
 
     @Test("description includes start and count")
     func description() {
-        let buffer = Memory.Address.Buffer()
+        let buffer = Memory.Buffer()
         let desc = buffer.description
-        #expect(desc.contains("Memory.Address.Buffer"))
+        #expect(desc.contains("Memory.Buffer"))
         #expect(desc.contains("count"))
     }
 
@@ -228,7 +228,7 @@ extension Memory.Address.Buffer.Test.Integration {
     func withRebound() {
         let values: [UInt32] = [0x01020304, 0x05060708]
         unsafe values.withUnsafeBytes { rawBuffer in
-            let buffer = unsafe Memory.Address.Buffer(rawBuffer)
+            let buffer = unsafe Memory.Buffer(rawBuffer)
             unsafe buffer.withRebound(to: UInt8.self) { typedBuffer in
                 #expect(unsafe typedBuffer.count == 8)
             }
@@ -238,13 +238,13 @@ extension Memory.Address.Buffer.Test.Integration {
 
 // MARK: - Performance Tests
 
-extension Memory.Address.Buffer.Test.Performance {
+extension Memory.Buffer.Test.Performance {
     @Test("sequential read")
     func sequentialRead() {
         let size = 10000
         let data = [UInt8](repeating: 42, count: size)
         unsafe data.withUnsafeBytes { rawBuffer in
-            let buffer = unsafe Memory.Address.Buffer(rawBuffer)
+            let buffer = unsafe Memory.Buffer(rawBuffer)
 
             // Warmup
             for _ in 0..<10 {
@@ -270,7 +270,7 @@ extension Memory.Address.Buffer.Test.Performance {
     func sliceCreation() {
         let data = [UInt8](repeating: 0, count: 1000)
         unsafe data.withUnsafeBytes { rawBuffer in
-            let buffer = unsafe Memory.Address.Buffer(rawBuffer)
+            let buffer = unsafe Memory.Buffer(rawBuffer)
             let sliceCount: Index<Memory>.Count = 10
 
             // Warmup

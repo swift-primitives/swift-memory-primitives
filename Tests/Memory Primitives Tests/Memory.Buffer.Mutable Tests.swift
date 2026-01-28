@@ -13,7 +13,7 @@ import Testing
 @testable import Memory_Primitives
 import Memory_Primitives_Test_Support
 
-extension Memory.Address.Buffer.Mutable {
+extension Memory.Buffer.Mutable {
     @Suite
     struct Test {
         @Suite struct Unit {}
@@ -25,10 +25,10 @@ extension Memory.Address.Buffer.Mutable {
 
 // MARK: - Unit Tests
 
-extension Memory.Address.Buffer.Mutable.Test.Unit {
+extension Memory.Buffer.Mutable.Test.Unit {
     @Test("init creates empty buffer with sentinel")
     func initEmpty() {
-        let buffer = Memory.Address.Buffer.Mutable()
+        let buffer = Memory.Buffer.Mutable()
         #expect(buffer.isEmpty)
         #expect(buffer.count == 0)
     }
@@ -37,7 +37,7 @@ extension Memory.Address.Buffer.Mutable.Test.Unit {
     func allocate() {
         let count: Index<Memory>.Count = 100
         let alignment: Index<Memory>.Count = 8
-        let buffer = Memory.Address.Buffer.Mutable.allocate(count: count, alignment: alignment)
+        let buffer = Memory.Buffer.Mutable.allocate(count: count, alignment: alignment)
         defer { buffer.deallocate() }
 
         #expect(!buffer.isEmpty)
@@ -48,7 +48,7 @@ extension Memory.Address.Buffer.Mutable.Test.Unit {
     func subscriptReadWrite() {
         let count: Index<Memory>.Count = 10
         let alignment: Index<Memory>.Count = 1
-        let buffer = Memory.Address.Buffer.Mutable.allocate(count: count, alignment: alignment)
+        let buffer = Memory.Buffer.Mutable.allocate(count: count, alignment: alignment)
         defer { buffer.deallocate() }
 
         let idx: Index<Memory> = 5
@@ -60,7 +60,7 @@ extension Memory.Address.Buffer.Mutable.Test.Unit {
     func read() {
         let count: Index<Memory>.Count = 4
         let alignment: Index<Memory>.Count = 4
-        let buffer = Memory.Address.Buffer.Mutable.allocate(count: count, alignment: alignment)
+        let buffer = Memory.Buffer.Mutable.allocate(count: count, alignment: alignment)
         defer { buffer.deallocate() }
 
         buffer.store(UInt32(0x12345678), as: UInt32.self)
@@ -72,7 +72,7 @@ extension Memory.Address.Buffer.Mutable.Test.Unit {
     func store() {
         let count: Index<Memory>.Count = 8
         let alignment: Index<Memory>.Count = 8
-        let buffer = Memory.Address.Buffer.Mutable.allocate(count: count, alignment: alignment)
+        let buffer = Memory.Buffer.Mutable.allocate(count: count, alignment: alignment)
         defer { buffer.deallocate() }
 
         buffer.store(UInt64(0xDEADBEEFCAFEBABE), as: UInt64.self)
@@ -84,7 +84,7 @@ extension Memory.Address.Buffer.Mutable.Test.Unit {
     func immutableProperty() {
         let count: Index<Memory>.Count = 10
         let alignment: Index<Memory>.Count = 1
-        let mutableBuffer = Memory.Address.Buffer.Mutable.allocate(count: count, alignment: alignment)
+        let mutableBuffer = Memory.Buffer.Mutable.allocate(count: count, alignment: alignment)
         defer { mutableBuffer.deallocate() }
 
         let idx: Index<Memory> = 0
@@ -98,17 +98,17 @@ extension Memory.Address.Buffer.Mutable.Test.Unit {
 
 // MARK: - Edge Case Tests
 
-extension Memory.Address.Buffer.Mutable.Test.EdgeCase {
+extension Memory.Buffer.Mutable.Test.EdgeCase {
     @Test("base returns nil for empty buffer (stdlib convention)")
     func baseEmptyReturnsNil() {
-        let buffer = Memory.Address.Buffer.Mutable()
+        let buffer = Memory.Buffer.Mutable()
         #expect(unsafe buffer.base.baseAddress == nil)
         #expect(unsafe buffer.base.count == 0)
     }
 
     @Test("baseNonNull returns sentinel for empty buffer")
     func baseNonNullEmpty() {
-        let buffer = Memory.Address.Buffer.Mutable()
+        let buffer = Memory.Buffer.Mutable()
         #expect(unsafe buffer.baseNonNull.baseAddress != nil)
         #expect(unsafe buffer.baseNonNull.count == 0)
     }
@@ -117,7 +117,7 @@ extension Memory.Address.Buffer.Mutable.Test.EdgeCase {
     func sliceOutOfBounds() {
         let count: Index<Memory>.Count = 10
         let alignment: Index<Memory>.Count = 1
-        let buffer = Memory.Address.Buffer.Mutable.allocate(count: count, alignment: alignment)
+        let buffer = Memory.Buffer.Mutable.allocate(count: count, alignment: alignment)
         defer { buffer.deallocate() }
 
         let sliceCount: Index<Memory>.Count = 10
@@ -129,7 +129,7 @@ extension Memory.Address.Buffer.Mutable.Test.EdgeCase {
     func sliceValid() {
         let count: Index<Memory>.Count = 10
         let alignment: Index<Memory>.Count = 1
-        let buffer = Memory.Address.Buffer.Mutable.allocate(count: count, alignment: alignment)
+        let buffer = Memory.Buffer.Mutable.allocate(count: count, alignment: alignment)
         defer { buffer.deallocate() }
 
         // Initialize buffer
@@ -152,10 +152,10 @@ extension Memory.Address.Buffer.Mutable.Test.EdgeCase {
     func copyFromImmutable() {
         let sourceData: [UInt8] = [1, 2, 3, 4, 5]
         unsafe sourceData.withUnsafeBytes { rawBuffer in
-            let source = unsafe Memory.Address.Buffer(rawBuffer)
+            let source = unsafe Memory.Buffer(rawBuffer)
             let count: Index<Memory>.Count = 5
             let alignment: Index<Memory>.Count = 1
-            let dest = Memory.Address.Buffer.Mutable.allocate(count: count, alignment: alignment)
+            let dest = Memory.Buffer.Mutable.allocate(count: count, alignment: alignment)
             defer { dest.deallocate() }
 
             dest.copy(from: source)
@@ -171,13 +171,13 @@ extension Memory.Address.Buffer.Mutable.Test.EdgeCase {
 
 // MARK: - Integration Tests
 
-extension Memory.Address.Buffer.Mutable.Test.Integration {
+extension Memory.Buffer.Mutable.Test.Integration {
     @Test("Equatable compares start and count")
     func equatable() {
         let count: Index<Memory>.Count = 10
         let alignment: Index<Memory>.Count = 1
-        let buffer1 = Memory.Address.Buffer.Mutable.allocate(count: count, alignment: alignment)
-        let buffer2 = Memory.Address.Buffer.Mutable.allocate(count: count, alignment: alignment)
+        let buffer1 = Memory.Buffer.Mutable.allocate(count: count, alignment: alignment)
+        let buffer2 = Memory.Buffer.Mutable.allocate(count: count, alignment: alignment)
         defer {
             buffer1.deallocate()
             buffer2.deallocate()
@@ -191,7 +191,7 @@ extension Memory.Address.Buffer.Mutable.Test.Integration {
     func hashable() {
         let count: Index<Memory>.Count = 10
         let alignment: Index<Memory>.Count = 1
-        let buffer = Memory.Address.Buffer.Mutable.allocate(count: count, alignment: alignment)
+        let buffer = Memory.Buffer.Mutable.allocate(count: count, alignment: alignment)
         defer { buffer.deallocate() }
 
         #expect(buffer.hashValue == buffer.hashValue)
@@ -201,7 +201,7 @@ extension Memory.Address.Buffer.Mutable.Test.Integration {
     func withRebound() {
         let count: Index<Memory>.Count = 8
         let alignment: Index<Memory>.Count = 4
-        let buffer = Memory.Address.Buffer.Mutable.allocate(count: count, alignment: alignment)
+        let buffer = Memory.Buffer.Mutable.allocate(count: count, alignment: alignment)
         defer { buffer.deallocate() }
 
         unsafe buffer.withRebound(to: UInt32.self) { typedBuffer in
@@ -213,7 +213,7 @@ extension Memory.Address.Buffer.Mutable.Test.Integration {
     func initializeRepeating() {
         let count: Index<Memory>.Count = 100
         let alignment: Index<Memory>.Count = 1
-        let buffer = Memory.Address.Buffer.Mutable.allocate(count: count, alignment: alignment)
+        let buffer = Memory.Buffer.Mutable.allocate(count: count, alignment: alignment)
         defer { buffer.deallocate() }
 
         _ = unsafe buffer.initialize(as: UInt8.self, repeating: 0xFF)
@@ -226,12 +226,12 @@ extension Memory.Address.Buffer.Mutable.Test.Integration {
 
 // MARK: - Performance Tests
 
-extension Memory.Address.Buffer.Mutable.Test.Performance {
+extension Memory.Buffer.Mutable.Test.Performance {
     @Test("sequential write")
     func sequentialWrite() {
         let count: Index<Memory>.Count = 10000
         let alignment: Index<Memory>.Count = 1
-        let buffer = Memory.Address.Buffer.Mutable.allocate(count: count, alignment: alignment)
+        let buffer = Memory.Buffer.Mutable.allocate(count: count, alignment: alignment)
         defer { buffer.deallocate() }
 
         // Warmup
@@ -258,10 +258,10 @@ extension Memory.Address.Buffer.Mutable.Test.Performance {
         let size = 10000
         let sourceData = [UInt8](repeating: 42, count: size)
         unsafe sourceData.withUnsafeBytes { rawBuffer in
-            let source = unsafe Memory.Address.Buffer(rawBuffer)
+            let source = unsafe Memory.Buffer(rawBuffer)
             let count: Index<Memory>.Count = 10000
             let alignment: Index<Memory>.Count = 1
-            let dest = Memory.Address.Buffer.Mutable.allocate(count: count, alignment: alignment)
+            let dest = Memory.Buffer.Mutable.allocate(count: count, alignment: alignment)
             defer { dest.deallocate() }
 
             // Warmup

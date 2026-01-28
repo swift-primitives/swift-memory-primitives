@@ -126,7 +126,7 @@ extension Memory.Arena.Test.EdgeCase {
     func multipleAllocations() {
         let capacity: Index<Memory>.Count = 256
         var arena = Memory.Arena(capacity: capacity)
-        var allocations: [Memory.Address.Mutable] = []
+        var allocations: [Memory.Mutable.Address] = []
 
         let count: Index<Memory>.Count = 32
         let alignment: Index<Memory>.Count = 8

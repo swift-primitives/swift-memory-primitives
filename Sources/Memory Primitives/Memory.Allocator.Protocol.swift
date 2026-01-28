@@ -34,7 +34,7 @@ extension Memory.Allocator {
         mutating func allocate(
             count: Memory.Address.Count,
             alignment: Memory.Address.Count
-        ) throws(Error) -> Memory.Address.Mutable
+        ) throws(Error) -> Memory.Mutable.Address
 
         /// Deallocates previously allocated memory.
         ///
@@ -43,7 +43,7 @@ extension Memory.Allocator {
         ///   - count: The original allocation size.
         ///   - alignment: The original alignment (some allocators require this).
         mutating func deallocate(
-            _ address: Memory.Address.Mutable,
+            _ address: Memory.Mutable.Address,
             count: Memory.Address.Count,
             alignment: Memory.Address.Count
         )

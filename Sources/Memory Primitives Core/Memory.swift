@@ -23,8 +23,20 @@ public enum Memory {}
 extension Memory {
     /// Marker type for mutable memory addresses.
     ///
-    /// Used as a phantom tag to distinguish `Memory.Address.Mutable` from
+    /// Used as a phantom tag to distinguish `Memory.Mutable.Address` from
     /// `Memory.Address`. Both are ordinal positions in memory, but the type
     /// system tracks whether operations are permitted to mutate.
     public enum Mutable {}
+}
+
+extension Memory.Mutable {
+    /// A mutable memory address.
+    ///
+    /// `Memory.Mutable.Address` has the same underlying representation as
+    /// `Memory.Address` (an ordinal position in memory), but carries type-level
+    /// information that permits mutation operations.
+    ///
+    /// For operations that read or write memory, use this type. For operations
+    /// that only need a position (e.g., arithmetic), use `Memory.Address`.
+    public typealias Address = Tagged<Memory.Mutable, Ordinal>
 }

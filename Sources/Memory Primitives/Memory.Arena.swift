@@ -25,7 +25,7 @@ extension Memory {
     public struct Arena: ~Copyable {
         /// The backing storage.
         @usableFromInline
-        internal var _buffer: Address.Buffer.Mutable
+        internal var _buffer: Buffer.Mutable
 
         /// Bytes currently allocated from the buffer.
         @usableFromInline
@@ -39,7 +39,7 @@ extension Memory {
         public init(capacity: Memory.Address.Count) {
             precondition(capacity > .zero, "Arena capacity must be > 0")
 
-            self._buffer = Address.Buffer.Mutable.allocate(
+            self._buffer = Buffer.Mutable.allocate(
                 count: capacity,
                 alignment: Memory.Address.Count(UInt(MemoryLayout<Int>.alignment))
             )
@@ -82,7 +82,7 @@ extension Memory {
         public mutating func allocate(
             count: Memory.Address.Count,
             alignment: Memory.Address.Count
-        ) -> Address.Mutable? {
+        ) -> Mutable.Address? {
             // Use rawValue (UInt) for bitwise alignment operations
             let alignValue = alignment.count.rawValue
             precondition(alignValue > 0 && (alignValue & (alignValue - 1)) == 0,

@@ -37,10 +37,10 @@ nonisolated(unsafe) let _emptyBufferSentinelMutable: UnsafeMutableRawPointer = {
 @usableFromInline
 nonisolated(unsafe) let _emptyBufferSentinel: UnsafeRawPointer = unsafe UnsafeRawPointer(_emptyBufferSentinelMutable)
 
-extension Tagged where Tag == Memory, RawValue == Ordinal {
+extension Memory {
     /// A raw buffer with guaranteed non-null start address.
     ///
-    /// `Memory.Address.Buffer` provides a primitives-ecosystem type for
+    /// `Memory.Buffer` provides a primitives-ecosystem type for
     /// read-only raw buffer access with a **non-null guarantee**.
     ///
     /// ## Invariants
@@ -53,17 +53,17 @@ extension Tagged where Tag == Memory, RawValue == Ordinal {
     /// ## Usage
     ///
     /// ```swift
-    /// let buffer: Memory.Address.Buffer = ...
+    /// let buffer: Memory.Buffer = ...
     /// let byte = buffer[Index<Memory>(5)]  // Valid if 5 < count
     /// let count = buffer.count
     /// ```
     ///
     /// ## Mutable Variant
     ///
-    /// For read-write access, use `Memory.Address.Buffer.Mutable`:
+    /// For read-write access, use `Memory.Buffer.Mutable`:
     ///
     /// ```swift
-    /// var mutableBuffer: Memory.Address.Buffer.Mutable = .allocate(count: 100, alignment: 8)
+    /// var mutableBuffer: Memory.Buffer.Mutable = .allocate(count: 100, alignment: 8)
     /// mutableBuffer.copy(from: source)
     /// mutableBuffer.deallocate()
     /// ```
@@ -113,7 +113,7 @@ extension Tagged where Tag == Memory, RawValue == Ordinal {
 
 // MARK: - Properties
 
-extension Memory.Address.Buffer {
+extension Memory.Buffer {
     /// The start address of the buffer (guaranteed non-null).
     ///
     /// - Note: For empty buffers, this points to a sentinel address.
@@ -132,7 +132,7 @@ extension Memory.Address.Buffer {
 
 // MARK: - Interop Views
 
-extension Memory.Address.Buffer {
+extension Memory.Buffer {
     /// The underlying stdlib buffer pointer (stdlib-normal form).
     ///
     /// For empty buffers, returns `(start: nil, count: 0)` per stdlib convention.
@@ -163,7 +163,7 @@ extension Memory.Address.Buffer {
 
 // MARK: - Element Access
 
-extension Memory.Address.Buffer {
+extension Memory.Buffer {
     /// Accesses the byte at the given index.
     @inlinable
     public subscript(index: Index<Memory>) -> UInt8 {
@@ -173,7 +173,7 @@ extension Memory.Address.Buffer {
 
 // MARK: - Read
 
-extension Memory.Address.Buffer {
+extension Memory.Buffer {
     /// Reads a value of the specified type from the buffer.
     ///
     /// - Parameters:
@@ -188,7 +188,7 @@ extension Memory.Address.Buffer {
 
 // MARK: - Extraction (Slicing)
 
-extension Memory.Address.Buffer {
+extension Memory.Buffer {
     /// Returns a buffer over the bytes within the specified range.
     ///
     /// - Parameter bounds: A lazy range of byte indices specifying the subregion.
@@ -206,7 +206,7 @@ extension Memory.Address.Buffer {
 
 // MARK: - Safe Slicing
 
-extension Memory.Address.Buffer {
+extension Memory.Buffer {
     /// Returns a buffer slice if bounds are valid, nil otherwise.
     ///
     /// ## Bounds Validation
@@ -248,7 +248,7 @@ extension Memory.Address.Buffer {
 
 // MARK: - Type Reinterpretation
 
-extension Memory.Address.Buffer {
+extension Memory.Buffer {
     /// Executes a closure with the buffer's memory temporarily bound to a typed buffer.
     ///
     /// - Parameters:
@@ -268,23 +268,23 @@ extension Memory.Address.Buffer {
 
 // MARK: - CustomStringConvertible
 
-extension Memory.Address.Buffer: CustomStringConvertible {
+extension Memory.Buffer: CustomStringConvertible {
     public var description: String {
-        "Memory.Address.Buffer(start: \(_start), count: \(_count.count))"
+        "Memory.Buffer(start: \(_start), count: \(_count.count))"
     }
 }
 
 // MARK: - CustomDebugStringConvertible
 
-extension Memory.Address.Buffer: CustomDebugStringConvertible {
+extension Memory.Buffer: CustomDebugStringConvertible {
     public var debugDescription: String {
-        "Memory.Address.Buffer(start: \(_start), count: \(_count.count))"
+        "Memory.Buffer(start: \(_start), count: \(_count.count))"
     }
 }
 
 // MARK: - Equatable
 
-extension Memory.Address.Buffer {
+extension Memory.Buffer {
     @inlinable
     public static func == (lhs: Self, rhs: Self) -> Bool {
         unsafe Int(bitPattern: UnsafeRawPointer(lhs._start)) == Int(bitPattern: UnsafeRawPointer(rhs._start))
@@ -294,7 +294,7 @@ extension Memory.Address.Buffer {
 
 // MARK: - Hashable
 
-extension Memory.Address.Buffer {
+extension Memory.Buffer {
     @inlinable
     public func hash(into hasher: inout Hasher) {
         hasher.combine(unsafe Int(bitPattern: UnsafeRawPointer(_start)))

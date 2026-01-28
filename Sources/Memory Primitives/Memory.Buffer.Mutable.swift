@@ -12,18 +12,18 @@
 public import Index_Primitives
 public import Range_Primitives
 
-/// Mutable sentinel re-exported from Memory.Address.Buffer.swift.
+/// Mutable sentinel re-exported from Memory.Buffer.swift.
 ///
 /// Uses the canonical mutable sentinel directly—no cast needed.
-/// See `_emptyBufferSentinelMutable` in Memory.Address.Buffer.swift for invariants.
+/// See `_emptyBufferSentinelMutable` in Memory.Buffer.swift for invariants.
 @usableFromInline
 nonisolated(unsafe) let _emptyMutableBufferSentinel: UnsafeMutableRawPointer =
     _emptyBufferSentinelMutable
 
-extension Memory.Address.Buffer {
+extension Memory.Buffer {
     /// A mutable raw buffer with guaranteed non-null start address.
     ///
-    /// `Memory.Address.Buffer.Mutable` provides a primitives-ecosystem type for
+    /// `Memory.Buffer.Mutable` provides a primitives-ecosystem type for
     /// read-write raw buffer access with a **non-null guarantee**.
     ///
     /// ## Invariants
@@ -36,7 +36,7 @@ extension Memory.Address.Buffer {
     /// ## Usage
     ///
     /// ```swift
-    /// var buffer: Memory.Address.Buffer.Mutable = .allocate(count: 100, alignment: 8)
+    /// var buffer: Memory.Buffer.Mutable = .allocate(count: 100, alignment: 8)
     /// buffer.copy(from: source)
     /// buffer.deallocate()
     /// ```
@@ -44,8 +44,8 @@ extension Memory.Address.Buffer {
     /// ## Converting to Immutable
     ///
     /// ```swift
-    /// let mutableBuffer: Memory.Address.Buffer.Mutable = ...
-    /// let immutableBuffer: Memory.Address.Buffer = mutableBuffer.immutable
+    /// let mutableBuffer: Memory.Buffer.Mutable = ...
+    /// let immutableBuffer: Memory.Buffer = mutableBuffer.immutable
     /// ```
     @safe
     public struct Mutable: Hashable, @unchecked Sendable {
@@ -54,7 +54,7 @@ extension Memory.Address.Buffer {
 
         /// Non-null start address. For empty buffers, points to sentinel.
         @usableFromInline
-        internal let _start: Memory.Address.Mutable
+        internal let _start: Memory.Mutable.Address
 
         /// Byte count.
         @usableFromInline
@@ -64,7 +64,7 @@ extension Memory.Address.Buffer {
 
         /// Creates a mutable buffer from a start address and byte count.
         @inlinable
-        public init(start: Memory.Address.Mutable, count: Memory.Address.Count) {
+        public init(start: Memory.Mutable.Address, count: Memory.Address.Count) {
             self._start = start
             self._count = count
         }
@@ -72,7 +72,7 @@ extension Memory.Address.Buffer {
         /// Creates an empty mutable buffer.
         @inlinable
         public init() {
-            unsafe self._start = Memory.Address.Mutable(_emptyMutableBufferSentinel)
+            unsafe self._start = Memory.Mutable.Address(_emptyMutableBufferSentinel)
             self._count = .zero
         }
 
@@ -82,9 +82,9 @@ extension Memory.Address.Buffer {
         @inlinable
         public init(_ buffer: UnsafeMutableRawBufferPointer) {
             if let baseAddress = buffer.baseAddress {
-                unsafe self._start = Memory.Address.Mutable(baseAddress)
+                unsafe self._start = Memory.Mutable.Address(baseAddress)
             } else {
-                unsafe self._start = Memory.Address.Mutable(_emptyMutableBufferSentinel)
+                unsafe self._start = Memory.Mutable.Address(_emptyMutableBufferSentinel)
             }
             self._count = Memory.Address.Count(UInt(buffer.count))
         }
@@ -93,13 +93,13 @@ extension Memory.Address.Buffer {
 
 // MARK: - Properties
 
-extension Memory.Address.Buffer.Mutable {
+extension Memory.Buffer.Mutable {
     /// The start address of the buffer (guaranteed non-null).
     ///
     /// - Note: For empty buffers, this points to a sentinel address.
     ///   Only access memory within `0..<count`.
     @inlinable
-    public var start: Memory.Address.Mutable { _start }
+    public var start: Memory.Mutable.Address { _start }
 
     /// The number of bytes in the buffer.
     @inlinable
@@ -112,7 +112,7 @@ extension Memory.Address.Buffer.Mutable {
 
 // MARK: - Interop Views
 
-extension Memory.Address.Buffer.Mutable {
+extension Memory.Buffer.Mutable {
     /// The underlying stdlib buffer pointer (stdlib-normal form).
     ///
     /// For empty buffers, returns `(start: nil, count: 0)` per stdlib convention.
@@ -143,7 +143,7 @@ extension Memory.Address.Buffer.Mutable {
 
 // MARK: - Allocation
 
-extension Memory.Address.Buffer.Mutable {
+extension Memory.Buffer.Mutable {
     /// Allocates uninitialized memory for the specified number of bytes.
     ///
     /// - Parameters:
@@ -171,7 +171,7 @@ extension Memory.Address.Buffer.Mutable {
 
 // MARK: - Element Access
 
-extension Memory.Address.Buffer.Mutable {
+extension Memory.Buffer.Mutable {
     /// Accesses the byte at the given index.
     @inlinable
     public subscript(index: Index<Memory>) -> UInt8 {
@@ -186,7 +186,7 @@ extension Memory.Address.Buffer.Mutable {
 
 // MARK: - Read and Store
 
-extension Memory.Address.Buffer.Mutable {
+extension Memory.Buffer.Mutable {
     /// Reads a value of the specified type from the buffer.
     ///
     /// - Parameters:
@@ -215,7 +215,7 @@ extension Memory.Address.Buffer.Mutable {
 
 // MARK: - Initialization
 
-extension Memory.Address.Buffer.Mutable {
+extension Memory.Buffer.Mutable {
     /// Initializes the buffer's memory as the specified type with a repeated value.
     ///
     /// - Parameters:
@@ -242,12 +242,12 @@ extension Memory.Address.Buffer.Mutable {
 
 // MARK: - Copy Operations
 
-extension Memory.Address.Buffer.Mutable {
+extension Memory.Buffer.Mutable {
     /// Copies bytes from a source buffer.
     ///
     /// - Parameter source: The source buffer to copy from.
     @inlinable
-    public func copy(from source: Memory.Address.Buffer) {
+    public func copy(from source: Memory.Buffer) {
         unsafe base.copyMemory(from: source.base)
     }
 
@@ -270,7 +270,7 @@ extension Memory.Address.Buffer.Mutable {
 
 // MARK: - Extraction (Slicing)
 
-extension Memory.Address.Buffer.Mutable {
+extension Memory.Buffer.Mutable {
     /// Returns a mutable buffer over the bytes within the specified range.
     ///
     /// - Parameter bounds: A lazy range of byte indices specifying the subregion.
@@ -278,7 +278,7 @@ extension Memory.Address.Buffer.Mutable {
     @inlinable
     public func extracting(_ bounds: Range.Lazy<Index<Memory>>) -> Self {
         // _start is always non-null (sentinel-backed), so pointer arithmetic is safe
-        let newStart = unsafe Memory.Address.Mutable(
+        let newStart = unsafe Memory.Mutable.Address(
             UnsafeMutableRawPointer(_start).advanced(by: Int(bitPattern: bounds.start))
         )
         let newCount = bounds.count.retag(Memory.self)
@@ -288,7 +288,7 @@ extension Memory.Address.Buffer.Mutable {
 
 // MARK: - Safe Slicing
 
-extension Memory.Address.Buffer.Mutable {
+extension Memory.Buffer.Mutable {
     /// Returns a mutable buffer slice if bounds are valid, nil otherwise.
     ///
     /// ## Bounds Validation
@@ -321,7 +321,7 @@ extension Memory.Address.Buffer.Mutable {
 
         // Compute new start using pointer arithmetic
         // _start is always non-null (sentinel-backed), so advanced(by:) is safe
-        let newStart = unsafe Memory.Address.Mutable(
+        let newStart = unsafe Memory.Mutable.Address(
             UnsafeMutableRawPointer(_start).advanced(by: Int(bitPattern: start))
         )
         return Self(start: newStart, count: sliceCount)
@@ -330,7 +330,7 @@ extension Memory.Address.Buffer.Mutable {
 
 // MARK: - Type Reinterpretation
 
-extension Memory.Address.Buffer.Mutable {
+extension Memory.Buffer.Mutable {
     /// Executes a closure with the buffer's memory temporarily bound to a typed buffer.
     ///
     /// - Parameters:
@@ -350,33 +350,33 @@ extension Memory.Address.Buffer.Mutable {
 
 // MARK: - Conversion
 
-extension Memory.Address.Buffer.Mutable {
+extension Memory.Buffer.Mutable {
     /// Creates an immutable buffer from this mutable buffer.
     @inlinable
-    public var immutable: Memory.Address.Buffer {
-        Memory.Address.Buffer(start: Memory.Address(_start), count: _count)
+    public var immutable: Memory.Buffer {
+        Memory.Buffer(start: Memory.Address(_start), count: _count)
     }
 }
 
 // MARK: - CustomStringConvertible
 
-extension Memory.Address.Buffer.Mutable: CustomStringConvertible {
+extension Memory.Buffer.Mutable: CustomStringConvertible {
     public var description: String {
-        "Memory.Address.Buffer.Mutable(start: \(_start), count: \(_count.count))"
+        "Memory.Buffer.Mutable(start: \(_start), count: \(_count.count))"
     }
 }
 
 // MARK: - CustomDebugStringConvertible
 
-extension Memory.Address.Buffer.Mutable: CustomDebugStringConvertible {
+extension Memory.Buffer.Mutable: CustomDebugStringConvertible {
     public var debugDescription: String {
-        "Memory.Address.Buffer.Mutable(start: \(_start), count: \(_count.count))"
+        "Memory.Buffer.Mutable(start: \(_start), count: \(_count.count))"
     }
 }
 
 // MARK: - Equatable
 
-extension Memory.Address.Buffer.Mutable {
+extension Memory.Buffer.Mutable {
     @inlinable
     public static func == (lhs: Self, rhs: Self) -> Bool {
         unsafe Int(bitPattern: UnsafeMutableRawPointer(lhs._start)) == Int(bitPattern: UnsafeMutableRawPointer(rhs._start))
@@ -386,7 +386,7 @@ extension Memory.Address.Buffer.Mutable {
 
 // MARK: - Hashable
 
-extension Memory.Address.Buffer.Mutable {
+extension Memory.Buffer.Mutable {
     @inlinable
     public func hash(into hasher: inout Hasher) {
         hasher.combine(unsafe Int(bitPattern: UnsafeMutableRawPointer(_start)))

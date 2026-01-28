@@ -18,13 +18,13 @@ extension Memory {
         public func allocate(
             count: Memory.Address.Count,
             alignment: Memory.Address.Count
-        ) throws(Never) -> Memory.Address.Mutable {
-            Memory.Address.Mutable.allocate(count: count, alignment: alignment)
+        ) throws(Never) -> Memory.Mutable.Address {
+            Memory.Mutable.Address.allocate(count: count, alignment: alignment)
         }
 
         @inlinable
         public func deallocate(
-            _ address: Memory.Address.Mutable,
+            _ address: Memory.Mutable.Address,
             count: Memory.Address.Count,
             alignment: Memory.Address.Count
         ) {

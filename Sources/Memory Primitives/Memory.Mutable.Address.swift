@@ -74,7 +74,7 @@ extension Tagged where Tag == Memory, RawValue == Ordinal {
     ///
     /// - Parameter address: The mutable address to convert.
     @inlinable
-    public init(_ address: Memory.Address.Mutable) {
+    public init(_ address: Memory.Mutable.Address) {
         self.init(__unchecked: (), address.rawValue)
     }
 }
@@ -153,7 +153,7 @@ extension Tagged where Tag == Memory.Mutable, RawValue == Ordinal {
     }
 }
 
-extension Property where Tag == Memory.Address.Mutable.Initialize, Base == Memory.Address.Mutable {
+extension Property where Tag == Memory.Mutable.Address.Initialize, Base == Memory.Mutable.Address {
     /// Initializes memory as the specified type by moving values from a source.
     ///
     /// The source memory becomes uninitialized after this operation.
@@ -208,7 +208,7 @@ extension Tagged where Tag == Memory.Mutable, RawValue == Ordinal {
     }
 }
 
-extension Property where Tag == Memory.Address.Mutable.Assuming, Base == Memory.Address.Mutable {
+extension Property where Tag == Memory.Mutable.Address.Assuming, Base == Memory.Mutable.Address {
     /// Returns a typed pointer assuming the memory is already bound to the specified type.
     ///
     /// - Parameter type: The type the memory is assumed to be bound to.
@@ -347,7 +347,7 @@ extension Tagged where Tag == Memory.Mutable, RawValue == Ordinal {
 extension UnsafeMutableRawPointer {
     /// Creates a mutable raw pointer from a mutable memory address.
     @inlinable
-    public init(_ address: Memory.Address.Mutable) {
+    public init(_ address: Memory.Mutable.Address) {
         unsafe self = UnsafeMutableRawPointer(bitPattern: address.rawValue.rawValue)!
     }
 }
