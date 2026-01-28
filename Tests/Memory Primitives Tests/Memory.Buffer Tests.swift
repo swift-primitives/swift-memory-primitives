@@ -37,7 +37,7 @@ extension Memory.Buffer.Test.Unit {
         unsafe data.withUnsafeBufferPointer { ptr in
             guard let baseAddress = ptr.baseAddress else { return }
             let start = unsafe Memory.Address(baseAddress)
-            let count: Index<Memory>.Count = 5
+            let count: Memory.Address.Count = 5
             let buffer = Memory.Buffer(start: start, count: count)
 
             #expect(!buffer.isEmpty)
@@ -271,7 +271,7 @@ extension Memory.Buffer.Test.Performance {
         let data = [UInt8](repeating: 0, count: 1000)
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Buffer(rawBuffer)
-            let sliceCount: Index<Memory>.Count = 10
+            let sliceCount: Memory.Address.Count = 10
 
             // Warmup
             for _ in 0..<10 {

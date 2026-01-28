@@ -40,8 +40,8 @@ Add to your target:
 import Memory_Primitives
 
 // Allocate raw memory with typed counts
-let byteCount: Index<Memory>.Count = 100
-let alignment: Index<Memory>.Count = 8
+let byteCount: Memory.Address.Count = 100
+let alignment: Memory.Address.Count = 8
 let buffer = Memory.Address.Buffer.Mutable.allocate(byteCount: byteCount, alignment: alignment)
 defer { buffer.deallocate() }
 

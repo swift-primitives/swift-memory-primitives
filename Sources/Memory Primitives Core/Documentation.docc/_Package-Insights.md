@@ -50,7 +50,7 @@ Sentinels that "will never be dereferenced" still need valid provenance if the t
 
 Arena stored `_offset: Memory.Address.Offset` to track bytes allocated. But "bytes allocated" is a count (how many), not an offset (displacement). This type mismatch forced raw value extraction everywhere the field was used.
 
-The fix: change to `_allocated: Index<Memory>.Count`. This is semantically correct—we're tracking a quantity, not a displacement. The property `remaining` becomes `capacity - allocated`, both Count types, using the policy-aware subtraction from Cardinal Primitives.
+The fix: change to `_allocated: Memory.Address.Count`. This is semantically correct—we're tracking a quantity, not a displacement. The property `remaining` becomes `capacity - allocated`, both Count types, using the policy-aware subtraction from Cardinal Primitives.
 
 Once the field has the correct semantic type, the methods that use it no longer need raw value extraction. The typed operations handle the arithmetic. Correct semantic types at the storage level eliminate extraction cascades throughout the API.
 
@@ -64,7 +64,7 @@ Once the field has the correct semantic type, the methods that use it no longer 
 
 **Context**: Changing the stride parameter type in Memory.Address arithmetic.
 
-The original `advanced(by:stride:)` took `stride: Index<Memory>.Count`. This is semantically incorrect. Stride isn't "a count of bytes"—it's "bytes per element," a ratio between the element domain and the byte domain. The distinction matters because ratios compose differently than counts.
+The original `advanced(by:stride:)` took `stride: Memory.Address.Count`. This is semantically incorrect. Stride isn't "a count of bytes"—it's "bytes per element," a ratio between the element domain and the byte domain. The distinction matters because ratios compose differently than counts.
 
 `Affine.Discrete.Ratio<Domain, UInt8>` is the mathematically correct type for stride. It expresses the conversion factor from elements to bytes. When multiplied with an element offset, it produces a byte offset:
 
