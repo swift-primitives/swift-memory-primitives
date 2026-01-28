@@ -12,7 +12,7 @@
 public import Index_Primitives
 public import Property_Primitives
 
-extension Memory.Address {
+extension Tagged where Tag == Memory, RawValue == Ordinal {
     /// A non-null mutable memory address.
     ///
     /// Represents a mutable physical memory location. The address is stored as
@@ -90,7 +90,7 @@ extension Memory.Address.Mutable {
     ///   - alignment: The alignment of the allocated memory, in bytes.
     /// - Returns: A mutable address to the allocated memory.
     @inlinable
-    public static func allocate(count: Index<UInt8>.Count, alignment: Index<UInt8>.Count) -> Self {
+    public static func allocate(count: Memory.Address.Count, alignment: Memory.Address.Count) -> Self {
         unsafe Self(UnsafeMutableRawPointer.allocate(count: count, alignment: alignment))
     }
 
@@ -116,7 +116,7 @@ extension Memory.Address.Mutable {
     public func initialize<T>(
         as type: T.Type,
         repeating value: T,
-        count: Index<T>.Count
+        count: Memory.Address.Count
     ) -> UnsafeMutablePointer<T> {
         unsafe _rawPointer.memory.initialize(as: type, repeating: value, count: count)
     }
@@ -133,7 +133,7 @@ extension Memory.Address.Mutable {
     public func initialize<T>(
         as type: T.Type,
         from source: UnsafePointer<T>,
-        count: Index<T>.Count
+        count: Memory.Address.Count
     ) -> UnsafeMutablePointer<T> {
         unsafe _rawPointer.memory.initialize(as: type, from: source, count: count)
     }
@@ -169,7 +169,7 @@ extension Property where Tag == Memory.Address.Mutable.Initialize, Base == Memor
     public func move<T>(
         as type: T.Type,
         from source: UnsafeMutablePointer<T>,
-        count: Index<T>.Count
+        count: Memory.Address.Count
     ) -> UnsafeMutablePointer<T> {
         unsafe base._rawPointer.memory.move.initialize(as: type, from: source, count: count)
     }
@@ -188,7 +188,7 @@ extension Memory.Address.Mutable {
     @discardableResult
     public func bind<T: ~Copyable>(
         to type: T.Type,
-        capacity: Index<T>.Count
+        capacity: Memory.Address.Count
     ) -> UnsafeMutablePointer<T> {
         unsafe _rawPointer.memory.bind(to: type, capacity: capacity)
     }
@@ -231,7 +231,7 @@ extension Memory.Address.Mutable {
     /// - Returns: A new address offset by the given bytes.
     @inlinable
     public func advanced(
-        by offset: Index<UInt8>.Offset
+        by offset: Memory.Address.Offset
     ) -> Self {
         unsafe Self(_rawPointer.advanced(by: offset))
     }
@@ -243,31 +243,31 @@ extension Memory.Address.Mutable {
     @inlinable
     public func distance(
         to other: Self
-    ) -> Index<UInt8>.Offset {
-        unsafe Index<UInt8>.Offset(_rawPointer.distance(to: other._rawPointer))
+    ) -> Memory.Address.Offset {
+        unsafe Memory.Address.Offset(_rawPointer.distance(to: other._rawPointer))
     }
 
     /// Adds a byte offset to an address.
     @inlinable
-    public static func + (lhs: Self, rhs: Index<UInt8>.Offset) -> Self {
+    public static func + (lhs: Self, rhs: Memory.Address.Offset) -> Self {
         lhs.advanced(by: rhs)
     }
 
     /// Adds a byte offset to an address.
     @inlinable
-    public static func + (lhs: Index<UInt8>.Offset, rhs: Self) -> Self {
+    public static func + (lhs: Memory.Address.Offset, rhs: Self) -> Self {
         rhs.advanced(by: lhs)
     }
 
     /// Subtracts a byte offset from an address.
     @inlinable
-    public static func - (lhs: Self, rhs: Index<UInt8>.Offset) -> Self {
+    public static func - (lhs: Self, rhs: Memory.Address.Offset) -> Self {
         lhs.advanced(by: -rhs)
     }
 
     /// Returns the byte distance between two addresses.
     @inlinable
-    public static func - (lhs: Self, rhs: Self) -> Index<UInt8>.Offset {
+    public static func - (lhs: Self, rhs: Self) -> Memory.Address.Offset {
         lhs.distance(to: rhs)
     }
 }
@@ -283,7 +283,7 @@ extension Memory.Address.Mutable {
     /// - Returns: The value read from memory.
     @inlinable
     public func read<T>(
-        from offset: Index<UInt8>.Offset = .zero,
+        from offset: Memory.Address.Offset = .zero,
         as type: T.Type
     ) -> T {
         unsafe _rawPointer.load(fromByteOffset: offset, as: type)
@@ -298,7 +298,7 @@ extension Memory.Address.Mutable {
     @inlinable
     public func store<T>(
         _ value: T,
-        at offset: Index<UInt8>.Offset = .zero,
+        at offset: Memory.Address.Offset = .zero,
         as type: T.Type
     ) {
         unsafe _rawPointer.store.bytes(of: value, at: offset, as: type)
@@ -316,9 +316,9 @@ extension Memory.Address.Mutable {
     @inlinable
     public func copy(
         from source: Memory.Address,
-        count: Index<UInt8>.Count
+        count: Memory.Address.Count
     ) {
-        unsafe _rawPointer.memory.copy(from: source._rawPointer, count: count)
+        unsafe _rawPointer.memory.copy(from: source.rawPointer, count: count)
     }
 
     /// Copies bytes from a source address (mutable variant).
@@ -329,7 +329,7 @@ extension Memory.Address.Mutable {
     @inlinable
     public func copy(
         from source: Self,
-        count: Index<UInt8>.Count
+        count: Memory.Address.Count
     ) {
         unsafe _rawPointer.memory.copy(
             from: UnsafeRawPointer(source._rawPointer),

@@ -38,7 +38,7 @@ nonisolated(unsafe) let _emptyBufferSentinelMutable: UnsafeMutableRawPointer = {
 nonisolated(unsafe) let _emptyBufferSentinel: UnsafeRawPointer =
     UnsafeRawPointer(_emptyBufferSentinelMutable)
 
-extension Memory.Address {
+extension Tagged where Tag == Memory, RawValue == Ordinal {
     /// A raw buffer with guaranteed non-null start address.
     ///
     /// `Memory.Address.Buffer` provides a primitives-ecosystem type for
@@ -144,7 +144,7 @@ extension Memory.Address.Buffer {
             return unsafe UnsafeRawBufferPointer(start: nil, count: 0)
         }
         return unsafe UnsafeRawBufferPointer(
-            start: _start._rawPointer,
+            start: _start.rawPointer,
             count: count
         )
     }
@@ -156,7 +156,7 @@ extension Memory.Address.Buffer {
     @inlinable
     public var baseNonNull: UnsafeRawBufferPointer {
         unsafe UnsafeRawBufferPointer(
-            start: _start._rawPointer,
+            start: _start.rawPointer,
             count: count
         )
     }
@@ -168,7 +168,7 @@ extension Memory.Address.Buffer {
     /// Accesses the byte at the given index.
     @inlinable
     public subscript(index: Index<UInt8>) -> UInt8 {
-        unsafe _start._rawPointer.load(fromByteOffset: Int(bitPattern: index), as: UInt8.self)
+        unsafe _start.rawPointer.load(fromByteOffset: Int(bitPattern: index), as: UInt8.self)
     }
 }
 
@@ -182,8 +182,8 @@ extension Memory.Address.Buffer {
     ///   - type: The type of value to read.
     /// - Returns: The value read from memory.
     @inlinable
-    public func read<T>(from offset: Index<UInt8>.Offset = .zero, as type: T.Type) -> T {
-        unsafe _start._rawPointer.load(fromByteOffset: offset, as: type)
+    public func read<T>(from offset: Memory.Address.Offset = .zero, as type: T.Type) -> T {
+        unsafe _start.rawPointer.load(fromByteOffset: offset, as: type)
     }
 }
 
@@ -198,7 +198,7 @@ extension Memory.Address.Buffer {
     public func extracting(_ bounds: Range.Lazy<Index<UInt8>>) -> Self {
         // _start is always non-null (sentinel-backed), so pointer arithmetic is safe
         let newStart = unsafe Memory.Address(
-            _start._rawPointer.advanced(by: Int(bitPattern: bounds.start))
+            _start.rawPointer.advanced(by: Int(bitPattern: bounds.start))
         )
         let newCount = bounds.count.retag(UInt8.self)
         return Self(start: newStart, count: newCount)
@@ -241,7 +241,7 @@ extension Memory.Address.Buffer {
         // Compute new start using pointer arithmetic
         // _start is always non-null (sentinel-backed), so advanced(by:) is safe
         let newStart = unsafe Memory.Address(
-            _start._rawPointer.advanced(by: Int(bitPattern: start))
+            _start.rawPointer.advanced(by: Int(bitPattern: start))
         )
         return Self(start: newStart, count: sliceCount)
     }
@@ -288,7 +288,7 @@ extension Memory.Address.Buffer: CustomDebugStringConvertible {
 extension Memory.Address.Buffer {
     @inlinable
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        unsafe Int(bitPattern: lhs._start._rawPointer) == Int(bitPattern: rhs._start._rawPointer)
+        unsafe Int(bitPattern: lhs._start.rawPointer) == Int(bitPattern: rhs._start.rawPointer)
             && lhs._count == rhs._count
     }
 }
@@ -298,7 +298,7 @@ extension Memory.Address.Buffer {
 extension Memory.Address.Buffer {
     @inlinable
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(unsafe Int(bitPattern: _start._rawPointer))
+        hasher.combine(unsafe Int(bitPattern: _start.rawPointer))
         hasher.combine(_count.count)
     }
 }

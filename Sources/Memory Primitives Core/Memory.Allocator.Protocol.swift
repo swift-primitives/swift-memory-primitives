@@ -34,8 +34,8 @@ extension Memory.Allocator {
         /// - Returns: A mutable address to the allocated memory.
         /// - Throws: `Error` if allocation fails.
         mutating func allocate(
-            count: Index<UInt8>.Count,
-            alignment: Index<UInt8>.Count
+            count: Memory.Address.Count,
+            alignment: Memory.Address.Count
         ) throws(Error) -> Memory.Address.Mutable
 
         /// Deallocates previously allocated memory.
@@ -46,8 +46,8 @@ extension Memory.Allocator {
         ///   - alignment: The original alignment (some allocators require this).
         mutating func deallocate(
             _ address: Memory.Address.Mutable,
-            count: Index<UInt8>.Count,
-            alignment: Index<UInt8>.Count
+            count: Memory.Address.Count,
+            alignment: Memory.Address.Count
         )
     }
 }

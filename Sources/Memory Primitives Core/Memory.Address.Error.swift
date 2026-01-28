@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-extension Memory.Address {
+extension Tagged where Tag == Memory, RawValue == Ordinal {
     /// Errors that can occur when creating a memory address.
     public enum Error: Swift.Error, Equatable, Hashable, Sendable {
         /// The pointer was null.

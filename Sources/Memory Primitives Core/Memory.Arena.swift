@@ -105,7 +105,7 @@ extension Memory {
 
             // Return the allocated address
             // Convert Count to Offset at boundary for pointer arithmetic
-            return _buffer.start.advanced(by: Index<UInt8>.Offset(Int(bitPattern: alignedAllocated)))
+            return _buffer.start.advanced(by: Memory.Address.Offset(Int(bitPattern: alignedAllocated)))
         }
     }
 }

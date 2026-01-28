@@ -48,7 +48,7 @@ Sentinels that "will never be dereferenced" still need valid provenance if the t
 
 **Context**: Fixing Memory.Arena to use Count instead of Offset for allocated bytes.
 
-Arena stored `_offset: Index<UInt8>.Offset` to track bytes allocated. But "bytes allocated" is a count (how many), not an offset (displacement). This type mismatch forced raw value extraction everywhere the field was used.
+Arena stored `_offset: Memory.Address.Offset` to track bytes allocated. But "bytes allocated" is a count (how many), not an offset (displacement). This type mismatch forced raw value extraction everywhere the field was used.
 
 The fix: change to `_allocated: Index<UInt8>.Count`. This is semantically correct—we're tracking a quantity, not a displacement. The property `remaining` becomes `capacity - allocated`, both Count types, using the policy-aware subtraction from Cardinal Primitives.
 

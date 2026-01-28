@@ -16,8 +16,8 @@ extension Memory {
 
         @inlinable
         public func allocate(
-            count: Index<UInt8>.Count,
-            alignment: Index<UInt8>.Count
+            count: Memory.Address.Count,
+            alignment: Memory.Address.Count
         ) throws(Never) -> Memory.Address.Mutable {
             Memory.Address.Mutable.allocate(count: count, alignment: alignment)
         }
@@ -25,8 +25,8 @@ extension Memory {
         @inlinable
         public func deallocate(
             _ address: Memory.Address.Mutable,
-            count: Index<UInt8>.Count,
-            alignment: Index<UInt8>.Count
+            count: Memory.Address.Count,
+            alignment: Memory.Address.Count
         ) {
             // System allocator doesn't need count/alignment for deallocation
             address.deallocate()

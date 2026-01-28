@@ -58,13 +58,13 @@ extension Memory.Address.Buffer {
 
         /// Byte count.
         @usableFromInline
-        internal let _count: Index<UInt8>.Count
+        internal let _count: Memory.Address.Count
 
         // MARK: - Initialization
 
         /// Creates a mutable buffer from a start address and byte count.
         @inlinable
-        public init(start: Memory.Address.Mutable, count: Index<UInt8>.Count) {
+        public init(start: Memory.Address.Mutable, count: Memory.Address.Count) {
             self._start = start
             self._count = count
         }
@@ -86,7 +86,7 @@ extension Memory.Address.Buffer {
             } else {
                 unsafe self._start = Memory.Address.Mutable(_emptyMutableBufferSentinel)
             }
-            self._count = Index<UInt8>.Count(UInt(buffer.count))
+            self._count = Memory.Address.Count(UInt(buffer.count))
         }
     }
 }
@@ -103,7 +103,7 @@ extension Memory.Address.Buffer.Mutable {
 
     /// The number of bytes in the buffer.
     @inlinable
-    public var count: Index<UInt8>.Count { _count }
+    public var count: Memory.Address.Count { _count }
 
     /// A Boolean value indicating whether the buffer is empty.
     @inlinable
@@ -152,8 +152,8 @@ extension Memory.Address.Buffer.Mutable {
     /// - Returns: A buffer to the allocated memory (never null; allocation failure traps).
     @inlinable
     public static func allocate(
-        count: Index<UInt8>.Count,
-        alignment: Index<UInt8>.Count
+        count: Memory.Address.Count,
+        alignment: Memory.Address.Count
     ) -> Self {
         let buffer = unsafe UnsafeMutableRawBufferPointer.allocate(
             count: count,
@@ -195,7 +195,7 @@ extension Memory.Address.Buffer.Mutable {
     /// - Returns: The value read from memory.
     @inlinable
     public func read<T>(
-        from offset: Index<UInt8>.Offset = .zero,
+        from offset: Memory.Address.Offset = .zero,
         as type: T.Type
     ) -> T {
         unsafe _start._rawPointer.load(fromByteOffset: offset, as: type)
@@ -208,7 +208,7 @@ extension Memory.Address.Buffer.Mutable {
     ///   - offset: The byte offset at which to store.
     ///   - type: The type of value to store.
     @inlinable
-    public func store<T>(_ value: T, at offset: Index<UInt8>.Offset = .zero, as type: T.Type) {
+    public func store<T>(_ value: T, at offset: Memory.Address.Offset = .zero, as type: T.Type) {
         unsafe _start._rawPointer.store.bytes(of: value, at: offset, as: type)
     }
 }
@@ -303,7 +303,7 @@ extension Memory.Address.Buffer.Mutable {
     @inlinable
     public func slice(
         start: Index<UInt8>,
-        count sliceCount: Index<UInt8>.Count
+        count sliceCount: Memory.Address.Count
     ) -> Self? {
         // Bounds check: start must be valid endpoint
         guard start <= _count else {
@@ -312,7 +312,7 @@ extension Memory.Address.Buffer.Mutable {
 
         // Bounds check: slice must fit
         // remaining = buffer count - start position
-        let startAsCount = Index<UInt8>.Count(start)
+        let startAsCount = Memory.Address.Count(start)
         let remaining = _count.count.subtract.saturating(startAsCount.count)
 
         guard sliceCount.count <= remaining else {

@@ -16,9 +16,16 @@ let package = Package(
             name: "Memory Primitives",
             targets: ["Memory Primitives"]
         ),
+        .library(
+            name: "Memory Primitives Test Support",
+            targets: ["Memory Primitives Test Support"]
+        ),
     ],
     dependencies: [
-        .package(path: "../swift-index-primitives"),
+        .package(path: "../swift-ordinal-primitives"),
+        .package(path: "../swift-cardinal-primitives"),
+        .package(path: "../swift-affine-primitives"),
+        .package(path: "../swift-identity-primitives"),
         .package(path: "../swift-range-primitives"),
         .package(path: "../swift-property-primitives"),
     ],
@@ -26,7 +33,23 @@ let package = Package(
         .target(
             name: "Memory Primitives",
             dependencies: [
-                .product(name: "Index Primitives", package: "swift-index-primitives"),
+                .target(name: "Memory Primitives Core"),
+                .target(name: "Memory Primitives Standard Library Integration"),
+            ]
+        ),
+        .target(
+            name: "Memory Primitives Standard Library Integration",
+            dependencies: [
+                .target(name: "Memory Primitives Core"),
+            ]
+        ),
+        .target(
+            name: "Memory Primitives Core",
+            dependencies: [
+                .product(name: "Ordinal Primitives", package: "swift-ordinal-primitives"),
+                .product(name: "Cardinal Primitives", package: "swift-cardinal-primitives"),
+                .product(name: "Affine Primitives", package: "swift-affine-primitives"),
+                .product(name: "Identity Primitives", package: "swift-identity-primitives"),
                 .product(name: "Range Primitives", package: "swift-range-primitives"),
                 .product(name: "Property Primitives", package: "swift-property-primitives"),
             ]
@@ -34,17 +57,19 @@ let package = Package(
         .target(
             name: "Memory Primitives Test Support",
             dependencies: [
-                .target(name: "Memory Primitives"),
-                .product(name: "Index Primitives Test Support", package: "swift-index-primitives"),
-                .product(name: "Range Primitives Test Support", package: "swift-range-primitives"),
+                "Memory Primitives",
+                .product(name: "Identity Primitives Test Support", package: "swift-identity-primitives"),
+                .product(name: "Ordinal Primitives Test Support", package: "swift-ordinal-primitives"),
+                .product(name: "Cardinal Primitives Test Support", package: "swift-cardinal-primitives"),
+                .product(name: "Affine Primitives Test Support", package: "swift-affine-primitives"),
             ],
             path: "Tests/Support"
         ),
         .testTarget(
             name: "Memory Primitives Tests",
             dependencies: [
-                .target(name: "Memory Primitives"),
-                .target(name: "Memory Primitives Test Support"),
+                "Memory Primitives",
+                "Memory Primitives Test Support",
             ]
         ),
     ],
