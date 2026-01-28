@@ -17,9 +17,9 @@ extension UnsafeRawBufferPointer {
         start: UnsafeRawPointer?,
         count: Memory.Address.Count
     ) {
-        unsafe try! self.init(
+        unsafe self.init(
             start: start,
-            count: Int(count.count)
+            count: Int(bitPattern: count.count)
         )
     }
 
@@ -28,7 +28,7 @@ extension UnsafeRawBufferPointer {
     public subscript(
         _ index: Index_Primitives_Core.Index<Memory>
     ) -> UInt8 {
-        unsafe try! self[Int(index.position)]
+        unsafe self[Int(bitPattern: index.position)]
     }
 
     /// Returns a new instance of the given type, read from the specified offset.

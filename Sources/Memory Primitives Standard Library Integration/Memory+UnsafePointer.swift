@@ -19,7 +19,7 @@ public func + <Pointee: ~Copyable>(
     lhs: UnsafePointer<Pointee>,
     rhs: Index<Pointee>
 ) -> UnsafePointer<Pointee> {
-    try! unsafe lhs + Int(rhs.position)
+    unsafe lhs + Int(bitPattern: rhs.position)
 }
 
 /// Advances a pointer by a typed index offset.
@@ -28,7 +28,7 @@ public func + <Pointee: ~Copyable>(
     lhs: Index<Pointee>,
     rhs: UnsafePointer<Pointee>
 ) -> UnsafePointer<Pointee> {
-    try! unsafe rhs + Int(lhs.position)
+    unsafe rhs + Int(bitPattern: lhs.position)
 }
 
 /// Subtracts a typed index offset from a pointer.
@@ -37,7 +37,7 @@ public func - <Pointee: ~Copyable>(
     lhs: UnsafePointer<Pointee>,
     rhs: Index<Pointee>
 ) -> UnsafePointer<Pointee> {
-    try! unsafe lhs - Int(rhs.position)
+    unsafe lhs - Int(bitPattern: rhs.position)
 }
 
 // MARK: - UnsafePointer Subscript

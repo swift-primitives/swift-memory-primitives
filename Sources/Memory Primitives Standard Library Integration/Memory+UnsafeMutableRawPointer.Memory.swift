@@ -53,7 +53,7 @@ where Tag == UnsafeMutableRawPointer.Memory, Base == UnsafeMutableRawPointer {
         repeating value: T,
         count: Index_Primitives_Core.Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
-        unsafe base.initializeMemory(as: type, repeating: value, count: try! Int(count.count))
+        unsafe base.initializeMemory(as: type, repeating: value, count: Int(bitPattern: count.count))
     }
 
     /// Initializes memory as the specified type from a source buffer.
@@ -70,7 +70,7 @@ where Tag == UnsafeMutableRawPointer.Memory, Base == UnsafeMutableRawPointer {
         from source: UnsafePointer<T>,
         count: Index_Primitives_Core.Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
-        unsafe base.initializeMemory(as: type, from: source, count: try! Int(count.count))
+        unsafe base.initializeMemory(as: type, from: source, count: Int(bitPattern: count.count))
     }
 
     /// Binds the memory to the specified type with a typed capacity.
@@ -85,7 +85,7 @@ where Tag == UnsafeMutableRawPointer.Memory, Base == UnsafeMutableRawPointer {
         to type: T.Type,
         capacity: Index_Primitives_Core.Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
-        unsafe base.bindMemory(to: type, capacity: try! Int(capacity.count))
+        unsafe base.bindMemory(to: type, capacity: Int(bitPattern: capacity.count))
     }
 
     /// Copies bytes from a source with a typed byte count.
@@ -98,7 +98,7 @@ where Tag == UnsafeMutableRawPointer.Memory, Base == UnsafeMutableRawPointer {
         from source: UnsafeRawPointer,
         count: Memory.Address.Count
     ) {
-        unsafe base.copyMemory(from: source, byteCount: try! Int(count.count))
+        unsafe base.copyMemory(from: source, byteCount: Int(bitPattern: count.count))
     }
 
     /// Namespace for move operations.

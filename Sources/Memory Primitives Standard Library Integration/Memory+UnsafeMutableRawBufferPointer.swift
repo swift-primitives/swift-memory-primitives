@@ -19,7 +19,7 @@ extension UnsafeMutableRawBufferPointer {
     ) {
         unsafe self.init(
             start: start,
-            count: try! Int(count.count)
+            count: Int(bitPattern: count.count)
         )
     }
 
@@ -32,9 +32,9 @@ extension UnsafeMutableRawBufferPointer {
         count: Memory.Address.Count,
         alignment: Memory.Address.Count
     ) -> Self {
-        try! Self.allocate(
-            byteCount: Int(count.count),
-            alignment: Int(alignment.count)
+        Self.allocate(
+            byteCount: Int(bitPattern: count.count),
+            alignment: Int(bitPattern: alignment.count)
         )
     }
 
@@ -44,10 +44,10 @@ extension UnsafeMutableRawBufferPointer {
         _ index: Index_Primitives_Core.Index<Memory>
     ) -> UInt8 {
         get {
-            try! unsafe self[Int(index.position)]
+            unsafe self[Int(bitPattern: index.position)]
         }
         nonmutating set {
-            try! unsafe self[Int(index.position)] = newValue
+            unsafe self[Int(bitPattern: index.position)] = newValue
         }
     }
 

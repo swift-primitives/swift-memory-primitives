@@ -47,9 +47,9 @@ extension Property_Primitives.Property {
         from source: UnsafeMutablePointer<Pointee>,
         count: Index_Primitives_Core.Index<Pointee>.Count
     ) where Tag == UnsafeMutablePointer<Pointee>.Move, Base == UnsafeMutablePointer<Pointee> {
-        try! unsafe base.moveInitialize(
+        unsafe base.moveInitialize(
             from: source,
-            count: Int(count.count)
+            count: Int(bitPattern: count.count)
         )
     }
 
@@ -66,6 +66,6 @@ extension Property_Primitives.Property {
         from source: UnsafeMutablePointer<Pointee>,
         count: Index_Primitives_Core.Index<Pointee>.Count
     ) where Tag == UnsafeMutablePointer<Pointee>.Move, Base == UnsafeMutablePointer<Pointee> {
-        try! unsafe base.moveUpdate(from: source, count: Int(count.count))
+        unsafe base.moveUpdate(from: source, count: Int(bitPattern: count.count))
     }
 }

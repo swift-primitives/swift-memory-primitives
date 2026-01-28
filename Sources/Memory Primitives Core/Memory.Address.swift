@@ -158,7 +158,7 @@ extension Tagged where Tag == Memory, RawValue == Ordinal {
     ///
     /// - Parameter offset: The byte offset.
     /// - Returns: A new address offset by the given bytes.
-    @inlinable
+    @_transparent
     public func advanced(by offset: Memory.Address.Offset) -> Self {
         unsafe Self(rawPointer.advanced(by: offset.rawValue.rawValue))
     }
@@ -167,31 +167,31 @@ extension Tagged where Tag == Memory, RawValue == Ordinal {
     ///
     /// - Parameter other: The target address.
     /// - Returns: The byte offset between this address and `other`.
-    @inlinable
+    @_transparent
     public func distance(to other: Self) -> Memory.Address.Offset {
         unsafe Memory.Address.Offset(rawPointer.distance(to: other.rawPointer))
     }
 
     /// Adds a byte offset to an address.
-    @inlinable
+    @_transparent
     public static func + (lhs: Self, rhs: Memory.Address.Offset) -> Self {
         lhs.advanced(by: rhs)
     }
 
     /// Adds a byte offset to an address.
-    @inlinable
+    @_transparent
     public static func + (lhs: Memory.Address.Offset, rhs: Self) -> Self {
         rhs.advanced(by: lhs)
     }
 
     /// Subtracts a byte offset from an address.
-    @inlinable
+    @_transparent
     public static func - (lhs: Self, rhs: Memory.Address.Offset) -> Self {
         lhs.advanced(by: -rhs)
     }
 
     /// Returns the byte distance between two addresses.
-    @inlinable
+    @_transparent
     public static func - (lhs: Self, rhs: Self) -> Memory.Address.Offset {
         rhs.distance(to: lhs)
     }

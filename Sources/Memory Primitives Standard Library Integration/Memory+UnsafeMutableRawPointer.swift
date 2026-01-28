@@ -16,7 +16,7 @@ extension UnsafeMutableRawPointer {
         count: Memory_Primitives_Core.Memory.Address.Count,
         alignment: Memory_Primitives_Core.Memory.Address.Count
     ) -> Self {
-        try! Self.allocate(byteCount: Int(count.count), alignment: Int(alignment.count))
+        Self.allocate(byteCount: Int(bitPattern: count.count), alignment: Int(bitPattern: alignment.count))
     }
 
     /// Returns a pointer offset by the specified typed byte offset.
