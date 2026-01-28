@@ -108,7 +108,7 @@ extension Memory.Address {
     public func advanced(
         by offset: Index<UInt8>.Offset
     ) -> Self {
-        unsafe Self(_rawPointer.advanced(by: offset.vector.rawValue))
+        unsafe Self(_rawPointer.advanced(by: offset))
     }
 
     /// Returns the distance in bytes from this address to another.

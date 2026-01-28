@@ -124,7 +124,7 @@ extension Memory.Address.Buffer.Mutable {
         }
         return unsafe UnsafeMutableRawBufferPointer(
             start: _start._rawPointer,
-            count: Int(_count.count)
+            count: _count
         )
     }
 
@@ -136,7 +136,7 @@ extension Memory.Address.Buffer.Mutable {
     public var baseNonNull: UnsafeMutableRawBufferPointer {
         unsafe UnsafeMutableRawBufferPointer(
             start: _start._rawPointer,
-            count: Int(_count.count)
+            count: _count
         )
     }
 }
@@ -176,10 +176,10 @@ extension Memory.Address.Buffer.Mutable {
     @inlinable
     public subscript(index: Index<UInt8>) -> UInt8 {
         get {
-            unsafe _start._rawPointer.load(fromByteOffset: Int(index.position), as: UInt8.self)
+            unsafe _start._rawPointer.load(fromByteOffset: Int(bitPattern: index), as: UInt8.self)
         }
         nonmutating set {
-            unsafe _start._rawPointer.storeBytes(of: newValue, toByteOffset: Int(index.position), as: UInt8.self)
+            unsafe _start._rawPointer.storeBytes(of: newValue, toByteOffset: Int(bitPattern: index), as: UInt8.self)
         }
     }
 }
@@ -198,7 +198,7 @@ extension Memory.Address.Buffer.Mutable {
         from offset: Index<UInt8>.Offset = .zero,
         as type: T.Type
     ) -> T {
-        unsafe _start._rawPointer.load(fromByteOffset: offset.vector.rawValue, as: type)
+        unsafe _start._rawPointer.load(fromByteOffset: offset, as: type)
     }
 
     /// Stores a value of the specified type to the buffer.
@@ -209,7 +209,7 @@ extension Memory.Address.Buffer.Mutable {
     ///   - type: The type of value to store.
     @inlinable
     public func store<T>(_ value: T, at offset: Index<UInt8>.Offset = .zero, as type: T.Type) {
-        unsafe _start._rawPointer.storeBytes(of: value, toByteOffset: offset.vector.rawValue, as: type)
+        unsafe _start._rawPointer.store.bytes(of: value, at: offset, as: type)
     }
 }
 
@@ -279,7 +279,7 @@ extension Memory.Address.Buffer.Mutable {
     public func extracting(_ bounds: Range.Lazy<Index<UInt8>>) -> Self {
         // _start is always non-null (sentinel-backed), so pointer arithmetic is safe
         let newStart = unsafe Memory.Address.Mutable(
-            _start._rawPointer.advanced(by: Int(bounds.start.position))
+            _start._rawPointer.advanced(by: Int(bitPattern: bounds.start))
         )
         let newCount = bounds.count.retag(UInt8.self)
         return Self(start: newStart, count: newCount)
@@ -322,7 +322,7 @@ extension Memory.Address.Buffer.Mutable {
         // Compute new start using pointer arithmetic
         // _start is always non-null (sentinel-backed), so advanced(by:) is safe
         let newStart = unsafe Memory.Address.Mutable(
-            _start._rawPointer.advanced(by: Int(start.position))
+            _start._rawPointer.advanced(by: Int(bitPattern: start))
         )
         return Self(start: newStart, count: sliceCount)
     }

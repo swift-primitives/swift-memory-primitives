@@ -286,7 +286,7 @@ extension Memory.Address.Mutable {
         from offset: Index<UInt8>.Offset = .zero,
         as type: T.Type
     ) -> T {
-        unsafe _rawPointer.load(fromByteOffset: offset.vector.rawValue, as: type)
+        unsafe _rawPointer.load(fromByteOffset: offset, as: type)
     }
 
     /// Stores a value of the specified type to memory.
@@ -301,7 +301,7 @@ extension Memory.Address.Mutable {
         at offset: Index<UInt8>.Offset = .zero,
         as type: T.Type
     ) {
-        unsafe _rawPointer.storeBytes(of: value, toByteOffset: offset.vector.rawValue, as: type)
+        unsafe _rawPointer.store.bytes(of: value, at: offset, as: type)
     }
 }
 
