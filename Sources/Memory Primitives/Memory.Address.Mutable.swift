@@ -12,77 +12,76 @@
 public import Index_Primitives
 public import Property_Primitives
 
+// MARK: - Pointer Conversion (Non-Optional)
+
+extension Tagged where Tag == Memory.Mutable, RawValue == Ordinal {
+    /// Creates a mutable address from a mutable raw pointer.
+    ///
+    /// - Parameter pointer: A non-null mutable raw pointer.
+    @inlinable
+    public init(_ pointer: UnsafeMutableRawPointer) {
+        let bits = UInt(bitPattern: pointer)
+        self.init(__unchecked: (), Ordinal(bits))
+    }
+
+    /// Creates a mutable address from a mutable typed pointer.
+    @inlinable
+    public init<T>(_ pointer: UnsafeMutablePointer<T>) {
+        unsafe self.init(UnsafeMutableRawPointer(pointer))
+    }
+}
+
+// MARK: - Pointer Conversion (Optional, Throwing)
+
+extension Tagged where Tag == Memory.Mutable, RawValue == Ordinal {
+    /// Creates a mutable address from an optional mutable raw pointer.
+    ///
+    /// - Parameter pointer: An optional mutable raw pointer.
+    /// - Throws: `Memory.Address.Error.null` if the pointer is nil.
+    @inlinable
+    public init(_ pointer: UnsafeMutableRawPointer?) throws(Memory.Address.Error) {
+        guard let pointer = unsafe pointer else { throw .null }
+        unsafe self.init(pointer)
+    }
+
+    /// Creates a mutable address from an optional mutable typed pointer.
+    ///
+    /// - Parameter pointer: An optional mutable typed pointer.
+    /// - Throws: `Memory.Address.Error.null` if the pointer is nil.
+    @inlinable
+    public init<T>(_ pointer: UnsafeMutablePointer<T>?) throws(Memory.Address.Error) {
+        guard let pointer = unsafe pointer else { throw .null }
+        unsafe self.init(UnsafeMutableRawPointer(pointer))
+    }
+}
+
+// MARK: - Address Conversion
+
+extension Tagged where Tag == Memory.Mutable, RawValue == Ordinal {
+    /// Creates a mutable address from an immutable address.
+    ///
+    /// - Warning: The caller is responsible for ensuring that mutation through
+    ///   the returned address is safe and permitted.
+    /// - Parameter address: The immutable address to convert.
+    @inlinable
+    public init(_ address: Memory.Address) {
+        self.init(__unchecked: (), address.rawValue)
+    }
+}
+
 extension Tagged where Tag == Memory, RawValue == Ordinal {
-    /// A non-null mutable memory address.
+    /// Creates an immutable address from a mutable address.
     ///
-    /// Represents a mutable physical memory location. The address is stored as
-    /// `UnsafeMutableRawPointer` internally with a non-null guarantee.
-    ///
-    /// This is the mutable raw address type. For typed pointer access, use
-    /// `Pointer<Pointee>.Mutable` which combines `Memory.Address.Mutable` with phantom typing.
-    @safe
-    public struct Mutable: Hashable, @unchecked Sendable {
-        /// The raw pointer value, guaranteed non-null.
-        @usableFromInline
-        internal let _rawPointer: UnsafeMutableRawPointer
-
-        // MARK: - Non-Optional Initializers
-
-        /// Creates a mutable address from a mutable raw pointer.
-        ///
-        /// - Parameter pointer: A non-null mutable raw pointer.
-        @inlinable
-        public init(_ pointer: UnsafeMutableRawPointer) {
-            unsafe self._rawPointer = unsafe pointer
-        }
-
-        /// Creates a mutable address from a mutable typed pointer.
-        @inlinable
-        public init<T>(_ pointer: UnsafeMutablePointer<T>) {
-            unsafe self._rawPointer = UnsafeMutableRawPointer(pointer)
-        }
-
-        // MARK: - Optional Initializers (Throwing)
-
-        /// Creates a mutable address from an optional mutable raw pointer.
-        ///
-        /// - Parameter pointer: An optional mutable raw pointer.
-        /// - Throws: `Memory.Address.Error.null` if the pointer is nil.
-        @inlinable
-        public init(_ pointer: UnsafeMutableRawPointer?) throws(Memory.Address.Error) {
-            guard let pointer = unsafe pointer else { throw .null }
-            unsafe self._rawPointer = unsafe pointer
-        }
-
-        /// Creates a mutable address from an optional mutable typed pointer.
-        ///
-        /// - Parameter pointer: An optional mutable typed pointer.
-        /// - Throws: `Memory.Address.Error.null` if the pointer is nil.
-        @inlinable
-        public init<T>(_ pointer: UnsafeMutablePointer<T>?) throws(Memory.Address.Error) {
-            guard let pointer = unsafe pointer else { throw .null }
-            unsafe self._rawPointer = UnsafeMutableRawPointer(pointer)
-        }
-
-        // MARK: - Properties
-
-        /// The mutable raw pointer value.
-        @inlinable
-        public var rawPointer: UnsafeMutableRawPointer {
-            unsafe _rawPointer
-        }
-
-        /// Returns an immutable view of this address.
-        @inlinable
-        public var immutable: Memory.Address {
-            unsafe Memory.Address(UnsafeRawPointer(_rawPointer))
-        }
+    /// - Parameter address: The mutable address to convert.
+    @inlinable
+    public init(_ address: Memory.Address.Mutable) {
+        self.init(__unchecked: (), address.rawValue)
     }
 }
 
 // MARK: - Allocation
 
-extension Memory.Address.Mutable {
+extension Tagged where Tag == Memory.Mutable, RawValue == Ordinal {
     /// Allocates uninitialized memory with the specified size and alignment.
     ///
     /// - Parameters:
@@ -97,13 +96,13 @@ extension Memory.Address.Mutable {
     /// Deallocates the memory referenced by this address.
     @inlinable
     public func deallocate() {
-        unsafe _rawPointer.deallocate()
+        unsafe UnsafeMutableRawPointer(self).deallocate()
     }
 }
 
 // MARK: - Initialization
 
-extension Memory.Address.Mutable {
+extension Tagged where Tag == Memory.Mutable, RawValue == Ordinal {
     /// Initializes memory as the specified type with the given value.
     ///
     /// - Parameters:
@@ -118,7 +117,7 @@ extension Memory.Address.Mutable {
         repeating value: T,
         count: Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
-        unsafe _rawPointer.memory.initialize(as: type, repeating: value, count: count)
+        unsafe UnsafeMutableRawPointer(self).memory.initialize(as: type, repeating: value, count: count)
     }
 
     /// Initializes memory as the specified type from a source buffer.
@@ -135,13 +134,13 @@ extension Memory.Address.Mutable {
         from source: UnsafePointer<T>,
         count: Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
-        unsafe _rawPointer.memory.initialize(as: type, from: source, count: count)
+        unsafe UnsafeMutableRawPointer(self).memory.initialize(as: type, from: source, count: count)
     }
 }
 
 // MARK: - Initialize Accessor
 
-extension Memory.Address.Mutable {
+extension Tagged where Tag == Memory.Mutable, RawValue == Ordinal {
     /// Tag type for initialization operations accessed via property accessor.
     public enum Initialize {}
 
@@ -171,13 +170,13 @@ extension Property where Tag == Memory.Address.Mutable.Initialize, Base == Memor
         from source: UnsafeMutablePointer<T>,
         count: Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
-        unsafe base._rawPointer.memory.move.initialize(as: type, from: source, count: count)
+        unsafe UnsafeMutableRawPointer(base).memory.move.initialize(as: type, from: source, count: count)
     }
 }
 
 // MARK: - Memory Binding
 
-extension Memory.Address.Mutable {
+extension Tagged where Tag == Memory.Mutable, RawValue == Ordinal {
     /// Binds the memory to the specified type and returns a typed pointer.
     ///
     /// - Parameters:
@@ -190,13 +189,13 @@ extension Memory.Address.Mutable {
         to type: T.Type,
         capacity: Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
-        unsafe _rawPointer.memory.bind(to: type, capacity: capacity)
+        unsafe UnsafeMutableRawPointer(self).memory.bind(to: type, capacity: capacity)
     }
 }
 
 // MARK: - Assuming Accessor
 
-extension Memory.Address.Mutable {
+extension Tagged where Tag == Memory.Mutable, RawValue == Ordinal {
     /// Tag type for assumption-based operations accessed via property accessor.
     public enum Assuming {}
 
@@ -218,13 +217,13 @@ extension Property where Tag == Memory.Address.Mutable.Assuming, Base == Memory.
     public func bound<T: ~Copyable>(
         to type: T.Type
     ) -> UnsafeMutablePointer<T> {
-        unsafe base._rawPointer.assumingMemoryBound(to: type)
+        unsafe UnsafeMutableRawPointer(base).assumingMemoryBound(to: type)
     }
 }
 
 // MARK: - Pointer Arithmetic
 
-extension Memory.Address.Mutable {
+extension Tagged where Tag == Memory.Mutable, RawValue == Ordinal {
     /// Returns an address offset by the specified number of bytes.
     ///
     /// - Parameter offset: The byte offset.
@@ -233,7 +232,9 @@ extension Memory.Address.Mutable {
     public func advanced(
         by offset: Memory.Address.Offset
     ) -> Self {
-        unsafe Self(_rawPointer.advanced(by: offset))
+        // Use ordinal arithmetic: add offset to the raw bits
+        let newBits = Int(bitPattern: rawValue.rawValue) &+ offset.rawValue.rawValue
+        return Self(__unchecked: (), Ordinal(UInt(bitPattern: newBits)))
     }
 
     /// Returns the distance in bytes from this address to another.
@@ -244,7 +245,10 @@ extension Memory.Address.Mutable {
     public func distance(
         to other: Self
     ) -> Memory.Address.Offset {
-        unsafe Memory.Address.Offset(_rawPointer.distance(to: other._rawPointer))
+        // Compute signed distance between addresses
+        let selfBits = Int(bitPattern: rawValue.rawValue)
+        let otherBits = Int(bitPattern: other.rawValue.rawValue)
+        return Memory.Address.Offset(otherBits &- selfBits)
     }
 
     /// Adds a byte offset to an address.
@@ -274,7 +278,7 @@ extension Memory.Address.Mutable {
 
 // MARK: - Read and Store
 
-extension Memory.Address.Mutable {
+extension Tagged where Tag == Memory.Mutable, RawValue == Ordinal {
     /// Reads a value of the specified type from memory.
     ///
     /// - Parameters:
@@ -286,7 +290,7 @@ extension Memory.Address.Mutable {
         from offset: Memory.Address.Offset = .zero,
         as type: T.Type
     ) -> T {
-        unsafe _rawPointer.load(fromByteOffset: offset, as: type)
+        unsafe UnsafeMutableRawPointer(self).load(fromByteOffset: offset, as: type)
     }
 
     /// Stores a value of the specified type to memory.
@@ -301,13 +305,13 @@ extension Memory.Address.Mutable {
         at offset: Memory.Address.Offset = .zero,
         as type: T.Type
     ) {
-        unsafe _rawPointer.store.bytes(of: value, at: offset, as: type)
+        unsafe UnsafeMutableRawPointer(self).store.bytes(of: value, at: offset, as: type)
     }
 }
 
 // MARK: - Copy Operations
 
-extension Memory.Address.Mutable {
+extension Tagged where Tag == Memory.Mutable, RawValue == Ordinal {
     /// Copies bytes from a source address.
     ///
     /// - Parameters:
@@ -318,7 +322,7 @@ extension Memory.Address.Mutable {
         from source: Memory.Address,
         count: Memory.Address.Count
     ) {
-        unsafe _rawPointer.memory.copy(from: source.rawPointer, count: count)
+        unsafe UnsafeMutableRawPointer(self).memory.copy(from: UnsafeRawPointer(source), count: count)
     }
 
     /// Copies bytes from a source address (mutable variant).
@@ -331,9 +335,19 @@ extension Memory.Address.Mutable {
         from source: Self,
         count: Memory.Address.Count
     ) {
-        unsafe _rawPointer.memory.copy(
-            from: UnsafeRawPointer(source._rawPointer),
+        unsafe UnsafeMutableRawPointer(self).memory.copy(
+            from: UnsafeRawPointer(UnsafeMutableRawPointer(source)),
             count: count
         )
+    }
+}
+
+// MARK: - UnsafeMutableRawPointer Interop
+
+extension UnsafeMutableRawPointer {
+    /// Creates a mutable raw pointer from a mutable memory address.
+    @inlinable
+    public init(_ address: Memory.Address.Mutable) {
+        unsafe self = UnsafeMutableRawPointer(bitPattern: address.rawValue.rawValue)!
     }
 }

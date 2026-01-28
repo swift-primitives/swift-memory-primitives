@@ -123,7 +123,7 @@ extension Memory.Address.Buffer.Mutable {
             return unsafe UnsafeMutableRawBufferPointer(start: nil, count: 0)
         }
         return unsafe UnsafeMutableRawBufferPointer(
-            start: _start._rawPointer,
+            start: UnsafeMutableRawPointer(_start),
             count: _count
         )
     }
@@ -135,7 +135,7 @@ extension Memory.Address.Buffer.Mutable {
     @inlinable
     public var baseNonNull: UnsafeMutableRawBufferPointer {
         unsafe UnsafeMutableRawBufferPointer(
-            start: _start._rawPointer,
+            start: UnsafeMutableRawPointer(_start),
             count: _count
         )
     }
@@ -165,7 +165,7 @@ extension Memory.Address.Buffer.Mutable {
     /// Deallocates the memory referenced by this buffer.
     @inlinable
     public func deallocate() {
-        unsafe _start._rawPointer.deallocate()
+        unsafe UnsafeMutableRawPointer(_start).deallocate()
     }
 }
 
@@ -176,10 +176,10 @@ extension Memory.Address.Buffer.Mutable {
     @inlinable
     public subscript(index: Index<Memory>) -> UInt8 {
         get {
-            unsafe _start._rawPointer.load(fromByteOffset: Int(bitPattern: index), as: UInt8.self)
+            unsafe UnsafeMutableRawPointer(_start).load(fromByteOffset: Int(bitPattern: index), as: UInt8.self)
         }
         nonmutating set {
-            unsafe _start._rawPointer.storeBytes(of: newValue, toByteOffset: Int(bitPattern: index), as: UInt8.self)
+            unsafe UnsafeMutableRawPointer(_start).storeBytes(of: newValue, toByteOffset: Int(bitPattern: index), as: UInt8.self)
         }
     }
 }
@@ -198,7 +198,7 @@ extension Memory.Address.Buffer.Mutable {
         from offset: Memory.Address.Offset = .zero,
         as type: T.Type
     ) -> T {
-        unsafe _start._rawPointer.load(fromByteOffset: offset, as: type)
+        unsafe UnsafeMutableRawPointer(_start).load(fromByteOffset: offset, as: type)
     }
 
     /// Stores a value of the specified type to the buffer.
@@ -209,7 +209,7 @@ extension Memory.Address.Buffer.Mutable {
     ///   - type: The type of value to store.
     @inlinable
     public func store<T>(_ value: T, at offset: Memory.Address.Offset = .zero, as type: T.Type) {
-        unsafe _start._rawPointer.store.bytes(of: value, at: offset, as: type)
+        unsafe UnsafeMutableRawPointer(_start).store.bytes(of: value, at: offset, as: type)
     }
 }
 
@@ -279,7 +279,7 @@ extension Memory.Address.Buffer.Mutable {
     public func extracting(_ bounds: Range.Lazy<Index<Memory>>) -> Self {
         // _start is always non-null (sentinel-backed), so pointer arithmetic is safe
         let newStart = unsafe Memory.Address.Mutable(
-            _start._rawPointer.advanced(by: Int(bitPattern: bounds.start))
+            UnsafeMutableRawPointer(_start).advanced(by: Int(bitPattern: bounds.start))
         )
         let newCount = bounds.count.retag(Memory.self)
         return Self(start: newStart, count: newCount)
@@ -322,7 +322,7 @@ extension Memory.Address.Buffer.Mutable {
         // Compute new start using pointer arithmetic
         // _start is always non-null (sentinel-backed), so advanced(by:) is safe
         let newStart = unsafe Memory.Address.Mutable(
-            _start._rawPointer.advanced(by: Int(bitPattern: start))
+            UnsafeMutableRawPointer(_start).advanced(by: Int(bitPattern: start))
         )
         return Self(start: newStart, count: sliceCount)
     }
@@ -354,7 +354,7 @@ extension Memory.Address.Buffer.Mutable {
     /// Creates an immutable buffer from this mutable buffer.
     @inlinable
     public var immutable: Memory.Address.Buffer {
-        Memory.Address.Buffer(start: _start.immutable, count: _count)
+        Memory.Address.Buffer(start: Memory.Address(_start), count: _count)
     }
 }
 
@@ -379,7 +379,7 @@ extension Memory.Address.Buffer.Mutable: CustomDebugStringConvertible {
 extension Memory.Address.Buffer.Mutable {
     @inlinable
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        unsafe Int(bitPattern: lhs._start._rawPointer) == Int(bitPattern: rhs._start._rawPointer)
+        unsafe Int(bitPattern: UnsafeMutableRawPointer(lhs._start)) == Int(bitPattern: UnsafeMutableRawPointer(rhs._start))
             && lhs._count == rhs._count
     }
 }
@@ -389,7 +389,7 @@ extension Memory.Address.Buffer.Mutable {
 extension Memory.Address.Buffer.Mutable {
     @inlinable
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(unsafe Int(bitPattern: _start._rawPointer))
+        hasher.combine(unsafe Int(bitPattern: UnsafeMutableRawPointer(_start)))
         hasher.combine(_count.count)
     }
 }

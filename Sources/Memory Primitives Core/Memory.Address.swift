@@ -114,24 +114,18 @@ extension Tagged where Tag == Memory, RawValue == Ordinal {
     }
 }
 
-// MARK: - Pointer Access
 
-extension Tagged where Tag == Memory, RawValue == Ordinal {
-    /// The raw pointer value.
+// MARK: - Mutable Address Typealias
+extension Tagged where Tag == Memory.Address, RawValue == Ordinal {
+    /// A mutable memory address.
     ///
-    /// Always succeeds because addresses are non-zero (non-null guarantee).
-    @inlinable
-    public var rawPointer: UnsafeRawPointer {
-        unsafe UnsafeRawPointer(bitPattern: rawValue.rawValue)!
-    }
-
-    /// The mutable raw pointer value.
+    /// `Memory.Address.Mutable` has the same underlying representation as
+    /// `Memory.Address` (an ordinal position in memory), but carries type-level
+    /// information that permits mutation operations.
     ///
-    /// Always succeeds because addresses are non-zero (non-null guarantee).
-    @inlinable
-    public var mutableRawPointer: UnsafeMutableRawPointer {
-        unsafe UnsafeMutableRawPointer(bitPattern: rawValue.rawValue)!
-    }
+    /// For operations that read or write memory, use this type. For operations
+    /// that only need a position (e.g., arithmetic), use `Memory.Address`.
+    public typealias Mutable = Tagged<Memory.Mutable, Ordinal>
 }
 
 // MARK: - UnsafeRawPointer Interop
@@ -140,7 +134,15 @@ extension UnsafeRawPointer {
     /// Creates a raw pointer from a memory address.
     @inlinable
     public init(_ address: Memory.Address) {
-        unsafe self = address.rawPointer
+        unsafe self = UnsafeRawPointer(bitPattern: address.rawValue.rawValue)!
+    }
+}
+
+extension UnsafeMutableRawPointer {
+    /// Creates a mutable raw pointer from a memory address.
+    @inlinable
+    public init(_ address: Memory.Address) {
+        unsafe self = UnsafeMutableRawPointer(bitPattern: address.rawValue.rawValue)!
     }
 }
 
@@ -160,7 +162,9 @@ extension Tagged where Tag == Memory, RawValue == Ordinal {
     /// - Returns: A new address offset by the given bytes.
     @_transparent
     public func advanced(by offset: Memory.Address.Offset) -> Self {
-        unsafe Self(rawPointer.advanced(by: offset.rawValue.rawValue))
+        // Use ordinal arithmetic: add offset to the raw bits
+        let newBits = Int(bitPattern: rawValue.rawValue) &+ offset.rawValue.rawValue
+        return Self(__unchecked: (), Ordinal(UInt(bitPattern: newBits)))
     }
 
     /// Returns the distance in bytes from this address to another.
@@ -169,7 +173,10 @@ extension Tagged where Tag == Memory, RawValue == Ordinal {
     /// - Returns: The byte offset between this address and `other`.
     @_transparent
     public func distance(to other: Self) -> Memory.Address.Offset {
-        unsafe Memory.Address.Offset(rawPointer.distance(to: other.rawPointer))
+        // Compute signed distance between addresses
+        let selfBits = Int(bitPattern: rawValue.rawValue)
+        let otherBits = Int(bitPattern: other.rawValue.rawValue)
+        return Memory.Address.Offset(otherBits &- selfBits)
     }
 
     /// Adds a byte offset to an address.

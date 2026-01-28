@@ -2,9 +2,9 @@
 
 <!--
 ---
-version: 1.0.0
+version: 1.1.0
 last_updated: 2026-01-28
-status: IN_PROGRESS
+status: IMPLEMENTED
 tier: 3
 ---
 -->

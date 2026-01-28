@@ -143,7 +143,7 @@ extension Memory.Address.Buffer {
             return unsafe UnsafeRawBufferPointer(start: nil, count: 0)
         }
         return unsafe UnsafeRawBufferPointer(
-            start: _start.rawPointer,
+            start: UnsafeRawPointer(_start),
             count: count
         )
     }
@@ -155,7 +155,7 @@ extension Memory.Address.Buffer {
     @inlinable
     public var baseNonNull: UnsafeRawBufferPointer {
         unsafe UnsafeRawBufferPointer(
-            start: _start.rawPointer,
+            start: UnsafeRawPointer(_start),
             count: count
         )
     }
@@ -167,7 +167,7 @@ extension Memory.Address.Buffer {
     /// Accesses the byte at the given index.
     @inlinable
     public subscript(index: Index<Memory>) -> UInt8 {
-        unsafe _start.rawPointer.load(fromByteOffset: Int(bitPattern: index), as: UInt8.self)
+        unsafe UnsafeRawPointer(_start).load(fromByteOffset: Int(bitPattern: index), as: UInt8.self)
     }
 }
 
@@ -182,7 +182,7 @@ extension Memory.Address.Buffer {
     /// - Returns: The value read from memory.
     @inlinable
     public func read<T>(from offset: Memory.Address.Offset = .zero, as type: T.Type) -> T {
-        unsafe _start.rawPointer.load(fromByteOffset: offset, as: type)
+        unsafe UnsafeRawPointer(_start).load(fromByteOffset: offset, as: type)
     }
 }
 
@@ -197,7 +197,7 @@ extension Memory.Address.Buffer {
     public func extracting(_ bounds: Range.Lazy<Index<Memory>>) -> Self {
         // _start is always non-null (sentinel-backed), so pointer arithmetic is safe
         let newStart = unsafe Memory.Address(
-            _start.rawPointer.advanced(by: Int(bitPattern: bounds.start))
+            UnsafeRawPointer(_start).advanced(by: Int(bitPattern: bounds.start))
         )
         let newCount = bounds.count.retag(Memory.self)
         return Self(start: newStart, count: newCount)
@@ -240,7 +240,7 @@ extension Memory.Address.Buffer {
         // Compute new start using pointer arithmetic
         // _start is always non-null (sentinel-backed), so advanced(by:) is safe
         let newStart = unsafe Memory.Address(
-            _start.rawPointer.advanced(by: Int(bitPattern: start))
+            UnsafeRawPointer(_start).advanced(by: Int(bitPattern: start))
         )
         return Self(start: newStart, count: sliceCount)
     }
@@ -287,7 +287,7 @@ extension Memory.Address.Buffer: CustomDebugStringConvertible {
 extension Memory.Address.Buffer {
     @inlinable
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        unsafe Int(bitPattern: lhs._start.rawPointer) == Int(bitPattern: rhs._start.rawPointer)
+        unsafe Int(bitPattern: UnsafeRawPointer(lhs._start)) == Int(bitPattern: UnsafeRawPointer(rhs._start))
             && lhs._count == rhs._count
     }
 }
@@ -297,7 +297,7 @@ extension Memory.Address.Buffer {
 extension Memory.Address.Buffer {
     @inlinable
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(unsafe Int(bitPattern: _start.rawPointer))
+        hasher.combine(unsafe Int(bitPattern: UnsafeRawPointer(_start)))
         hasher.combine(_count.count)
     }
 }

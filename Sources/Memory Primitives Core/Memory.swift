@@ -19,3 +19,12 @@
 /// - ``Memory/Contiguous``: Contiguous memory access patterns
 ///   - ``Memory/Contiguous/Protocol``: Protocol for types with contiguous storage
 public enum Memory {}
+
+extension Memory {
+    /// Marker type for mutable memory addresses.
+    ///
+    /// Used as a phantom tag to distinguish `Memory.Address.Mutable` from
+    /// `Memory.Address`. Both are ordinal positions in memory, but the type
+    /// system tracks whether operations are permitted to mutate.
+    public enum Mutable {}
+}
