@@ -28,7 +28,7 @@ extension MemoryAddressBufferMutableTests.Unit {
     func initEmpty() {
         let buffer = Memory.Address.Buffer.Mutable()
         #expect(buffer.isEmpty)
-        #expect(buffer.count.rawValue == 0)
+        #expect(buffer.count == 0)
     }
 
     @Test("allocate creates buffer with specified size")
@@ -39,7 +39,7 @@ extension MemoryAddressBufferMutableTests.Unit {
         defer { buffer.deallocate() }
 
         #expect(!buffer.isEmpty)
-        #expect(buffer.count.rawValue == 100)
+        #expect(buffer.count == 100)
     }
 
     @Test("subscript read-write access")

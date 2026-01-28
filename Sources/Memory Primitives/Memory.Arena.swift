@@ -85,22 +85,22 @@ extension Memory {
             count: Index<UInt8>.Count,
             alignment: Index<UInt8>.Count
         ) -> Address.Mutable? {
-            let alignValue = alignment.count.rawValue
+            let alignValue = alignment.count
             precondition(alignValue > 0 && (alignValue & (alignValue - 1)) == 0,
                          "Alignment must be power of 2")
 
             // Round up allocated to alignment boundary
             let alignMask = alignValue &- 1
-            let alignedAllocated = (_allocated.count.rawValue &+ alignMask) & ~alignMask
+            let alignedAllocated = (_allocated.count &+ alignMask) & ~alignMask
 
             // Check if allocation fits (overflow-safe: use saturating add then compare)
-            let (endAllocated, overflow) = alignedAllocated.addingReportingOverflow(count.count.rawValue)
-            guard !overflow, endAllocated <= capacity.count.rawValue else {
+            let (endAllocated, overflow) = alignedAllocated.addingReportingOverflow(count.count)
+            guard !overflow, endAllocated <= capacity.count else {
                 return nil
             }
 
             // Update allocated count
-            _allocated = Index<UInt8>.Count(Cardinal.Count(endAllocated))
+            _allocated = Index<UInt8>.Count(Cardinal(endAllocated))
 
             // Return the allocated address
             // Convert Count to Offset at boundary for pointer arithmetic

@@ -124,7 +124,7 @@ extension Memory.Address.Buffer.Mutable {
         }
         return unsafe UnsafeMutableRawBufferPointer(
             start: _start._rawPointer,
-            count: Int(_count.count.rawValue)
+            count: Int(_count.count)
         )
     }
 
@@ -136,7 +136,7 @@ extension Memory.Address.Buffer.Mutable {
     public var baseNonNull: UnsafeMutableRawBufferPointer {
         unsafe UnsafeMutableRawBufferPointer(
             start: _start._rawPointer,
-            count: Int(_count.count.rawValue)
+            count: Int(_count.count)
         )
     }
 }
@@ -176,10 +176,10 @@ extension Memory.Address.Buffer.Mutable {
     @inlinable
     public subscript(index: Index<UInt8>) -> UInt8 {
         get {
-            unsafe _start._rawPointer.load(fromByteOffset: Int(index.position.rawValue), as: UInt8.self)
+            unsafe _start._rawPointer.load(fromByteOffset: Int(index.position), as: UInt8.self)
         }
         nonmutating set {
-            unsafe _start._rawPointer.storeBytes(of: newValue, toByteOffset: Int(index.position.rawValue), as: UInt8.self)
+            unsafe _start._rawPointer.storeBytes(of: newValue, toByteOffset: Int(index.position), as: UInt8.self)
         }
     }
 }
@@ -279,7 +279,7 @@ extension Memory.Address.Buffer.Mutable {
     public func extracting(_ bounds: Range.Lazy<Index<UInt8>>) -> Self {
         // _start is always non-null (sentinel-backed), so pointer arithmetic is safe
         let newStart = unsafe Memory.Address.Mutable(
-            _start._rawPointer.advanced(by: Int(bounds.start.position.rawValue))
+            _start._rawPointer.advanced(by: Int(bounds.start.position))
         )
         let newCount = bounds.count.retag(UInt8.self)
         return Self(start: newStart, count: newCount)
@@ -322,7 +322,7 @@ extension Memory.Address.Buffer.Mutable {
         // Compute new start using pointer arithmetic
         // _start is always non-null (sentinel-backed), so advanced(by:) is safe
         let newStart = unsafe Memory.Address.Mutable(
-            _start._rawPointer.advanced(by: Int(start.position.rawValue))
+            _start._rawPointer.advanced(by: Int(start.position))
         )
         return Self(start: newStart, count: sliceCount)
     }
@@ -362,7 +362,7 @@ extension Memory.Address.Buffer.Mutable {
 
 extension Memory.Address.Buffer.Mutable: CustomStringConvertible {
     public var description: String {
-        "Memory.Address.Buffer.Mutable(start: \(_start), count: \(_count.count.rawValue))"
+        "Memory.Address.Buffer.Mutable(start: \(_start), count: \(_count.count))"
     }
 }
 
@@ -370,7 +370,7 @@ extension Memory.Address.Buffer.Mutable: CustomStringConvertible {
 
 extension Memory.Address.Buffer.Mutable: CustomDebugStringConvertible {
     public var debugDescription: String {
-        "Memory.Address.Buffer.Mutable(start: \(_start), count: \(_count.count.rawValue))"
+        "Memory.Address.Buffer.Mutable(start: \(_start), count: \(_count.count))"
     }
 }
 
@@ -390,6 +390,6 @@ extension Memory.Address.Buffer.Mutable {
     @inlinable
     public func hash(into hasher: inout Hasher) {
         hasher.combine(unsafe Int(bitPattern: _start._rawPointer))
-        hasher.combine(_count.count.rawValue)
+        hasher.combine(_count.count)
     }
 }

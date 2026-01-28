@@ -28,7 +28,7 @@ extension MemoryAddressBufferTests.Unit {
     func initEmpty() {
         let buffer = Memory.Address.Buffer()
         #expect(buffer.isEmpty)
-        #expect(buffer.count.rawValue == 0)
+        #expect(buffer.count == 0)
     }
 
     @Test("init from start and count")
@@ -41,7 +41,7 @@ extension MemoryAddressBufferTests.Unit {
             let buffer = Memory.Address.Buffer(start: start, count: count)
 
             #expect(!buffer.isEmpty)
-            #expect(buffer.count.rawValue == 5)
+            #expect(buffer.count == 5)
         }
     }
 
@@ -50,7 +50,7 @@ extension MemoryAddressBufferTests.Unit {
         let data: [UInt8] = [10, 20, 30]
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Address.Buffer(rawBuffer)
-            #expect(buffer.count.rawValue == 3)
+            #expect(buffer.count == 3)
         }
     }
 
@@ -59,7 +59,7 @@ extension MemoryAddressBufferTests.Unit {
         let emptyBuffer = unsafe UnsafeRawBufferPointer(start: nil, count: 0)
         let buffer = unsafe Memory.Address.Buffer(emptyBuffer)
         #expect(buffer.isEmpty)
-        #expect(buffer.count.rawValue == 0)
+        #expect(buffer.count == 0)
     }
 
     @Test("start property returns non-null address")
@@ -77,7 +77,7 @@ extension MemoryAddressBufferTests.Unit {
         let data: [UInt8] = [1, 2, 3, 4, 5, 6, 7]
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Address.Buffer(rawBuffer)
-            #expect(buffer.count.rawValue == 7)
+            #expect(buffer.count == 7)
         }
     }
 
@@ -166,7 +166,7 @@ extension MemoryAddressBufferTests.EdgeCase {
             let buffer = unsafe Memory.Address.Buffer(rawBuffer)
             let slice = buffer.slice(start: 1, count: 3)
             #expect(slice != nil)
-            #expect(slice?.count.rawValue == 3)
+            #expect(slice?.count == 3)
             if let slice = slice {
                 let idx0: Index<UInt8> = 0
                 #expect(slice[idx0] == 2)
