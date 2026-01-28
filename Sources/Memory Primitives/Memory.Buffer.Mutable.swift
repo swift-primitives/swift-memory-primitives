@@ -110,36 +110,6 @@ extension Memory.Buffer.Mutable {
     public var isEmpty: Bool { _count == .zero }
 }
 
-// MARK: - Interop Views
-
-extension Memory.Buffer.Mutable {
-    /// The underlying stdlib buffer pointer (stdlib-normal form).
-    ///
-    /// For empty buffers, returns `(start: nil, count: 0)` per stdlib convention.
-    /// Use this for idiomatic Swift stdlib interop.
-    @inlinable
-    public var base: UnsafeMutableRawBufferPointer {
-        if isEmpty {
-            return unsafe UnsafeMutableRawBufferPointer(start: nil, count: 0)
-        }
-        return unsafe UnsafeMutableRawBufferPointer(
-            start: UnsafeMutableRawPointer(_start),
-            count: _count
-        )
-    }
-
-    /// The underlying stdlib buffer pointer with non-null start.
-    ///
-    /// For empty buffers, returns `(start: sentinel, count: 0)`.
-    /// Use this for C APIs that reject null pointers even with size 0.
-    @inlinable
-    public var baseNonNull: UnsafeMutableRawBufferPointer {
-        unsafe UnsafeMutableRawBufferPointer(
-            start: UnsafeMutableRawPointer(_start),
-            count: _count
-        )
-    }
-}
 
 // MARK: - Allocation
 
@@ -225,7 +195,7 @@ extension Memory.Buffer.Mutable {
     @inlinable
     @discardableResult
     public func initialize<T>(as type: T.Type, repeating value: T) -> UnsafeMutableBufferPointer<T> {
-        unsafe base.initializeMemory(as: type, repeating: value)
+        unsafe base.nullable.initializeMemory(as: type, repeating: value)
     }
 
     /// Initializes the buffer's memory as the specified type from a source collection.
@@ -236,7 +206,7 @@ extension Memory.Buffer.Mutable {
     /// - Returns: A tuple containing an iterator to remaining source elements and a typed buffer to initialized memory.
     @inlinable
     public func initialize<S: Swift.Sequence>(as type: S.Element.Type, from source: S) -> (unwritten: S.Iterator, initialized: UnsafeMutableBufferPointer<S.Element>) {
-        unsafe base.initializeMemory(as: type, from: source)
+        unsafe base.nullable.initializeMemory(as: type, from: source)
     }
 }
 
@@ -248,7 +218,7 @@ extension Memory.Buffer.Mutable {
     /// - Parameter source: The source buffer to copy from.
     @inlinable
     public func copy(from source: Memory.Buffer) {
-        unsafe base.copyMemory(from: source.base)
+        unsafe base.nullable.copyMemory(from: source.base.nullable)
     }
 
     /// Copies bytes from a raw buffer pointer.
@@ -256,7 +226,7 @@ extension Memory.Buffer.Mutable {
     /// - Parameter source: The source buffer to copy from.
     @inlinable
     public func copy(from source: UnsafeRawBufferPointer) {
-        unsafe base.copyMemory(from: source)
+        unsafe base.nullable.copyMemory(from: source)
     }
 
     /// Copies bytes from a typed collection.
@@ -264,7 +234,7 @@ extension Memory.Buffer.Mutable {
     /// - Parameter source: A collection of bytes to copy.
     @inlinable
     public func copy<C: Collection>(bytes source: C) where C.Element == UInt8 {
-        unsafe base.copyBytes(from: source)
+        unsafe base.nullable.copyBytes(from: source)
     }
 }
 
@@ -342,7 +312,7 @@ extension Memory.Buffer.Mutable {
         to type: T.Type,
         _ body: (UnsafeMutableBufferPointer<T>) throws -> Result
     ) rethrows -> Result {
-        try unsafe base.withMemoryRebound(to: type) { typedBuffer in
+        try unsafe base.nullable.withMemoryRebound(to: type) { typedBuffer in
             try unsafe body(typedBuffer)
         }
     }

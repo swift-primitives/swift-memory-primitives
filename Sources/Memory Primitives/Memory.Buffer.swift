@@ -130,36 +130,6 @@ extension Memory.Buffer {
     public var isEmpty: Bool { _count == .zero }
 }
 
-// MARK: - Interop Views
-
-extension Memory.Buffer {
-    /// The underlying stdlib buffer pointer (stdlib-normal form).
-    ///
-    /// For empty buffers, returns `(start: nil, count: 0)` per stdlib convention.
-    /// Use this for idiomatic Swift stdlib interop.
-    @inlinable
-    public var base: UnsafeRawBufferPointer {
-        if isEmpty {
-            return unsafe UnsafeRawBufferPointer(start: nil, count: 0)
-        }
-        return unsafe UnsafeRawBufferPointer(
-            start: UnsafeRawPointer(_start),
-            count: count
-        )
-    }
-
-    /// The underlying stdlib buffer pointer with non-null start.
-    ///
-    /// For empty buffers, returns `(start: sentinel, count: 0)`.
-    /// Use this for C APIs that reject null pointers even with size 0.
-    @inlinable
-    public var baseNonNull: UnsafeRawBufferPointer {
-        unsafe UnsafeRawBufferPointer(
-            start: UnsafeRawPointer(_start),
-            count: count
-        )
-    }
-}
 
 // MARK: - Element Access
 
@@ -260,7 +230,7 @@ extension Memory.Buffer {
         to type: T.Type,
         _ body: (UnsafeBufferPointer<T>) throws -> Result
     ) rethrows -> Result {
-        try unsafe base.withMemoryRebound(to: type) { typedBuffer in
+        try unsafe base.nullable.withMemoryRebound(to: type) { typedBuffer in
             try unsafe body(typedBuffer)
         }
     }

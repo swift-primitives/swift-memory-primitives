@@ -125,18 +125,18 @@ extension Memory.Buffer.Test.Unit {
 // MARK: - Edge Case Tests
 
 extension Memory.Buffer.Test.EdgeCase {
-    @Test("base returns nil for empty buffer (stdlib convention)")
-    func baseEmptyReturnsNil() {
+    @Test("base.nullable returns nil for empty buffer (stdlib convention)")
+    func baseNullableEmpty() {
         let buffer = Memory.Buffer()
-        #expect(unsafe buffer.base.baseAddress == nil)
-        #expect(unsafe buffer.base.count == 0)
+        #expect(unsafe buffer.base.nullable.baseAddress == nil)
+        #expect(unsafe buffer.base.nullable.count == 0)
     }
 
-    @Test("baseNonNull returns sentinel for empty buffer")
+    @Test("base.nonNull returns sentinel for empty buffer")
     func baseNonNullEmpty() {
         let buffer = Memory.Buffer()
-        #expect(unsafe buffer.baseNonNull.baseAddress != nil)
-        #expect(unsafe buffer.baseNonNull.count == 0)
+        #expect(unsafe buffer.base.nonNull.baseAddress != nil)
+        #expect(unsafe buffer.base.nonNull.count == 0)
     }
 
     @Test("slice returns nil for out-of-bounds offset")

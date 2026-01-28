@@ -2,22 +2,22 @@
 
 <!--
 ---
-version: 1.0.0
+version: 1.1.0
 last_updated: 2026-01-28
-status: IN_PROGRESS
+status: DECISION
 ---
 -->
 
 ## Context
 
-`Memory.Buffer` internally guarantees a non-null `_start` address using a sentinel allocation for empty buffers. Two public interop properties exist:
+`Memory.Buffer` internally guarantees a non-null `_start` address using a sentinel allocation for empty buffers. Two public interop properties currently exist:
 
 - `base` — returns `UnsafeRawBufferPointer(start: nil, count: 0)` for empty buffers (stdlib convention)
 - `baseNonNull` — returns `UnsafeRawBufferPointer(start: sentinel, count: 0)` for empty buffers
 
 Extensive C interop is expected across the ecosystem, making non-null buffer access a primary use case rather than a niche concern. Many C APIs reject null pointers even when accompanied by a zero count.
 
-The name `baseNonNull` is a compound identifier, which violates the spirit of [API-NAME-002].
+The name `baseNonNull` is a compound identifier, which violates [API-NAME-002].
 
 ## Question
 
@@ -42,30 +42,47 @@ Current implementation. `base` returns nil-for-empty (stdlib convention); `baseN
 
 Make the default `base` return non-null (matching the internal invariant). Provide a stdlib-convention variant for code that expects nil.
 
-This would require `base` to return a wrapper type with a `.nullable` property, since `base` returns `UnsafeRawBufferPointer` (a stdlib value type that cannot be extended with a nested accessor in a meaningful way).
-
 **Advantages:**
 - Default behavior matches the type's core invariant (non-null)
 - C interop path is the simple, obvious one
 
 **Disadvantages:**
-- Returning a wrapper from `base` adds indirection
 - Breaks existing code that checks `buffer.base.baseAddress == nil`
-- The wrapper would need its own type — potentially over-engineered
+- Requires a wrapper type or namespace
 
-### Option C: Nested accessor via namespace type
+### Option C: Nested accessor via Property pattern
 
-Introduce a namespace to hold both variants:
+Use `Property<Tag, Base>` from `swift-property-primitives` to create a namespace:
 
 ```swift
+import Property_Primitives
+
 extension Memory.Buffer {
-    struct Base {
-        // Returns UnsafeRawBufferPointer with nil for empty (stdlib convention)
-        var nullable: UnsafeRawBufferPointer { ... }
-        // Returns UnsafeRawBufferPointer with sentinel for empty (C interop)
-        var nonNull: UnsafeRawBufferPointer { ... }
+    enum Base {}
+
+    var base: Property<Base, Memory.Buffer> { .init(self) }
+}
+
+extension Property where Tag == Memory.Buffer.Base, Base == Memory.Buffer {
+    /// Stdlib-normal form: `nil` base address for empty buffers.
+    var nullable: UnsafeRawBufferPointer {
+        if base.isEmpty {
+            return unsafe UnsafeRawBufferPointer(start: nil, count: 0)
+        }
+        return unsafe UnsafeRawBufferPointer(
+            start: UnsafeRawPointer(base._start),
+            count: base.count
+        )
     }
-    var base: Base { ... }
+
+    /// Non-null form: sentinel base address for empty buffers.
+    /// Use for C APIs that reject null pointers even with count 0.
+    var nonNull: UnsafeRawBufferPointer {
+        unsafe UnsafeRawBufferPointer(
+            start: UnsafeRawPointer(base._start),
+            count: base.count
+        )
+    }
 }
 ```
 
@@ -74,108 +91,99 @@ Usage: `buffer.base.nullable`, `buffer.base.nonNull`.
 **Advantages:**
 - Follows [API-NAME-002] — nested accessor, no compound name
 - Progressive disclosure: autocomplete on `buffer.base.` shows both options
-- Neither variant is privileged — the user must choose explicitly
-- Clean separation of concerns
+- Uses established Property pattern from the primitives ecosystem
+- Zero runtime overhead — Property stores the buffer value directly
 
 **Disadvantages:**
-- Neither `buffer.base.nullable` nor `buffer.base.nonNull` can be passed directly where `UnsafeRawBufferPointer` is expected without explicit access (but that's the same as today)
-- Adds a namespace type for two properties
-- `buffer.base` alone is no longer usable — you must pick a variant
+- `buffer.base` alone is no longer usable as `UnsafeRawBufferPointer` — you must pick a variant
+- Adds a dependency on `Property Primitives` (already Tier 1, so allowed)
+- Internal methods like `withRebound` that currently call `base.withMemoryRebound` must change to `base.nullable.withMemoryRebound` or `base.nonNull.withMemoryRebound`
 
-### Option D: Non-null `base`; stdlib conversion via `init` on stdlib side
+### Option D: Non-null `base`; stdlib conversion via manual construction
 
-Make `base` always non-null. For stdlib interop where nil is needed, users construct the nil-base buffer themselves:
-
-```swift
-// Primary path (non-null, C-safe):
-let raw = buffer.base  // always non-null
-
-// Stdlib convention (when explicitly needed):
-let stdlibBuffer = buffer.isEmpty
-    ? UnsafeRawBufferPointer(start: nil, count: 0)
-    : buffer.base
-```
+Make `base` always non-null. Users construct the nil-base buffer themselves when needed.
 
 **Advantages:**
 - Single property, simple API
-- Non-null is the default (matches internal invariant and C interop needs)
-- No compound names
 
 **Disadvantages:**
-- Stdlib nil-convention becomes manual — error-prone boilerplate
-- Users must know the stdlib convention and remember to apply it
-- Violates the principle of making the common case easy if stdlib interop is also common
+- Stdlib nil-convention becomes manual boilerplate
+- Error-prone: users must remember to apply the convention
 
 ### Option E: `base` returns non-null; add `stdlib` conversion property
 
-```swift
-extension Memory.Buffer {
-    // Primary: always non-null (C-safe)
-    var base: UnsafeRawBufferPointer { ... }
-
-    // Stdlib-normal form: nil for empty
-    var stdlib: UnsafeRawBufferPointer { ... }
-}
-```
+Two flat properties: `base` (non-null) and `stdlib` (nil-for-empty).
 
 **Advantages:**
-- Non-null is the default — correct for C interop
-- `stdlib` clearly communicates intent
+- Non-null is the default
 - No compound names
-- Simple — two properties, clear purpose
 
 **Disadvantages:**
-- `stdlib` is a vague name — stdlib of what?
+- `stdlib` is vague — stdlib of what?
 - Two properties at the same level without namespace grouping
 
-### Option F: Rename only — `base` stays nil; `cBase` or similar for C interop
+### Option F: Rename only — `base` stays nil; rename `baseNonNull`
 
-Keep `base` as stdlib-convention. Rename `baseNonNull` to something convention-compliant.
-
-Candidates: `cBase`, `rawBase`, `unsafeBase`
+Keep `base` as stdlib-convention. Rename `baseNonNull` to a convention-compliant name.
 
 **Advantages:**
 - `base` retains stdlib compatibility
-- Fixes the compound-name violation
 
 **Disadvantages:**
-- All candidates are still compound-ish or carry misleading connotations (`unsafe` has strict meaning in Swift 6.2; `c` prefix is un-Swifty; `raw` is already the abstraction level)
+- All candidates (`cBase`, `rawBase`, `unsafeBase`) are still compound-ish or carry misleading connotations
 
 ### Comparison
 
-| Criterion | A: Current | C: Nested | D: Non-null only | E: base + stdlib |
-|-----------|-----------|-----------|-------------------|-----------------|
-| [API-NAME-002] compliance | No (`baseNonNull`) | Yes | Yes | Yes |
-| C interop (primary path) | Secondary | Explicit | Default | Default |
-| Stdlib interop | Default | Explicit | Manual | Explicit |
-| API simplicity | Two properties | Namespace + two | One property | Two properties |
+| Criterion | A: Current | C: Property | D: Non-null only | E: base + stdlib |
+|-----------|-----------|-------------|-------------------|-----------------|
+| [API-NAME-002] compliance | No | Yes | Yes | Yes |
+| C interop path | `buffer.baseNonNull` | `buffer.base.nonNull` | `buffer.base` | `buffer.base` |
+| Stdlib interop path | `buffer.base` | `buffer.base.nullable` | Manual | `buffer.stdlib` |
+| API simplicity | Two flat properties | Namespace + two | One property | Two flat properties |
 | Discoverability | Flat | Progressive | Trivial | Flat |
-| Code at call site | `buffer.base` / `buffer.baseNonNull` | `buffer.base.nonNull` / `buffer.base.nullable` | `buffer.base` | `buffer.base` / `buffer.stdlib` |
+| Ecosystem consistency | Ad hoc | Uses Property pattern | N/A | Ad hoc |
 
 ### Constraints
 
-1. **C interop is extensive.** Non-null base is not a niche concern — it is a primary interop path. The API should make this easy.
+1. **C interop is extensive.** Non-null base is a primary interop path.
 
-2. **Stdlib convention is real.** Code throughout the Swift ecosystem checks `baseAddress == nil` for emptiness. A conversion to stdlib-normal form must exist.
+2. **Stdlib convention is real.** A conversion to stdlib-normal form must exist.
 
 3. **[API-NAME-002]** forbids compound identifiers. `baseNonNull` violates this.
 
-4. **The sentinel is an implementation detail.** Neither `base` nor any renamed variant should expose sentinel semantics — it should expose the guarantee (non-null) or the convention (nullable).
+4. **The sentinel is an implementation detail.** The API should expose the guarantee (non-null) or the convention (nullable), not sentinel mechanics.
 
-5. **`start` already provides non-null access.** Code within the primitives layer uses `start: Memory.Address` directly. The `base` / `baseNonNull` properties are specifically for crossing the boundary to stdlib/C types.
+5. **`start` provides non-null access within primitives.** `base` is specifically for crossing to stdlib/C types.
+
+6. **`base` defaults to nil-for-empty** (for now). This preserves stdlib compatibility during the pre-1.0 period. Can be revisited when the ecosystem matures and the default can shift to non-null.
+
+7. **[API-IMPL-005]**: The `Base` tag enum and Property extension should live in their own file (`Memory.Buffer.Base.swift`).
 
 ## Outcome
 
-**Status**: IN_PROGRESS
+**Status**: DECISION
 
-**Leaning**: Option C (nested accessor) or Option E (`base` + `stdlib`).
+**Decision**: Option C — nested accessor via `Property<Tag, Base>`.
 
-Option C is the most convention-compliant and provides progressive disclosure, but adds a namespace type for two properties. Option E is simpler but `stdlib` as a property name needs refinement.
+**Rationale:**
 
-**Open questions for resolution:**
-1. Is the namespace type in Option C justified for only two properties, or is it over-engineering?
-2. If Option E, what should the stdlib-convention property be named? (`base.stdlib`? `nullableBase`? Something else?)
-3. Should `base` default to non-null (Options C/D/E) or nil-for-empty (Options A/F)?
+1. **Convention compliance.** `buffer.base.nonNull` and `buffer.base.nullable` follow [API-NAME-002] — no compound identifiers. The current `baseNonNull` does not.
+
+2. **Progressive disclosure.** Autocomplete on `buffer.base.` reveals both options. Users learn that a choice exists — they are not silently getting one convention when they needed the other.
+
+3. **Ecosystem consistency.** The `Property<Tag, Base>` pattern is established infrastructure from `swift-property-primitives`. Using it here is consistent with how other primitives create namespaced accessors.
+
+4. **Future-proof.** When the ecosystem matures and the default can shift to non-null, this is a naming change within the namespace (`base.nullable` → deprecated, `base.nonNull` → possibly promoted to `base` directly) rather than a breaking rename of a top-level property.
+
+5. **Explicit choice.** Neither convention is silently assumed. Users must write `buffer.base.nullable` or `buffer.base.nonNull`, making the choice visible and grep-able.
+
+**Implementation path:**
+- Add `Property Primitives` dependency to `swift-memory-primitives`
+- Create `Memory.Buffer.Base.swift` with tag enum and Property extension
+- Create `Memory.Buffer.Mutable.Base.swift` with parallel mutable implementation
+- Update `withRebound` and any internal callers from `base` → `base.nullable`
+- Update tests
+- Remove old `base` and `baseNonNull` properties
 
 ## References
 
@@ -183,4 +191,6 @@ Option C is the most convention-compliant and provides progressive disclosure, b
 - `Memory.Buffer.Mutable.swift` — parallel mutable implementation
 - `Memory.Buffer Tests.swift:128-140` — tests for both properties
 - `memory-address-mutability.md` — address-as-position design philosophy
+- `swift-property-primitives` — `Property<Tag, Base>` pattern
 - [API-NAME-002] — no compound identifiers
+- [API-IMPL-005] — one type per file
