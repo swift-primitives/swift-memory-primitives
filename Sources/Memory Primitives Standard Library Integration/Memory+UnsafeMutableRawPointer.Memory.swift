@@ -8,12 +8,6 @@
 import Property_Primitives
 import Memory_Primitives_Core
 
-// MARK: - Tag Type
-
-extension UnsafeMutableRawPointer {
-    /// Tag for memory operations on raw pointers.
-    public enum Memory {}
-}
 
 // MARK: - Accessor
 
@@ -37,7 +31,7 @@ extension UnsafeMutableRawPointer {
 // MARK: - Property Extension
 
 extension Property_Primitives.Property
-where Tag == UnsafeMutableRawPointer.Memory, Base == UnsafeMutableRawPointer {
+where Tag == Memory, Base == UnsafeMutableRawPointer {
 
     /// Initializes memory as the specified type with a repeated value.
     ///
@@ -103,7 +97,7 @@ where Tag == UnsafeMutableRawPointer.Memory, Base == UnsafeMutableRawPointer {
 
     /// Namespace for move operations.
     @inlinable
-    public var move: Property_Primitives.Property<UnsafeMutableRawPointer.Memory.Move, Base> {
+    public var move: Property_Primitives.Property<Memory.Move, Base> {
         unsafe Property_Primitives.Property(base)
     }
 }

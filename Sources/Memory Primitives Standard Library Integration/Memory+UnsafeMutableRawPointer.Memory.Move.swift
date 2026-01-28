@@ -9,7 +9,7 @@ import Property_Primitives
 
 // MARK: - Tag Type
 
-extension UnsafeMutableRawPointer.Memory {
+extension Memory {
     /// Tag for move operations on raw pointer memory.
     public enum Move {}
 }
@@ -17,7 +17,7 @@ extension UnsafeMutableRawPointer.Memory {
 // MARK: - Property Extension
 
 extension Property_Primitives.Property
-where Tag == UnsafeMutableRawPointer.Memory.Move, Base == UnsafeMutableRawPointer {
+where Tag == Memory.Move, Base == UnsafeMutableRawPointer {
 
     /// Initializes memory by moving values from a source.
     ///
