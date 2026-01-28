@@ -13,17 +13,19 @@ import Testing
 @testable import Memory_Primitives
 import Memory_Primitives_Test_Support
 
-@Suite("Memory.Address.Buffer.Mutable")
-struct MemoryAddressBufferMutableTests {
-    @Suite struct Unit {}
-    @Suite struct EdgeCase {}
-    @Suite struct Integration {}
-    @Suite(.serialized) struct Performance {}
+extension Memory.Address.Buffer.Mutable {
+    @Suite
+    struct Test {
+        @Suite struct Unit {}
+        @Suite struct EdgeCase {}
+        @Suite struct Integration {}
+        @Suite(.serialized) struct Performance {}
+    }
 }
 
 // MARK: - Unit Tests
 
-extension MemoryAddressBufferMutableTests.Unit {
+extension Memory.Address.Buffer.Mutable.Test.Unit {
     @Test("init creates empty buffer with sentinel")
     func initEmpty() {
         let buffer = Memory.Address.Buffer.Mutable()
@@ -96,7 +98,7 @@ extension MemoryAddressBufferMutableTests.Unit {
 
 // MARK: - Edge Case Tests
 
-extension MemoryAddressBufferMutableTests.EdgeCase {
+extension Memory.Address.Buffer.Mutable.Test.EdgeCase {
     @Test("base returns nil for empty buffer (stdlib convention)")
     func baseEmptyReturnsNil() {
         let buffer = Memory.Address.Buffer.Mutable()
@@ -169,7 +171,7 @@ extension MemoryAddressBufferMutableTests.EdgeCase {
 
 // MARK: - Integration Tests
 
-extension MemoryAddressBufferMutableTests.Integration {
+extension Memory.Address.Buffer.Mutable.Test.Integration {
     @Test("Equatable compares start and count")
     func equatable() {
         let count: Index<UInt8>.Count = 10
@@ -224,7 +226,7 @@ extension MemoryAddressBufferMutableTests.Integration {
 
 // MARK: - Performance Tests
 
-extension MemoryAddressBufferMutableTests.Performance {
+extension Memory.Address.Buffer.Mutable.Test.Performance {
     @Test("sequential write")
     func sequentialWrite() {
         let count: Index<UInt8>.Count = 10000

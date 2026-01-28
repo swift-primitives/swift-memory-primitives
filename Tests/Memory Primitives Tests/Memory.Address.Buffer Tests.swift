@@ -13,17 +13,17 @@ import Testing
 @testable import Memory_Primitives
 import Memory_Primitives_Test_Support
 
-@Suite("Memory.Address.Buffer")
-struct MemoryAddressBufferTests {
-    @Suite struct Unit {}
-    @Suite struct EdgeCase {}
-    @Suite struct Integration {}
-    @Suite(.serialized) struct Performance {}
+extension Memory.Address.Buffer {
+    @Suite
+    struct Test {
+        @Suite struct Unit {}
+        @Suite struct EdgeCase {}
+        @Suite struct Integration {}
+        @Suite(.serialized) struct Performance {}
+    }
 }
 
-// MARK: - Unit Tests
-
-extension MemoryAddressBufferTests.Unit {
+extension Memory.Address.Buffer.Test.Unit {
     @Test("init creates empty buffer with sentinel")
     func initEmpty() {
         let buffer = Memory.Address.Buffer()
@@ -35,7 +35,7 @@ extension MemoryAddressBufferTests.Unit {
     func initFromStartAndCount() {
         let data: [UInt8] = [1, 2, 3, 4, 5]
         unsafe data.withUnsafeBufferPointer { ptr in
-            guard let baseAddress = unsafe ptr.baseAddress else { return }
+            guard let baseAddress = ptr.baseAddress else { return }
             let start = unsafe Memory.Address(baseAddress)
             let count: Index<UInt8>.Count = 5
             let buffer = Memory.Address.Buffer(start: start, count: count)
@@ -124,7 +124,7 @@ extension MemoryAddressBufferTests.Unit {
 
 // MARK: - Edge Case Tests
 
-extension MemoryAddressBufferTests.EdgeCase {
+extension Memory.Address.Buffer.Test.EdgeCase {
     @Test("base returns nil for empty buffer (stdlib convention)")
     func baseEmptyReturnsNil() {
         let buffer = Memory.Address.Buffer()
@@ -196,7 +196,7 @@ extension MemoryAddressBufferTests.EdgeCase {
 
 // MARK: - Integration Tests
 
-extension MemoryAddressBufferTests.Integration {
+extension Memory.Address.Buffer.Test.Integration {
     @Test("Equatable compares start and count")
     func equatable() {
         let data: [UInt8] = [1, 2, 3]
@@ -238,7 +238,7 @@ extension MemoryAddressBufferTests.Integration {
 
 // MARK: - Performance Tests
 
-extension MemoryAddressBufferTests.Performance {
+extension Memory.Address.Buffer.Test.Performance {
     @Test("sequential read")
     func sequentialRead() {
         let size = 10000

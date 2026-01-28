@@ -13,21 +13,23 @@ import Testing
 @testable import Memory_Primitives
 import Memory_Primitives_Test_Support
 
-@Suite("Memory.Arena")
-struct MemoryArenaTests {
-    @Suite struct Unit {}
-    @Suite struct EdgeCase {}
-    @Suite struct Integration {}
-    @Suite(.serialized) struct Performance {}
+extension Memory.Arena {
+    @Suite
+    struct Test {
+        @Suite struct Unit {}
+        @Suite struct EdgeCase {}
+        @Suite struct Integration {}
+        @Suite(.serialized) struct Performance {}
+    }
 }
 
 // MARK: - Unit Tests
 
-extension MemoryArenaTests.Unit {
+extension Memory.Arena.Test.Unit {
     @Test("init creates arena with specified capacity")
     func initWithCapacity() {
         let capacity: Index<UInt8>.Count = 1024
-        var arena = Memory.Arena(capacity: capacity)
+        let arena = Memory.Arena(capacity: capacity)
         #expect(arena.capacity.rawValue == 1024)
         #expect(arena.allocated.rawValue == 0)
         #expect(arena.remaining.rawValue == 1024)
@@ -91,7 +93,7 @@ extension MemoryArenaTests.Unit {
 
 // MARK: - Edge Case Tests
 
-extension MemoryArenaTests.EdgeCase {
+extension Memory.Arena.Test.EdgeCase {
     @Test("allocate returns nil when insufficient space")
     func allocateInsufficientSpace() {
         let capacity: Index<UInt8>.Count = 100
@@ -171,7 +173,7 @@ extension MemoryArenaTests.EdgeCase {
 
 // MARK: - Integration Tests
 
-extension MemoryArenaTests.Integration {
+extension Memory.Arena.Test.Integration {
     @Test("allocated memory is usable")
     func allocatedMemoryUsable() {
         let capacity: Index<UInt8>.Count = 1024
@@ -232,7 +234,7 @@ extension MemoryArenaTests.Integration {
 
 // MARK: - Performance Tests
 
-extension MemoryArenaTests.Performance {
+extension Memory.Arena.Test.Performance {
     @Test("many small allocations")
     func manySmallAllocations() {
         let capacity: Index<UInt8>.Count = 1048576
