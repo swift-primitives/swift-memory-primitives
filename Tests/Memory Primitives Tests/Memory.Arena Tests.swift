@@ -197,7 +197,7 @@ extension Memory.Arena.Test.Integration {
 
         let intCount: Memory.Address.Count = 8
         let intAlign: Memory.Address.Count = 8
-        guard let intAddr = arena.allocate(count: intCount, alignment: intAlign) else {
+        guard let intAddr: Memory.Mutable.Address = arena.allocate(count: intCount, alignment: intAlign) else {
             Issue.record("Int allocation failed")
             return
         }
