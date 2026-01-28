@@ -116,7 +116,7 @@ extension Memory.Address.Mutable {
     public func initialize<T>(
         as type: T.Type,
         repeating value: T,
-        count: Memory.Address.Count
+        count: Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
         unsafe _rawPointer.memory.initialize(as: type, repeating: value, count: count)
     }
@@ -133,7 +133,7 @@ extension Memory.Address.Mutable {
     public func initialize<T>(
         as type: T.Type,
         from source: UnsafePointer<T>,
-        count: Memory.Address.Count
+        count: Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
         unsafe _rawPointer.memory.initialize(as: type, from: source, count: count)
     }
@@ -169,7 +169,7 @@ extension Property where Tag == Memory.Address.Mutable.Initialize, Base == Memor
     public func move<T>(
         as type: T.Type,
         from source: UnsafeMutablePointer<T>,
-        count: Memory.Address.Count
+        count: Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
         unsafe base._rawPointer.memory.move.initialize(as: type, from: source, count: count)
     }
@@ -188,7 +188,7 @@ extension Memory.Address.Mutable {
     @discardableResult
     public func bind<T: ~Copyable>(
         to type: T.Type,
-        capacity: Memory.Address.Count
+        capacity: Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
         unsafe _rawPointer.memory.bind(to: type, capacity: capacity)
     }

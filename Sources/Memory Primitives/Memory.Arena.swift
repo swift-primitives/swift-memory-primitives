@@ -31,19 +31,19 @@ extension Memory {
 
         /// Bytes currently allocated from the buffer.
         @usableFromInline
-        internal var _allocated: Index<UInt8>.Count
+        internal var _allocated: Memory.Address.Count
 
         /// Creates an arena with the specified capacity.
         ///
         /// - Parameter capacity: Total capacity in bytes. Must be > 0.
         /// - Precondition: `capacity > .zero`
         @inlinable
-        public init(capacity: Index<UInt8>.Count) {
+        public init(capacity: Memory.Address.Count) {
             precondition(capacity > .zero, "Arena capacity must be > 0")
 
             self._buffer = Address.Buffer.Mutable.allocate(
                 count: capacity,
-                alignment: Index<UInt8>.Count(UInt(MemoryLayout<Int>.alignment))
+                alignment: Memory.Address.Count(UInt(MemoryLayout<Int>.alignment))
             )
             self._allocated = .zero
         }
@@ -54,16 +54,16 @@ extension Memory {
 
         /// The total capacity in bytes.
         @inlinable
-        public var capacity: Index<UInt8>.Count { _buffer.count }
+        public var capacity: Memory.Address.Count { _buffer.count }
 
         /// The number of bytes currently allocated.
         @inlinable
-        public var allocated: Index<UInt8>.Count { _allocated }
+        public var allocated: Memory.Address.Count { _allocated }
 
         /// The number of bytes remaining.
         @inlinable
-        public var remaining: Index<UInt8>.Count {
-            Index<UInt8>.Count(capacity.count.subtract.saturating(_allocated.count))
+        public var remaining: Memory.Address.Count {
+            Memory.Address.Count(capacity.count.subtract.saturating(_allocated.count))
         }
 
         /// Resets the arena, invalidating all previous allocations.
@@ -82,8 +82,8 @@ extension Memory {
         /// - Returns: Address to allocated memory, or nil if insufficient space.
         @inlinable
         public mutating func allocate(
-            count: Index<UInt8>.Count,
-            alignment: Index<UInt8>.Count
+            count: Memory.Address.Count,
+            alignment: Memory.Address.Count
         ) -> Address.Mutable? {
             // Use rawValue (UInt) for bitwise alignment operations
             let alignValue = alignment.count.rawValue
@@ -101,7 +101,7 @@ extension Memory {
             }
 
             // Update allocated count
-            _allocated = Index<UInt8>.Count(Cardinal(endAllocated))
+            _allocated = Memory.Address.Count(Cardinal(endAllocated))
 
             // Return the allocated address
             // Convert Count to Offset at boundary for pointer arithmetic

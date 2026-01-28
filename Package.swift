@@ -28,6 +28,7 @@ let package = Package(
         .package(path: "../swift-identity-primitives"),
         .package(path: "../swift-range-primitives"),
         .package(path: "../swift-property-primitives"),
+        .package(path: "../swift-index-primitives"),
     ],
     targets: [
         .target(
@@ -35,6 +36,7 @@ let package = Package(
             dependencies: [
                 .target(name: "Memory Primitives Core"),
                 .target(name: "Memory Primitives Standard Library Integration"),
+                .product(name: "Index Primitives", package: "swift-index-primitives"),
             ]
         ),
         .target(
@@ -59,6 +61,8 @@ let package = Package(
             dependencies: [
                 "Memory Primitives",
                 .product(name: "Identity Primitives Test Support", package: "swift-identity-primitives"),
+                .product(name: "Index Primitives Test Support", package: "swift-index-primitives"),
+                .product(name: "Range Primitives Test Support", package: "swift-range-primitives"),
                 .product(name: "Ordinal Primitives Test Support", package: "swift-ordinal-primitives"),
                 .product(name: "Cardinal Primitives Test Support", package: "swift-cardinal-primitives"),
                 .product(name: "Affine Primitives Test Support", package: "swift-affine-primitives"),

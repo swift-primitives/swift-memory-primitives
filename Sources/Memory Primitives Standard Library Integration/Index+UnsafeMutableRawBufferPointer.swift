@@ -15,7 +15,7 @@ extension UnsafeMutableRawBufferPointer {
     @_disfavoredOverload
     public init(
         start: UnsafeMutableRawPointer?,
-        count: Index_Primitives_Core.Index<UInt8>.Count
+        count: Memory.Address.Count
     ) {
         unsafe self.init(
             start: start,
@@ -29,8 +29,8 @@ extension UnsafeMutableRawBufferPointer {
     @inlinable
     @_disfavoredOverload
     public static func allocate(
-        count: Index_Primitives_Core.Index<UInt8>.Count,
-        alignment: Index_Primitives_Core.Index<UInt8>.Count
+        count: Memory.Address.Count,
+        alignment: Memory.Address.Count
     ) -> Self {
         try! Self.allocate(
             byteCount: Int(count.count),
@@ -41,7 +41,7 @@ extension UnsafeMutableRawBufferPointer {
     /// Accesses the byte at the given typed index.
     @inlinable
     public subscript(
-        _ index: Index_Primitives_Core.Index<UInt8>
+        _ index: Index_Primitives_Core.Index<Memory>
     ) -> UInt8 {
         get {
             try! unsafe self[Int(index.position)]
@@ -59,7 +59,7 @@ extension UnsafeMutableRawBufferPointer {
     /// - Returns: A new instance of the given type.
     @inlinable
     public func load<T>(
-        fromByteOffset offset: Index_Primitives_Core.Index<UInt8>.Offset,
+        fromByteOffset offset: Memory.Address.Offset,
         as type: T.Type
     ) -> T {
         unsafe self.load(fromByteOffset: offset.vector.rawValue, as: type)

@@ -44,7 +44,7 @@ where Tag == UnsafeMutableRawBufferPointer.Store, Base == UnsafeMutableRawBuffer
     @inlinable
     public func bytes<T>(
         of value: T,
-        at offset: Index_Primitives_Core.Index<UInt8>.Offset,
+        at offset: Memory.Address.Offset,
         as type: T.Type
     ) {
         unsafe base.storeBytes(of: value, toByteOffset: offset.vector.rawValue, as: type)

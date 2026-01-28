@@ -144,20 +144,6 @@ extension UnsafeRawPointer {
     }
 }
 
-// MARK: - Type Aliases
-
-extension Tagged where Tag == Memory, RawValue == Ordinal {
-    /// Byte offset type (displacement in address space).
-    ///
-    /// This is `Tagged<Memory, Affine.Discrete.Vector>`.
-    public typealias Offset = Tagged<Memory, Affine.Discrete.Vector>
-
-    /// Byte count type (cardinality in address space).
-    ///
-    /// This is `Tagged<Memory, Cardinal>`.
-    public typealias Count = Tagged<Memory, Cardinal>
-}
-
 // MARK: - Pointer Arithmetic
 //
 // Note: The affine arithmetic operators (+, -) are inherited from

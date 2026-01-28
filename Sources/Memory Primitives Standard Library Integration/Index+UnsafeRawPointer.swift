@@ -15,7 +15,7 @@ extension UnsafeRawPointer {
     /// Returns a pointer offset by the specified typed byte offset.
     @inlinable
     public func advanced(
-        by offset: Index_Primitives_Core.Index<UInt8>.Offset
+        by offset: Memory.Address.Offset
     ) -> Self {
         unsafe self.advanced(by: offset.vector.rawValue)
     }
@@ -28,7 +28,7 @@ extension UnsafeRawPointer {
     /// - Returns: A new instance of the given type.
     @inlinable
     public func load<T>(
-        fromByteOffset offset: Index_Primitives_Core.Index<UInt8>.Offset,
+        fromByteOffset offset: Memory.Address.Offset,
         as type: T.Type
     ) -> T {
         unsafe self.load(fromByteOffset: offset.vector.rawValue, as: type)

@@ -51,7 +51,7 @@ where Tag == UnsafeMutableRawPointer.Memory, Base == UnsafeMutableRawPointer {
     public func initialize<T>(
         as type: T.Type,
         repeating value: T,
-        count: Memory.Address.Count
+        count: Index_Primitives_Core.Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
         unsafe base.initializeMemory(as: type, repeating: value, count: try! Int(count.count))
     }
@@ -68,7 +68,7 @@ where Tag == UnsafeMutableRawPointer.Memory, Base == UnsafeMutableRawPointer {
     public func initialize<T>(
         as type: T.Type,
         from source: UnsafePointer<T>,
-        count: Memory.Address.Count
+        count: Index_Primitives_Core.Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
         unsafe base.initializeMemory(as: type, from: source, count: try! Int(count.count))
     }
@@ -83,7 +83,7 @@ where Tag == UnsafeMutableRawPointer.Memory, Base == UnsafeMutableRawPointer {
     @discardableResult
     public func bind<T: ~Copyable>(
         to type: T.Type,
-        capacity: Memory.Address.Count
+        capacity: Index_Primitives_Core.Index<T>.Count
     ) -> UnsafeMutablePointer<T> {
         unsafe base.bindMemory(to: type, capacity: try! Int(capacity.count))
     }

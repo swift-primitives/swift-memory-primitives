@@ -28,7 +28,7 @@ extension Memory.Arena {
 extension Memory.Arena.Test.Unit {
     @Test("init creates arena with specified capacity")
     func initWithCapacity() {
-        let capacity: Index<UInt8>.Count = 1024
+        let capacity: Index<Memory>.Count = 1024
         let arena = Memory.Arena(capacity: capacity)
         #expect(arena.capacity.rawValue == 1024)
         #expect(arena.allocated.rawValue == 0)
@@ -37,39 +37,39 @@ extension Memory.Arena.Test.Unit {
 
     @Test("allocate returns address for valid request")
     func allocateValid() {
-        let capacity: Index<UInt8>.Count = 1024
+        let capacity: Index<Memory>.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
-        let count: Index<UInt8>.Count = 100
-        let alignment: Index<UInt8>.Count = 8
+        let count: Index<Memory>.Count = 100
+        let alignment: Index<Memory>.Count = 8
         let address = arena.allocate(count: count, alignment: alignment)
         #expect(address != nil)
     }
 
     @Test("allocate updates offset")
     func allocateUpdatesOffset() {
-        let capacity: Index<UInt8>.Count = 1024
+        let capacity: Index<Memory>.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
-        let count: Index<UInt8>.Count = 100
-        let alignment: Index<UInt8>.Count = 8
+        let count: Index<Memory>.Count = 100
+        let alignment: Index<Memory>.Count = 8
         _ = arena.allocate(count: count, alignment: alignment)
         #expect(arena.allocated.rawValue >= 100)
     }
 
     @Test("capacity property returns total capacity")
     func capacityProperty() {
-        let capacity: Index<UInt8>.Count = 2048
+        let capacity: Index<Memory>.Count = 2048
         let arena = Memory.Arena(capacity: capacity)
         #expect(arena.capacity.rawValue == 2048)
     }
 
     @Test("remaining decreases after allocation")
     func remainingDecreases() {
-        let capacity: Index<UInt8>.Count = 1024
+        let capacity: Index<Memory>.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
         let initialRemaining = arena.remaining.rawValue
 
-        let count: Index<UInt8>.Count = 256
-        let alignment: Index<UInt8>.Count = 8
+        let count: Index<Memory>.Count = 256
+        let alignment: Index<Memory>.Count = 8
         _ = arena.allocate(count: count, alignment: alignment)
 
         #expect(arena.remaining.rawValue < initialRemaining)
@@ -77,11 +77,11 @@ extension Memory.Arena.Test.Unit {
 
     @Test("reset restores full capacity")
     func reset() {
-        let capacity: Index<UInt8>.Count = 1024
+        let capacity: Index<Memory>.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
 
-        let count: Index<UInt8>.Count = 500
-        let alignment: Index<UInt8>.Count = 8
+        let count: Index<Memory>.Count = 500
+        let alignment: Index<Memory>.Count = 8
         _ = arena.allocate(count: count, alignment: alignment)
         #expect(arena.remaining.rawValue < 1024)
 
@@ -96,27 +96,27 @@ extension Memory.Arena.Test.Unit {
 extension Memory.Arena.Test.EdgeCase {
     @Test("allocate returns nil when insufficient space")
     func allocateInsufficientSpace() {
-        let capacity: Index<UInt8>.Count = 100
+        let capacity: Index<Memory>.Count = 100
         var arena = Memory.Arena(capacity: capacity)
-        let count: Index<UInt8>.Count = 200
-        let alignment: Index<UInt8>.Count = 8
+        let count: Index<Memory>.Count = 200
+        let alignment: Index<Memory>.Count = 8
         let address = arena.allocate(count: count, alignment: alignment)
         #expect(address == nil)
     }
 
     @Test("allocate respects alignment")
     func allocateAlignment() {
-        let capacity: Index<UInt8>.Count = 1024
+        let capacity: Index<Memory>.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
 
         // First allocation of 1 byte
-        let count1: Index<UInt8>.Count = 1
-        let alignment1: Index<UInt8>.Count = 1
+        let count1: Index<Memory>.Count = 1
+        let alignment1: Index<Memory>.Count = 1
         _ = arena.allocate(count: count1, alignment: alignment1)
 
         // Second allocation with 16-byte alignment
-        let count2: Index<UInt8>.Count = 32
-        let alignment2: Index<UInt8>.Count = 16
+        let count2: Index<Memory>.Count = 32
+        let alignment2: Index<Memory>.Count = 16
         let address = arena.allocate(count: count2, alignment: alignment2)
 
         #expect(address != nil)
@@ -124,12 +124,12 @@ extension Memory.Arena.Test.EdgeCase {
 
     @Test("multiple allocations succeed until exhausted")
     func multipleAllocations() {
-        let capacity: Index<UInt8>.Count = 256
+        let capacity: Index<Memory>.Count = 256
         var arena = Memory.Arena(capacity: capacity)
         var allocations: [Memory.Address.Mutable] = []
 
-        let count: Index<UInt8>.Count = 32
-        let alignment: Index<UInt8>.Count = 8
+        let count: Index<Memory>.Count = 32
+        let alignment: Index<Memory>.Count = 8
         while let address = arena.allocate(count: count, alignment: alignment) {
             allocations.append(address)
         }
@@ -139,33 +139,33 @@ extension Memory.Arena.Test.EdgeCase {
 
     @Test("allocate zero bytes succeeds")
     func allocateZeroBytes() {
-        let capacity: Index<UInt8>.Count = 100
+        let capacity: Index<Memory>.Count = 100
         var arena = Memory.Arena(capacity: capacity)
-        let count: Index<UInt8>.Count = 0
-        let alignment: Index<UInt8>.Count = 8
+        let count: Index<Memory>.Count = 0
+        let alignment: Index<Memory>.Count = 8
         let address = arena.allocate(count: count, alignment: alignment)
         #expect(address != nil)
     }
 
     @Test("allocate exactly capacity succeeds")
     func allocateExactCapacity() {
-        let capacity: Index<UInt8>.Count = 64
+        let capacity: Index<Memory>.Count = 64
         var arena = Memory.Arena(capacity: capacity)
-        let count: Index<UInt8>.Count = 64
-        let alignment: Index<UInt8>.Count = 1
+        let count: Index<Memory>.Count = 64
+        let alignment: Index<Memory>.Count = 1
         let address = arena.allocate(count: count, alignment: alignment)
         #expect(address != nil)
     }
 
     @Test("allocate after exact capacity returns nil")
     func allocateAfterExact() {
-        let capacity: Index<UInt8>.Count = 64
+        let capacity: Index<Memory>.Count = 64
         var arena = Memory.Arena(capacity: capacity)
-        let count: Index<UInt8>.Count = 64
-        let alignment: Index<UInt8>.Count = 1
+        let count: Index<Memory>.Count = 64
+        let alignment: Index<Memory>.Count = 1
         _ = arena.allocate(count: count, alignment: alignment)
 
-        let oneMore: Index<UInt8>.Count = 1
+        let oneMore: Index<Memory>.Count = 1
         let second = arena.allocate(count: oneMore, alignment: alignment)
         #expect(second == nil)
     }
@@ -176,10 +176,10 @@ extension Memory.Arena.Test.EdgeCase {
 extension Memory.Arena.Test.Integration {
     @Test("allocated memory is usable")
     func allocatedMemoryUsable() {
-        let capacity: Index<UInt8>.Count = 1024
+        let capacity: Index<Memory>.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
-        let count: Index<UInt8>.Count = 8
-        let alignment: Index<UInt8>.Count = 8
+        let count: Index<Memory>.Count = 8
+        let alignment: Index<Memory>.Count = 8
         guard let address = arena.allocate(count: count, alignment: alignment) else {
             Issue.record("Allocation failed")
             return
@@ -192,18 +192,18 @@ extension Memory.Arena.Test.Integration {
 
     @Test("multiple typed allocations")
     func multipleTypedAllocations() {
-        let capacity: Index<UInt8>.Count = 1024
+        let capacity: Index<Memory>.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
 
-        let intCount: Index<UInt8>.Count = 8
-        let intAlign: Index<UInt8>.Count = 8
+        let intCount: Index<Memory>.Count = 8
+        let intAlign: Index<Memory>.Count = 8
         guard let intAddr = arena.allocate(count: intCount, alignment: intAlign) else {
             Issue.record("Int allocation failed")
             return
         }
 
-        let doubleCount: Index<UInt8>.Count = 8
-        let doubleAlign: Index<UInt8>.Count = 8
+        let doubleCount: Index<Memory>.Count = 8
+        let doubleAlign: Index<Memory>.Count = 8
         guard let doubleAddr = arena.allocate(count: doubleCount, alignment: doubleAlign) else {
             Issue.record("Double allocation failed")
             return
@@ -218,11 +218,11 @@ extension Memory.Arena.Test.Integration {
 
     @Test("reset allows reuse")
     func resetAllowsReuse() {
-        let capacity: Index<UInt8>.Count = 100
+        let capacity: Index<Memory>.Count = 100
         var arena = Memory.Arena(capacity: capacity)
 
-        let count: Index<UInt8>.Count = 32
-        let alignment: Index<UInt8>.Count = 8
+        let count: Index<Memory>.Count = 32
+        let alignment: Index<Memory>.Count = 8
         while arena.allocate(count: count, alignment: alignment) != nil {}
 
         arena.reset()
@@ -237,9 +237,9 @@ extension Memory.Arena.Test.Integration {
 extension Memory.Arena.Test.Performance {
     @Test("many small allocations")
     func manySmallAllocations() {
-        let capacity: Index<UInt8>.Count = 1048576
-        let count: Index<UInt8>.Count = 64
-        let alignment: Index<UInt8>.Count = 8
+        let capacity: Index<Memory>.Count = 1048576
+        let count: Index<Memory>.Count = 64
+        let alignment: Index<Memory>.Count = 8
 
         // Warmup
         for _ in 0..<10 {
@@ -260,10 +260,10 @@ extension Memory.Arena.Test.Performance {
 
     @Test("allocate and reset cycle")
     func allocateResetCycle() {
-        let capacity: Index<UInt8>.Count = 1024
+        let capacity: Index<Memory>.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
-        let count: Index<UInt8>.Count = 8
-        let alignment: Index<UInt8>.Count = 8
+        let count: Index<Memory>.Count = 8
+        let alignment: Index<Memory>.Count = 8
 
         // Warmup
         for _ in 0..<10 {

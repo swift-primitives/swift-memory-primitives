@@ -7,7 +7,7 @@ Non-null memory address wrappers with typed index integration for Swift.
 ## Key Features
 
 - **Non-null guarantees** - All address types enforce non-null invariants at construction
-- **Typed index integration** - Uses `Index<UInt8>` for byte-level operations throughout
+- **Typed index integration** - Uses `Index<Memory>` for byte-level operations throughout
 - **Mutable and immutable variants** - `Memory.Address` and `Memory.Address.Mutable` mirror Swift's pointer duality
 - **Buffer types** - `Memory.Address.Buffer` and `Memory.Address.Buffer.Mutable` for contiguous byte regions
 - **Swift Embedded compatible** - No Foundation dependencies
@@ -40,13 +40,13 @@ Add to your target:
 import Memory_Primitives
 
 // Allocate raw memory with typed counts
-let byteCount: Index<UInt8>.Count = 100
-let alignment: Index<UInt8>.Count = 8
+let byteCount: Index<Memory>.Count = 100
+let alignment: Index<Memory>.Count = 8
 let buffer = Memory.Address.Buffer.Mutable.allocate(byteCount: byteCount, alignment: alignment)
 defer { buffer.deallocate() }
 
 // Access bytes via typed index
-let idx: Index<UInt8> = 0
+let idx: Index<Memory> = 0
 buffer[idx] = 42
 
 // Load/store typed values (offset defaults to 0)

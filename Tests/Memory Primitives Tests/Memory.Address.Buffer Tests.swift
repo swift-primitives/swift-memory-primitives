@@ -37,7 +37,7 @@ extension Memory.Address.Buffer.Test.Unit {
         unsafe data.withUnsafeBufferPointer { ptr in
             guard let baseAddress = ptr.baseAddress else { return }
             let start = unsafe Memory.Address(baseAddress)
-            let count: Index<UInt8>.Count = 5
+            let count: Index<Memory>.Count = 5
             let buffer = Memory.Address.Buffer(start: start, count: count)
 
             #expect(!buffer.isEmpty)
@@ -101,9 +101,9 @@ extension Memory.Address.Buffer.Test.Unit {
         let data: [UInt8] = [10, 20, 30, 40, 50]
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Address.Buffer(rawBuffer)
-            let idx0: Index<UInt8> = 0
-            let idx2: Index<UInt8> = 2
-            let idx4: Index<UInt8> = 4
+            let idx0: Index<Memory> = 0
+            let idx2: Index<Memory> = 2
+            let idx4: Index<Memory> = 4
 
             #expect(buffer[idx0] == 10)
             #expect(buffer[idx2] == 30)
@@ -168,7 +168,7 @@ extension Memory.Address.Buffer.Test.EdgeCase {
             #expect(slice != nil)
             #expect(slice?.count == 3)
             if let slice = slice {
-                let idx0: Index<UInt8> = 0
+                let idx0: Index<Memory> = 0
                 #expect(slice[idx0] == 2)
             }
         }
@@ -249,8 +249,8 @@ extension Memory.Address.Buffer.Test.Performance {
             // Warmup
             for _ in 0..<10 {
                 var sum: UInt = 0
-                (Index<UInt8>.zero..<buffer.count).forEach { idx in
-                    sum += UInt(buffer[idx])
+                for i in 0..<Int(buffer.count.count.rawValue) {
+                    sum += UInt(buffer[try! Index<Memory>(i)])
                 }
                 _ = sum
             }
@@ -258,8 +258,8 @@ extension Memory.Address.Buffer.Test.Performance {
             // Measured
             for _ in 0..<100 {
                 var sum: UInt = 0
-                (Index<UInt8>.zero..<buffer.count).forEach { idx in
-                    sum += UInt(buffer[idx])
+                for i in 0..<Int(buffer.count.count.rawValue) {
+                    sum += UInt(buffer[try! Index<Memory>(i)])
                 }
                 _ = sum
             }
@@ -271,11 +271,11 @@ extension Memory.Address.Buffer.Test.Performance {
         let data = [UInt8](repeating: 0, count: 1000)
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Address.Buffer(rawBuffer)
-            let sliceCount: Index<UInt8>.Count = 10
+            let sliceCount: Index<Memory>.Count = 10
 
             // Warmup
             for _ in 0..<10 {
-                var start: Index<UInt8> = .zero
+                var start: Index<Memory> = .zero
                 for _ in 0..<100 {
                     _ = buffer.slice(start: start, count: sliceCount)
                     start = start + sliceCount
@@ -284,7 +284,7 @@ extension Memory.Address.Buffer.Test.Performance {
 
             // Measured
             for _ in 0..<100 {
-                var start: Index<UInt8> = .zero
+                var start: Index<Memory> = .zero
                 for _ in 0..<100 {
                     _ = buffer.slice(start: start, count: sliceCount)
                     start = start + sliceCount

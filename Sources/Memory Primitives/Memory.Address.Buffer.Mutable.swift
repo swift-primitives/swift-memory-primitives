@@ -174,7 +174,7 @@ extension Memory.Address.Buffer.Mutable {
 extension Memory.Address.Buffer.Mutable {
     /// Accesses the byte at the given index.
     @inlinable
-    public subscript(index: Index<UInt8>) -> UInt8 {
+    public subscript(index: Index<Memory>) -> UInt8 {
         get {
             unsafe _start._rawPointer.load(fromByteOffset: Int(bitPattern: index), as: UInt8.self)
         }
@@ -276,12 +276,12 @@ extension Memory.Address.Buffer.Mutable {
     /// - Parameter bounds: A lazy range of byte indices specifying the subregion.
     /// - Returns: A mutable buffer over the specified range.
     @inlinable
-    public func extracting(_ bounds: Range.Lazy<Index<UInt8>>) -> Self {
+    public func extracting(_ bounds: Range.Lazy<Index<Memory>>) -> Self {
         // _start is always non-null (sentinel-backed), so pointer arithmetic is safe
         let newStart = unsafe Memory.Address.Mutable(
             _start._rawPointer.advanced(by: Int(bitPattern: bounds.start))
         )
-        let newCount = bounds.count.retag(UInt8.self)
+        let newCount = bounds.count.retag(Memory.self)
         return Self(start: newStart, count: newCount)
     }
 }
@@ -302,17 +302,17 @@ extension Memory.Address.Buffer.Mutable {
     /// - Returns: A mutable buffer over the slice, or nil if bounds are invalid.
     @inlinable
     public func slice(
-        start: Index<UInt8>,
+        start: Index<Memory>,
         count sliceCount: Memory.Address.Count
     ) -> Self? {
         // Bounds check: start must be valid endpoint
-        guard start <= _count else {
+        guard start.rawValue.rawValue <= _count.count.rawValue else {
             return nil
         }
 
         // Bounds check: slice must fit
         // remaining = buffer count - start position
-        let startAsCount = Memory.Address.Count(start)
+        let startAsCount = Memory.Address.Count(start.rawValue.rawValue)
         let remaining = _count.count.subtract.saturating(startAsCount.count)
 
         guard sliceCount.count <= remaining else {

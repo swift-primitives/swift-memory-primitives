@@ -35,8 +35,7 @@ nonisolated(unsafe) let _emptyBufferSentinelMutable: UnsafeMutableRawPointer = {
 ///
 /// See `_emptyBufferSentinelMutable` for invariants.
 @usableFromInline
-nonisolated(unsafe) let _emptyBufferSentinel: UnsafeRawPointer =
-    UnsafeRawPointer(_emptyBufferSentinelMutable)
+nonisolated(unsafe) let _emptyBufferSentinel: UnsafeRawPointer = unsafe UnsafeRawPointer(_emptyBufferSentinelMutable)
 
 extension Tagged where Tag == Memory, RawValue == Ordinal {
     /// A raw buffer with guaranteed non-null start address.
@@ -55,7 +54,7 @@ extension Tagged where Tag == Memory, RawValue == Ordinal {
     ///
     /// ```swift
     /// let buffer: Memory.Address.Buffer = ...
-    /// let byte = buffer[Index<UInt8>(5)]  // Valid if 5 < count
+    /// let byte = buffer[Index<Memory>(5)]  // Valid if 5 < count
     /// let count = buffer.count
     /// ```
     ///
@@ -79,13 +78,13 @@ extension Tagged where Tag == Memory, RawValue == Ordinal {
 
         /// Byte count.
         @usableFromInline
-        internal let _count: Index<UInt8>.Count
+        internal let _count: Memory.Address.Count
 
         // MARK: - Initialization
 
         /// Creates a buffer from a start address and byte count.
         @inlinable
-        public init(start: Memory.Address, count: Index<UInt8>.Count) {
+        public init(start: Memory.Address, count: Memory.Address.Count) {
             self._start = start
             self._count = count
         }
@@ -107,7 +106,7 @@ extension Tagged where Tag == Memory, RawValue == Ordinal {
             } else {
                 unsafe self._start = Memory.Address(_emptyBufferSentinel)
             }
-            self._count = Index<UInt8>.Count(UInt(buffer.count))
+            self._count = Memory.Address.Count(UInt(buffer.count))
         }
     }
 }
@@ -124,7 +123,7 @@ extension Memory.Address.Buffer {
 
     /// The number of bytes in the buffer.
     @inlinable
-    public var count: Index<UInt8>.Count { _count }
+    public var count: Memory.Address.Count { _count }
 
     /// A Boolean value indicating whether the buffer is empty.
     @inlinable
@@ -167,7 +166,7 @@ extension Memory.Address.Buffer {
 extension Memory.Address.Buffer {
     /// Accesses the byte at the given index.
     @inlinable
-    public subscript(index: Index<UInt8>) -> UInt8 {
+    public subscript(index: Index<Memory>) -> UInt8 {
         unsafe _start.rawPointer.load(fromByteOffset: Int(bitPattern: index), as: UInt8.self)
     }
 }
@@ -195,12 +194,12 @@ extension Memory.Address.Buffer {
     /// - Parameter bounds: A lazy range of byte indices specifying the subregion.
     /// - Returns: A buffer over the specified range.
     @inlinable
-    public func extracting(_ bounds: Range.Lazy<Index<UInt8>>) -> Self {
+    public func extracting(_ bounds: Range.Lazy<Index<Memory>>) -> Self {
         // _start is always non-null (sentinel-backed), so pointer arithmetic is safe
         let newStart = unsafe Memory.Address(
             _start.rawPointer.advanced(by: Int(bitPattern: bounds.start))
         )
-        let newCount = bounds.count.retag(UInt8.self)
+        let newCount = bounds.count.retag(Memory.self)
         return Self(start: newStart, count: newCount)
     }
 }
@@ -221,17 +220,17 @@ extension Memory.Address.Buffer {
     /// - Returns: A buffer over the slice, or nil if bounds are invalid.
     @inlinable
     public func slice(
-        start: Index<UInt8>,
-        count sliceCount: Index<UInt8>.Count
+        start: Index<Memory>,
+        count sliceCount: Memory.Address.Count
     ) -> Self? {
         // Bounds check: start must be valid endpoint
-        guard start <= _count else {
+        guard start.rawValue.rawValue <= _count.count.rawValue else {
             return nil
         }
 
         // Bounds check: slice must fit
         // remaining = buffer count - start position
-        let startAsCount = Index<UInt8>.Count(start)
+        let startAsCount = Memory.Address.Count(start.rawValue.rawValue)
         let remaining = _count.count.subtract.saturating(startAsCount.count)
 
         guard sliceCount.count <= remaining else {
