@@ -9,8 +9,6 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Index_Primitives
-
 extension Memory.Allocator {
     /// Protocol for memory allocation strategies.
     ///

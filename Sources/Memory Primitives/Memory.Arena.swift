@@ -9,8 +9,6 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Index_Primitives
-
 extension Memory {
     /// A bump allocator for batch allocations.
     ///
