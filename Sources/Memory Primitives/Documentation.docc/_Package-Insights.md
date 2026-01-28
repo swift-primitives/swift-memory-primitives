@@ -58,6 +58,29 @@ Once the field has the correct semantic type, the methods that use it no longer 
 
 ---
 
+## Stride Is a Ratio, Not a Count
+
+**Date**: 2026-01-27
+
+**Context**: Changing the stride parameter type in Memory.Address arithmetic.
+
+The original `advanced(by:stride:)` took `stride: Index<UInt8>.Count`. This is semantically incorrect. Stride isn't "a count of bytes"—it's "bytes per element," a ratio between the element domain and the byte domain. The distinction matters because ratios compose differently than counts.
+
+`Affine.Discrete.Ratio<Domain, UInt8>` is the mathematically correct type for stride. It expresses the conversion factor from elements to bytes. When multiplied with an element offset, it produces a byte offset:
+
+```swift
+let elementOffset: Index<Int32>.Offset = ...
+let byteOffset = elementOffset * Affine.Discrete.Ratio<Int32, UInt8>(4)
+```
+
+The type system now prevents mixing strides from different domains. You cannot accidentally multiply a `Index<Int32>.Offset` by a `Ratio<Int64, UInt8>`.
+
+Changing from `Count` to `Ratio` was a breaking API change. But the previous API was lying about its semantics. A count answers "how many?" A ratio answers "how many per unit?" The new signature tells the truth about what the parameter means.
+
+**Applies to**: `Memory.Address` stride parameters, strided arithmetic APIs, ratio vs count disambiguation.
+
+---
+
 ## Topics
 
 ### Related Documents
