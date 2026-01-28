@@ -116,7 +116,8 @@ extension Tagged where Tag == Memory, RawValue == Ordinal {
 
 
 // MARK: - Mutable Address Typealias
-extension Tagged where Tag == Memory.Address, RawValue == Ordinal {
+
+extension Tagged where Tag == Memory, RawValue == Ordinal {
     /// A mutable memory address.
     ///
     /// `Memory.Address.Mutable` has the same underlying representation as
