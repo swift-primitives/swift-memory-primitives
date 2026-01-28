@@ -204,7 +204,7 @@ extension Memory.Buffer.Mutable.Test.Integration {
         defer { buffer.deallocate() }
 
         unsafe buffer.withRebound(to: UInt32.self) { typedBuffer in
-            #expect(unsafe typedBuffer.count == 2)
+            #expect(typedBuffer.count == 2)
         }
     }
 

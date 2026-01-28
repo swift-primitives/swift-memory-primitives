@@ -230,7 +230,7 @@ extension Memory.Buffer.Test.Integration {
         unsafe values.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Buffer(rawBuffer)
             unsafe buffer.withRebound(to: UInt8.self) { typedBuffer in
-                #expect(unsafe typedBuffer.count == 8)
+                #expect(typedBuffer.count == 8)
             }
         }
     }

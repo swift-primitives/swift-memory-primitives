@@ -18,7 +18,7 @@ public import Range_Primitives
 /// See `_emptyBufferSentinelMutable` in Memory.Buffer.swift for invariants.
 @usableFromInline
 nonisolated(unsafe) let _emptyMutableBufferSentinel: UnsafeMutableRawPointer =
-    _emptyBufferSentinelMutable
+    unsafe _emptyBufferSentinelMutable
 
 extension Memory.Buffer {
     /// A mutable raw buffer with guaranteed non-null start address.

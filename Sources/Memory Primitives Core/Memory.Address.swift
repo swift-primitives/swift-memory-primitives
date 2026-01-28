@@ -10,7 +10,7 @@
 // ===----------------------------------------------------------------------===//
 
 public import Ordinal_Primitives
-public import Cardinal_Primitives
+import Cardinal_Primitives
 public import Affine_Primitives
 public import Identity_Primitives
 
