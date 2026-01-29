@@ -20,6 +20,21 @@ extension Memory {
     /// An address is an ordinal position in byte-addressable memory. The backing
     /// `Ordinal` stores the pointer's bit pattern as `UInt`.
     ///
+    /// ## Provenance Model
+    ///
+    /// This type uses an integer-address model. When a pointer is converted to
+    /// `Memory.Address`, it is stored as a raw integer bit pattern. Pointer
+    /// provenance—the compiler's tracking of which allocation a pointer may
+    /// access—is not preserved at this layer.
+    ///
+    /// This is a deliberate design choice. Integer addresses enable:
+    /// - Typed arithmetic with affine operators
+    /// - Cross-domain index scaling via `Affine.Discrete.Ratio`
+    /// - Phantom type safety via `Tagged<Memory, Ordinal>`
+    ///
+    /// Higher layers (e.g., `Pointer<T>`) that need provenance-safe access
+    /// should work with Swift's stdlib pointer types directly.
+    ///
     /// ## Arithmetic
     ///
     /// Address arithmetic comes from `Tagged<Tag, Ordinal>` extensions in Affine_Primitives:
