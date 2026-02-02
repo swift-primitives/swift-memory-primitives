@@ -91,7 +91,7 @@ extension Memory.Arena {
     public mutating func allocate(
         count: Memory.Address.Count,
         alignment: Memory.Address.Count
-    ) -> Memory.Mutable.Address? {
+    ) -> Memory.Address? {
         // Use rawValue (UInt) for bitwise alignment operations
         let alignValue = alignment.count.rawValue
         precondition(alignValue > 0 && (alignValue & (alignValue - 1)) == 0,

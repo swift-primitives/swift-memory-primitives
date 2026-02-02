@@ -18,18 +18,20 @@ extension Memory {
         public func allocate(
             count: Memory.Address.Count,
             alignment: Memory.Address.Count
-        ) throws(Never) -> Memory.Mutable.Address {
-            Memory.Mutable.Address.allocate(count: count, alignment: alignment)
+        ) throws(Never) -> Memory.Address {
+            unsafe Memory.Address(
+                UnsafeMutableRawPointer.allocate(count: count, alignment: alignment)
+            )
         }
 
         @inlinable
         public func deallocate(
-            _ address: Memory.Mutable.Address,
+            _ address: Memory.Address,
             count: Memory.Address.Count,
             alignment: Memory.Address.Count
         ) {
             // System allocator doesn't need count/alignment for deallocation
-            address.deallocate()
+            unsafe UnsafeMutableRawPointer(address).deallocate()
         }
     }
 }

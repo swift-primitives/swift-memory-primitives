@@ -48,11 +48,11 @@ extension Memory.Arithmetic.Basics {
     }
 
     @Test
-    func `Memory.Mutable.Address from UnsafeMutableRawPointer preserves identity`() {
+    func `Memory.Address from UnsafeMutableRawPointer preserves identity`() {
         var value: UInt64 = 0xCAFEBABE
         unsafe withUnsafeMutablePointer(to: &value) { ptr in
             let raw = UnsafeMutableRawPointer(ptr)
-            let address = unsafe Memory.Mutable.Address(raw)
+            let address = unsafe Memory.Address(raw)
             let back = unsafe UnsafeMutableRawPointer(address)
             #expect(unsafe back == raw)
         }
@@ -165,7 +165,7 @@ extension Memory.Arithmetic.Offset {
     func `Mutable address advances by offset`() {
         var values: [UInt8] = [0, 0, 0, 0, 0, 0, 0, 0]
         unsafe values.withUnsafeMutableBytes { rawBuffer in
-            let base = unsafe Memory.Mutable.Address(rawBuffer.baseAddress!)
+            let base = unsafe Memory.Address(rawBuffer.baseAddress!)
             let offset: Memory.Address.Offset = 4
             let advanced = try! base + offset
 
@@ -178,13 +178,13 @@ extension Memory.Arithmetic.Offset {
 
 extension Memory.Arithmetic.Distance {
     @Test
-    func `distance(to:) computes signed byte distance`() {
+    func `Subtraction computes signed byte distance`() {
         let values: [UInt8] = [0, 0, 0, 0, 0, 0, 0, 0]
         unsafe values.withUnsafeBytes { rawBuffer in
             let a = unsafe Memory.Address(rawBuffer.baseAddress!)
             let b = unsafe Memory.Address(rawBuffer.baseAddress!.advanced(by: 5))
 
-            let distance = a.distance(to: b)
+            let distance: Memory.Address.Offset = try! b - a
             #expect(distance == 5)
         }
     }
@@ -208,37 +208,38 @@ extension Memory.Arithmetic.Distance {
             let a = unsafe Memory.Address(rawBuffer.baseAddress!)
             let b = unsafe Memory.Address(rawBuffer.baseAddress!.advanced(by: 4))
 
-            let forward = a.distance(to: b)
-            let backward = b.distance(to: a)
+            let forward: Memory.Address.Offset = try! b - a
+            let backward: Memory.Address.Offset = try! a - b
 
             #expect(forward == -backward)
         }
     }
 
     @Test
-    func `Round-trip: address + distance(to: other) == other`() {
+    func `Round-trip: address + (other - address) == other`() {
         let values: [UInt8] = [0, 0, 0, 0, 0, 0, 0, 0]
         unsafe values.withUnsafeBytes { rawBuffer in
             let a = unsafe Memory.Address(rawBuffer.baseAddress!)
             let b = unsafe Memory.Address(rawBuffer.baseAddress!.advanced(by: 6))
 
-            let distance = a.distance(to: b)
-            let reconstructed = a + distance
+            let distance: Memory.Address.Offset = try! b - a
+            let reconstructed = try! a + distance
 
             #expect(reconstructed == b)
         }
     }
 
     @Test
-    func `Mutable distance matches immutable distance for same locations`() {
+    func `Distance between two addresses in same buffer`() {
         var values: [UInt8] = [0, 0, 0, 0, 0, 0, 0, 0]
         unsafe values.withUnsafeMutableBytes { rawBuffer in
-            let a = unsafe Memory.Mutable.Address(rawBuffer.baseAddress!)
-            let b = unsafe Memory.Mutable.Address(rawBuffer.baseAddress!.advanced(by: 3))
+            let a = unsafe Memory.Address(rawBuffer.baseAddress!)
+            let b = unsafe Memory.Address(rawBuffer.baseAddress!.advanced(by: 3))
 
-            let distance = a.distance(to: b)
+            // Use subtraction to get distance (b - a = offset from a to b)
+            let distance: Memory.Address.Offset = try! b - a
             #expect(distance == 3)
-            #expect(a + distance == b)
+            #expect(try! a + distance == b)
         }
     }
 }
@@ -291,8 +292,9 @@ extension Memory.Arithmetic.Count {
             return
         }
 
-        address.store(0xDEADBEEF, as: UInt64.self)
-        let loaded: UInt64 = address.read(as: UInt64.self)
+        let ptr = unsafe UnsafeMutableRawPointer(address)
+        unsafe ptr.storeBytes(of: UInt64(0xDEADBEEF), as: UInt64.self)
+        let loaded: UInt64 = unsafe ptr.load(as: UInt64.self)
         #expect(loaded == 0xDEADBEEF)
     }
 }
@@ -357,12 +359,13 @@ extension Memory.Arithmetic.Composition {
     func `Strided element access: base + index * stride → element address`() {
         var values: [UInt64] = [100, 200, 300, 400, 500]
         unsafe values.withUnsafeMutableBytes { rawBuffer in
-            let base: Memory.Mutable.Address = unsafe .init(rawBuffer.baseAddress!)
+            let base: Memory.Address = unsafe .init(rawBuffer.baseAddress!)
             let stride: Affine.Discrete.Ratio<UInt64, Memory> = .init(MemoryLayout<UInt64>.stride)
 
             for i in 0..<5 {
-                let address = base + Index<UInt64>.Offset(i) * stride
-                let value: UInt64 = address.read(as: UInt64.self)
+                let address = try! base + Index<UInt64>.Offset(i) * stride
+                let ptr = unsafe UnsafeRawPointer(address)
+                let value: UInt64 = unsafe ptr.load(as: UInt64.self)
                 #expect(value == UInt64((i + 1) * 100))
             }
         }
@@ -386,13 +389,15 @@ extension Memory.Arithmetic.Composition {
         let stride: Affine.Discrete.Ratio<Int, Memory> = .init(intStride)
 
         for i in 0..<count {
-            let address = base + Index<Int>.Offset(i) * stride
-            address.store(i * 11, as: Int.self)
+            let address = try! base + Index<Int>.Offset(i) * stride
+            let ptr = unsafe UnsafeMutableRawPointer(address)
+            unsafe ptr.storeBytes(of: i * 11, as: Int.self)
         }
 
         for i in 0..<count {
-            let address = base + Index<Int>.Offset(i) * stride
-            let value: Int = address.read(as: Int.self)
+            let address = try! base + Index<Int>.Offset(i) * stride
+            let ptr = unsafe UnsafeRawPointer(address)
+            let value: Int = unsafe ptr.load(as: Int.self)
             #expect(value == i * 11)
         }
     }
@@ -412,11 +417,14 @@ extension Memory.Arithmetic.Composition {
         let field0Offset: Memory.Address.Offset = 0
         let field1Offset: Memory.Address.Offset = 8
 
-        (base + field0Offset).store(0x12345678, as: UInt32.self)
-        (base + field1Offset).store(0xDEADBEEFCAFEBABE, as: UInt64.self)
+        let ptr0 = unsafe UnsafeMutableRawPointer(try! base + field0Offset)
+        let ptr1 = unsafe UnsafeMutableRawPointer(try! base + field1Offset)
 
-        let f0: UInt32 = (base + field0Offset).read(as: UInt32.self)
-        let f1: UInt64 = (base + field1Offset).read(as: UInt64.self)
+        unsafe ptr0.storeBytes(of: UInt32(0x12345678), as: UInt32.self)
+        unsafe ptr1.storeBytes(of: UInt64(0xDEADBEEFCAFEBABE), as: UInt64.self)
+
+        let f0: UInt32 = unsafe UnsafeRawPointer(ptr0).load(as: UInt32.self)
+        let f1: UInt64 = unsafe UnsafeRawPointer(ptr1).load(as: UInt64.self)
 
         #expect(f0 == 0x12345678)
         #expect(f1 == 0xDEADBEEFCAFEBABE)
@@ -437,16 +445,22 @@ extension Memory.Arithmetic.Composition {
             return
         }
 
+        // Use raw pointers for memory operations
+        let srcPtr = unsafe UnsafeMutableRawPointer(src)
+        let dstPtr = unsafe UnsafeMutableRawPointer(dst)
+
         for i in 0..<4 {
-            let address = src + Index<UInt64>.Offset(i) * stride
-            address.store(UInt64(i * 100 + 1), as: UInt64.self)
+            let address = try! src + Index<UInt64>.Offset(i) * stride
+            let ptr = unsafe UnsafeMutableRawPointer(address)
+            unsafe ptr.storeBytes(of: UInt64(i * 100 + 1), as: UInt64.self)
         }
 
-        dst.copy(from: Memory.Address(src), count: byteCount)
+        unsafe dstPtr.copyMemory(from: UnsafeRawPointer(srcPtr), byteCount: Int(bitPattern: byteCount.count))
 
         for i in 0..<4 {
-            let address = dst + Index<UInt64>.Offset(i) * stride
-            let value: UInt64 = address.read(as: UInt64.self)
+            let address = try! dst + Index<UInt64>.Offset(i) * stride
+            let ptr = unsafe UnsafeRawPointer(address)
+            let value: UInt64 = unsafe ptr.load(as: UInt64.self)
             #expect(value == UInt64(i * 100 + 1))
         }
     }
@@ -457,11 +471,13 @@ extension Memory.Arithmetic.Composition {
         let stride: Affine.Discrete.Ratio<UInt32, Memory> = .init(MemoryLayout<UInt32>.stride)
 
         unsafe data.withUnsafeMutableBytes { rawBuffer in
-            let base: Memory.Mutable.Address = unsafe .init(rawBuffer.baseAddress!)
+            let base: Memory.Address = unsafe .init(rawBuffer.baseAddress!)
             var sum: UInt32 = 0
 
             for i in 0..<8 {
-                sum += (base + Index<UInt32>.Offset(i) * stride).read(as: UInt32.self)
+                let addr = try! base + Index<UInt32>.Offset(i) * stride
+                let ptr = unsafe UnsafeRawPointer(addr)
+                sum += unsafe ptr.load(as: UInt32.self)
             }
 
             #expect(sum == 360)
@@ -474,11 +490,13 @@ extension Memory.Arithmetic.Composition {
         let stride: Affine.Discrete.Ratio<Int32, Memory> = .init(MemoryLayout<Int32>.stride)
 
         unsafe data.withUnsafeMutableBytes { rawBuffer in
-            let base: Memory.Mutable.Address = unsafe .init(rawBuffer.baseAddress!)
-            let mid: Memory.Mutable.Address = base + 4 * stride
+            let base: Memory.Address = unsafe .init(rawBuffer.baseAddress!)
+            let mid: Memory.Address = base + 4 * stride
 
-            let forward: Int32 = (mid + 2 * stride).read(as: Int32.self)
-            let backward: Int32 = (mid + -3 * stride).read(as: Int32.self)
+            let forwardAddr = mid + 2 * stride
+            let backwardAddr = try! mid - 3 * stride  // Use subtraction to go backward
+            let forward: Int32 = unsafe UnsafeRawPointer(forwardAddr).load(as: Int32.self)
+            let backward: Int32 = unsafe UnsafeRawPointer(backwardAddr).load(as: Int32.self)
 
             #expect(forward == 7)
             #expect(backward == 2)
@@ -504,7 +522,7 @@ extension Memory.Arithmetic.Composition {
         var arena: Memory.Arena = .init(capacity: 4096)
         let alignment: Memory.Address.Count = 64
 
-        guard let base: Memory.Mutable.Address = arena.allocate(count: totalBytes, alignment: alignment) else {
+        guard let base: Memory.Address = arena.allocate(count: totalBytes, alignment: alignment) else {
             Issue.record("Allocation failed")
             return
         }
@@ -512,10 +530,12 @@ extension Memory.Arithmetic.Composition {
         // Write to element 3 of cache line 1 (absolute element index = 8 + 3 = 11)
         let lineOffset: Memory.Address.Offset = 1 * lineToByte
         let elemOffset: Memory.Address.Offset = 3 * elementToByte
-        let target: Memory.Mutable.Address = base + lineOffset + elemOffset
+        let target: Memory.Address = try! base + lineOffset + elemOffset
 
-        target.store(0xBEEF, as: UInt64.self)
-        #expect(target.read(as: UInt64.self) == 0xBEEF)
+        // Use raw pointer for memory operations (addresses are positions, not capabilities)
+        let ptr = unsafe UnsafeMutableRawPointer(target)
+        unsafe ptr.storeBytes(of: UInt64(0xBEEF), as: UInt64.self)
+        #expect(unsafe ptr.load(as: UInt64.self) == 0xBEEF)
     }
 
     @Test
@@ -524,12 +544,14 @@ extension Memory.Arithmetic.Composition {
         let stride: Affine.Discrete.Ratio<UInt32, Memory> = .init(MemoryLayout<UInt32>.stride)
 
         unsafe data.withUnsafeMutableBytes { rawBuffer in
-            let base: Memory.Mutable.Address = unsafe .init(rawBuffer.baseAddress!)
+            let base: Memory.Address = unsafe .init(rawBuffer.baseAddress!)
 
             // Read every other element: indices 0, 2, 4, 6
             var evens: [UInt32] = []
             for i in Swift.stride(from: 0, to: 8, by: 2) {
-                let value: UInt32 = (base + Index.Offset(i) * stride).read(as: UInt32.self)
+                let addr: Memory.Address = try! base + Index.Offset(i) * stride
+                let ptr = unsafe UnsafeRawPointer(addr)
+                let value: UInt32 = unsafe ptr.load(as: UInt32.self)
                 evens.append(value)
             }
 

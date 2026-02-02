@@ -54,7 +54,7 @@ extension Memory.Buffer {
 
         /// Non-null start address. For empty buffers, points to sentinel.
         @usableFromInline
-        internal let _start: Memory.Mutable.Address
+        internal let _start: Memory.Address
 
         /// Byte count.
         @usableFromInline
@@ -64,7 +64,7 @@ extension Memory.Buffer {
 
         /// Creates a mutable buffer from a start address and byte count.
         @inlinable
-        public init(start: Memory.Mutable.Address, count: Memory.Address.Count) {
+        public init(start: Memory.Address, count: Memory.Address.Count) {
             self._start = start
             self._count = count
         }
@@ -72,7 +72,7 @@ extension Memory.Buffer {
         /// Creates an empty mutable buffer.
         @inlinable
         public init() {
-            unsafe self._start = Memory.Mutable.Address(_emptyMutableBufferSentinel)
+            unsafe self._start = Memory.Address(_emptyMutableBufferSentinel)
             self._count = .zero
         }
 
@@ -82,9 +82,9 @@ extension Memory.Buffer {
         @inlinable
         public init(_ buffer: UnsafeMutableRawBufferPointer) {
             if let baseAddress = buffer.baseAddress {
-                unsafe self._start = Memory.Mutable.Address(baseAddress)
+                unsafe self._start = Memory.Address(baseAddress)
             } else {
-                unsafe self._start = Memory.Mutable.Address(_emptyMutableBufferSentinel)
+                unsafe self._start = Memory.Address(_emptyMutableBufferSentinel)
             }
             self._count = Memory.Address.Count(UInt(buffer.count))
         }
@@ -99,7 +99,7 @@ extension Memory.Buffer.Mutable {
     /// - Note: For empty buffers, this points to a sentinel address.
     ///   Only access memory within `0..<count`.
     @inlinable
-    public var start: Memory.Mutable.Address { _start }
+    public var start: Memory.Address { _start }
 
     /// The number of bytes in the buffer.
     @inlinable
@@ -248,7 +248,7 @@ extension Memory.Buffer.Mutable {
     @inlinable
     public func extracting(_ bounds: Range.Lazy<Index<Memory>>) -> Self {
         // _start is always non-null (sentinel-backed), so pointer arithmetic is safe
-        let newStart = unsafe Memory.Mutable.Address(
+        let newStart = unsafe Memory.Address(
             UnsafeMutableRawPointer(_start).advanced(by: Int(bitPattern: bounds.start))
         )
         let newCount = bounds.count.retag(Memory.self)
@@ -291,7 +291,7 @@ extension Memory.Buffer.Mutable {
 
         // Compute new start using pointer arithmetic
         // _start is always non-null (sentinel-backed), so advanced(by:) is safe
-        let newStart = unsafe Memory.Mutable.Address(
+        let newStart = unsafe Memory.Address(
             UnsafeMutableRawPointer(_start).advanced(by: Int(bitPattern: start))
         )
         return Self(start: newStart, count: sliceCount)
@@ -324,7 +324,7 @@ extension Memory.Buffer.Mutable {
     /// Creates an immutable buffer from this mutable buffer.
     @inlinable
     public var immutable: Memory.Buffer {
-        Memory.Buffer(start: Memory.Address(_start), count: _count)
+        Memory.Buffer(start: _start, count: _count)
     }
 }
 

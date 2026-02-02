@@ -126,7 +126,7 @@ extension Memory.Arena.Test.EdgeCase {
     func multipleAllocations() {
         let capacity: Memory.Address.Count = 256
         var arena = Memory.Arena(capacity: capacity)
-        var allocations: [Memory.Mutable.Address] = []
+        var allocations: [Memory.Address] = []
 
         let count: Memory.Address.Count = 32
         let alignment: Memory.Address.Count = 8
@@ -185,8 +185,10 @@ extension Memory.Arena.Test.Integration {
             return
         }
 
-        address.store(42, as: Int.self)
-        let value: Int = address.read(as: Int.self)
+        // Use raw pointer for memory operations (addresses are positions, not capabilities)
+        let ptr = unsafe UnsafeMutableRawPointer(address)
+        unsafe ptr.storeBytes(of: 42, as: Int.self)
+        let value: Int = unsafe ptr.load(as: Int.self)
         #expect(value == 42)
     }
 
@@ -197,7 +199,7 @@ extension Memory.Arena.Test.Integration {
 
         let intCount: Memory.Address.Count = 8
         let intAlign: Memory.Address.Count = 8
-        guard let intAddr: Memory.Mutable.Address = arena.allocate(count: intCount, alignment: intAlign) else {
+        guard let intAddr: Memory.Address = arena.allocate(count: intCount, alignment: intAlign) else {
             Issue.record("Int allocation failed")
             return
         }
@@ -209,11 +211,15 @@ extension Memory.Arena.Test.Integration {
             return
         }
 
-        intAddr.store(123, as: Int.self)
-        doubleAddr.store(3.14159, as: Double.self)
+        // Use raw pointers for memory operations (addresses are positions, not capabilities)
+        let intPtr = unsafe UnsafeMutableRawPointer(intAddr)
+        let doublePtr = unsafe UnsafeMutableRawPointer(doubleAddr)
 
-        #expect(intAddr.read(as: Int.self) == 123)
-        #expect(doubleAddr.read(as: Double.self) == 3.14159)
+        unsafe intPtr.storeBytes(of: 123, as: Int.self)
+        unsafe doublePtr.storeBytes(of: 3.14159, as: Double.self)
+
+        #expect(unsafe intPtr.load(as: Int.self) == 123)
+        #expect(unsafe doublePtr.load(as: Double.self) == 3.14159)
     }
 
     @Test("reset allows reuse")
