@@ -221,60 +221,7 @@ extension Property where Tag == Memory.Mutable.Address.Assuming, Base == Memory.
     }
 }
 
-// MARK: - Pointer Arithmetic
 
-extension Tagged where Tag == Memory.Mutable, RawValue == Ordinal {
-    /// Returns an address offset by the specified number of bytes.
-    ///
-    /// - Parameter offset: The byte offset.
-    /// - Returns: A new address offset by the given bytes.
-    @inlinable
-    public func advanced(
-        by offset: Memory.Address.Offset
-    ) -> Self {
-        // Use ordinal arithmetic: add offset to the raw bits
-        let newBits = Int(bitPattern: rawValue.rawValue) &+ offset.rawValue.rawValue
-        return Self(__unchecked: (), Ordinal(UInt(bitPattern: newBits)))
-    }
-
-    /// Returns the distance in bytes from this address to another.
-    ///
-    /// - Parameter other: The target address.
-    /// - Returns: The byte offset between this address and `other`.
-    @inlinable
-    public func distance(
-        to other: Self
-    ) -> Memory.Address.Offset {
-        // Compute signed distance between addresses
-        let selfBits = Int(bitPattern: rawValue.rawValue)
-        let otherBits = Int(bitPattern: other.rawValue.rawValue)
-        return Memory.Address.Offset(otherBits &- selfBits)
-    }
-
-    /// Adds a byte offset to an address.
-    @inlinable
-    public static func + (lhs: Self, rhs: Memory.Address.Offset) -> Self {
-        lhs.advanced(by: rhs)
-    }
-
-    /// Adds a byte offset to an address.
-    @inlinable
-    public static func + (lhs: Memory.Address.Offset, rhs: Self) -> Self {
-        rhs.advanced(by: lhs)
-    }
-
-    /// Subtracts a byte offset from an address.
-    @inlinable
-    public static func - (lhs: Self, rhs: Memory.Address.Offset) -> Self {
-        lhs.advanced(by: -rhs)
-    }
-
-    /// Returns the byte distance between two addresses.
-    @inlinable
-    public static func - (lhs: Self, rhs: Self) -> Memory.Address.Offset {
-        rhs.distance(to: lhs)
-    }
-}
 
 // MARK: - Read and Store
 

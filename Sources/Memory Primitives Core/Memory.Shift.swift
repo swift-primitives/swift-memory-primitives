@@ -32,29 +32,14 @@ extension Memory {
         ///
         /// Always in range `0...63`.
         public let rawValue: UInt8
-
-        /// Maximum valid shift value (63 bits, covers UInt64).
-        public static let maxValue: UInt8 = 63
     }
 }
 
-// MARK: - Error
+// MARK: - Constants
 
 extension Memory.Shift {
-    /// Error from Shift operations.
-    public enum Error: Swift.Error, Sendable, Equatable {
-        /// The shift value was out of valid range.
-        case outOfRange(value: Int, max: UInt8)
-    }
-}
-
-extension Memory.Shift.Error: CustomStringConvertible {
-    public var description: String {
-        switch self {
-        case .outOfRange(let value, let max):
-            return "shift out of range (was \(value), valid: 0...\(max))"
-        }
-    }
+    /// Maximum valid shift value (63 bits, covers UInt64).
+    public static let maxValue: UInt8 = 63
 }
 
 // MARK: - Throwing Initializer

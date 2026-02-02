@@ -91,7 +91,7 @@ extension Memory.Arithmetic.Offset {
         unsafe values.withUnsafeBytes { rawBuffer in
             let base = unsafe Memory.Address(rawBuffer.baseAddress!)
             let offset: Memory.Address.Offset = 3
-            let advanced = base + offset
+            let advanced = try! base + offset
 
             #expect(advanced.rawValue.rawValue == base.rawValue.rawValue &+ 3)
         }
@@ -103,7 +103,7 @@ extension Memory.Arithmetic.Offset {
         unsafe values.withUnsafeBytes { rawBuffer in
             let base = unsafe Memory.Address(rawBuffer.baseAddress!.advanced(by: 4))
             let offset: Memory.Address.Offset = -2
-            let retreated = base + offset
+            let retreated = try! base + offset
 
             #expect(retreated.rawValue.rawValue == base.rawValue.rawValue &- 2)
         }
@@ -116,8 +116,8 @@ extension Memory.Arithmetic.Offset {
             let base = unsafe Memory.Address(rawBuffer.baseAddress!)
             let offset: Memory.Address.Offset = 5
 
-            let lhs = base + offset
-            let rhs = offset + base
+            let lhs = try! base + offset
+            let rhs = try! offset + base
 
             #expect(lhs == rhs)
         }
@@ -129,7 +129,7 @@ extension Memory.Arithmetic.Offset {
         unsafe values.withUnsafeBytes { rawBuffer in
             let base = unsafe Memory.Address(rawBuffer.baseAddress!.advanced(by: 4))
             let offset: Memory.Address.Offset = 3
-            let result = base - offset
+            let result = try! base - offset
 
             #expect(result.rawValue.rawValue == base.rawValue.rawValue &- 3)
         }
@@ -167,20 +167,9 @@ extension Memory.Arithmetic.Offset {
         unsafe values.withUnsafeMutableBytes { rawBuffer in
             let base = unsafe Memory.Mutable.Address(rawBuffer.baseAddress!)
             let offset: Memory.Address.Offset = 4
-            let advanced = base + offset
+            let advanced = try! base + offset
 
             #expect(advanced.rawValue.rawValue == base.rawValue.rawValue &+ 4)
-        }
-    }
-
-    @Test
-    func `advanced(by:) method matches + operator`() {
-        let values: [UInt8] = [1, 2, 3, 4, 5, 6, 7, 8]
-        unsafe values.withUnsafeBytes { rawBuffer in
-            let base = unsafe Memory.Address(rawBuffer.baseAddress!)
-            let offset: Memory.Address.Offset = 6
-
-            #expect(base.advanced(by: offset) == base + offset)
         }
     }
 }
@@ -207,7 +196,7 @@ extension Memory.Arithmetic.Distance {
             let a = unsafe Memory.Address(rawBuffer.baseAddress!)
             let b = unsafe Memory.Address(rawBuffer.baseAddress!.advanced(by: 7))
 
-            let distance = b - a
+            let distance = try! b - a
             #expect(distance == 7)
         }
     }
@@ -515,7 +504,7 @@ extension Memory.Arithmetic.Composition {
         var arena: Memory.Arena = .init(capacity: 4096)
         let alignment: Memory.Address.Count = 64
 
-        guard let base = arena.allocate(count: totalBytes, alignment: alignment) else {
+        guard let base: Memory.Mutable.Address = arena.allocate(count: totalBytes, alignment: alignment) else {
             Issue.record("Allocation failed")
             return
         }
@@ -523,7 +512,7 @@ extension Memory.Arithmetic.Composition {
         // Write to element 3 of cache line 1 (absolute element index = 8 + 3 = 11)
         let lineOffset: Memory.Address.Offset = 1 * lineToByte
         let elemOffset: Memory.Address.Offset = 3 * elementToByte
-        let target = base + lineOffset + elemOffset
+        let target: Memory.Mutable.Address = base + lineOffset + elemOffset
 
         target.store(0xBEEF, as: UInt64.self)
         #expect(target.read(as: UInt64.self) == 0xBEEF)
@@ -540,7 +529,7 @@ extension Memory.Arithmetic.Composition {
             // Read every other element: indices 0, 2, 4, 6
             var evens: [UInt32] = []
             for i in Swift.stride(from: 0, to: 8, by: 2) {
-                let value: UInt32 = (base + Index<UInt32>.Offset(i) * stride).read(as: UInt32.self)
+                let value: UInt32 = (base + Index.Offset(i) * stride).read(as: UInt32.self)
                 evens.append(value)
             }
 

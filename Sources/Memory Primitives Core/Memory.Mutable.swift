@@ -9,13 +9,11 @@
 //
 // ===----------------------------------------------------------------------===//
 
-/// Namespace for memory-related primitives.
-///
-/// Memory primitives provide fundamental abstractions for memory access patterns
-/// that other packages build upon.
-///
-/// ## Overview
-///
-/// - ``Memory/Contiguous``: Contiguous memory access patterns
-///   - ``Memory/Contiguous/Protocol``: Protocol for types with contiguous storage
-public enum Memory {}
+extension Memory {
+    /// Marker type for mutable memory addresses.
+    ///
+    /// Used as a phantom tag to distinguish `Memory.Mutable.Address` from
+    /// `Memory.Address`. Both are ordinal positions in memory, but the type
+    /// system tracks whether operations are permitted to mutate.
+    public enum Mutable {}
+}
