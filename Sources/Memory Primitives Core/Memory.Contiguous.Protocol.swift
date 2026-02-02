@@ -36,15 +36,15 @@ extension Memory.Contiguous {
     ///         mutating get { /* return mutable span */ }
     ///     }
     ///
-    ///     func withUnsafeBufferPointer<R>(
+    ///     func withUnsafeBufferPointer<R, E: Swift.Error>(
     ///         _ body: (UnsafeBufferPointer<Element>) throws -> R
-    ///     ) rethrows -> R {
+    ///     ) throws(E) -> R {
     ///         // provide unsafe access for C interop
     ///     }
     ///
-    ///     mutating func withUnsafeMutableBufferPointer<R>(
+    ///     mutating func withUnsafeMutableBufferPointer<R, E: Swift.Error>(
     ///         _ body: (inout UnsafeMutableBufferPointer<Element>) throws -> R
-    ///     ) rethrows -> R {
+    ///     ) throws(E) -> R {
     ///         // provide mutable unsafe access
     ///     }
     /// }

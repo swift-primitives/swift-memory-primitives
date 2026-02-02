@@ -308,11 +308,11 @@ extension Memory.Buffer.Mutable {
     ///   - body: A closure that receives the typed mutable buffer.
     /// - Returns: The return value of the closure.
     @inlinable
-    public func withRebound<T, Result>(
+    public func withRebound<T, Result, E: Swift.Error>(
         to type: T.Type,
-        _ body: (UnsafeMutableBufferPointer<T>) throws -> Result
-    ) rethrows -> Result {
-        try unsafe base.nullable.withMemoryRebound(to: type) { typedBuffer in
+        _ body: (UnsafeMutableBufferPointer<T>) throws(E) -> Result
+    ) throws(E) -> Result {
+        try unsafe base.nullable.withMemoryRebound(to: type) { typedBuffer throws(E) in
             try unsafe body(typedBuffer)
         }
     }

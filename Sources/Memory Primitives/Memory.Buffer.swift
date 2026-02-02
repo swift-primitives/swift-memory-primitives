@@ -226,11 +226,11 @@ extension Memory.Buffer {
     ///   - body: A closure that receives the typed buffer.
     /// - Returns: The return value of the closure.
     @inlinable
-    public func withRebound<T, Result>(
+    public func withRebound<T, Result, E: Swift.Error>(
         to type: T.Type,
-        _ body: (UnsafeBufferPointer<T>) throws -> Result
-    ) rethrows -> Result {
-        try unsafe base.nullable.withMemoryRebound(to: type) { typedBuffer in
+        _ body: (UnsafeBufferPointer<T>) throws(E) -> Result
+    ) throws(E) -> Result {
+        try unsafe base.nullable.withMemoryRebound(to: type) { typedBuffer throws(E) in
             try unsafe body(typedBuffer)
         }
     }
