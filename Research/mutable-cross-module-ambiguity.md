@@ -120,7 +120,7 @@ extension Tagged where RawValue == Tagged<Memory.Mutable, Ordinal>, Tag: ~Copyab
 
 **Result**: **CONFIRMED for library code, but REFUTED for consumers**
 - Library compiles
-- Consumers CANNOT write `Pointer<Int>.Mutable` in type annotations — the typealias definition itself uses `.Mutable` which is ambiguous when resolved
+- Consumers CANNOT write `Pointer<Int>.Mutator` in type annotations — the typealias definition itself uses `.Mutable` which is ambiguous when resolved
 
 ### 3.4 Variant D: Remove Pointer-Level Mutable Typealias Entirely
 
