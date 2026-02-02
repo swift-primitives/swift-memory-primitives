@@ -272,7 +272,7 @@ extension Tagged where Tag == Memory.Mutable, RawValue == Ordinal {
     /// Returns the byte distance between two addresses.
     @inlinable
     public static func - (lhs: Self, rhs: Self) -> Memory.Address.Offset {
-        lhs.distance(to: rhs)
+        rhs.distance(to: lhs)
     }
 }
 
