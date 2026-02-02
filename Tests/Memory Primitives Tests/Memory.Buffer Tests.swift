@@ -249,8 +249,8 @@ extension Memory.Buffer.Test.Performance {
             // Warmup
             for _ in 0..<10 {
                 var sum: UInt = 0
-                for i in 0..<Int(buffer.count.count.rawValue) {
-                    sum += UInt(buffer[try! Index<Memory>(i)])
+                (.zero..<buffer.count).forEach { idx in
+                    sum += UInt(buffer[idx])
                 }
                 _ = sum
             }
@@ -258,8 +258,8 @@ extension Memory.Buffer.Test.Performance {
             // Measured
             for _ in 0..<100 {
                 var sum: UInt = 0
-                for i in 0..<Int(buffer.count.count.rawValue) {
-                    sum += UInt(buffer[try! Index<Memory>(i)])
+                (.zero..<buffer.count).forEach { idx in
+                    sum += UInt(buffer[idx])
                 }
                 _ = sum
             }
