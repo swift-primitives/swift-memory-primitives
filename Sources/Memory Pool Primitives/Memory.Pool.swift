@@ -253,7 +253,7 @@ extension Memory.Pool {
         }
         _freeHead = 0
         _allocated = 0
-        _allocationBits.clearAll()
+        _allocationBits.clear.all()
     }
 }
 
