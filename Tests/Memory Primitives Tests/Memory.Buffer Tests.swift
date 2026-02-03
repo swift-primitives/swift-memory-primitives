@@ -24,15 +24,15 @@ extension Memory.Buffer {
 }
 
 extension Memory.Buffer.Test.Unit {
-    @Test("init creates empty buffer with sentinel")
-    func initEmpty() {
+    @Test
+    func `init creates empty buffer with sentinel`() {
         let buffer = Memory.Buffer()
         #expect(buffer.isEmpty)
         #expect(buffer.count == 0)
     }
 
-    @Test("init from start and count")
-    func initFromStartAndCount() {
+    @Test
+    func `init from start and count`() {
         let data: [UInt8] = [1, 2, 3, 4, 5]
         unsafe data.withUnsafeBufferPointer { ptr in
             guard let baseAddress = ptr.baseAddress else { return }
@@ -45,8 +45,8 @@ extension Memory.Buffer.Test.Unit {
         }
     }
 
-    @Test("init from UnsafeRawBufferPointer")
-    func initFromUnsafeRawBufferPointer() {
+    @Test
+    func `init from UnsafeRawBufferPointer`() {
         let data: [UInt8] = [10, 20, 30]
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Buffer(rawBuffer)
@@ -54,16 +54,16 @@ extension Memory.Buffer.Test.Unit {
         }
     }
 
-    @Test("init from empty UnsafeRawBufferPointer uses sentinel")
-    func initFromEmptyUnsafeRawBufferPointer() {
+    @Test
+    func `init from empty UnsafeRawBufferPointer uses sentinel`() {
         let emptyBuffer = unsafe UnsafeRawBufferPointer(start: nil, count: 0)
         let buffer = unsafe Memory.Buffer(emptyBuffer)
         #expect(buffer.isEmpty)
         #expect(buffer.count == 0)
     }
 
-    @Test("start property returns non-null address")
-    func startProperty() {
+    @Test
+    func `start property returns non-null address`() {
         let data: [UInt8] = [1, 2, 3]
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Buffer(rawBuffer)
@@ -72,8 +72,8 @@ extension Memory.Buffer.Test.Unit {
         }
     }
 
-    @Test("count property returns byte count")
-    func countProperty() {
+    @Test
+    func `count property returns byte count`() {
         let data: [UInt8] = [1, 2, 3, 4, 5, 6, 7]
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Buffer(rawBuffer)
@@ -81,14 +81,14 @@ extension Memory.Buffer.Test.Unit {
         }
     }
 
-    @Test("isEmpty returns true for empty buffer")
-    func isEmptyTrue() {
+    @Test
+    func `isEmpty returns true for empty buffer`() {
         let buffer = Memory.Buffer()
         #expect(buffer.isEmpty)
     }
 
-    @Test("isEmpty returns false for non-empty buffer")
-    func isEmptyFalse() {
+    @Test
+    func `isEmpty returns false for non-empty buffer`() {
         let data: [UInt8] = [1]
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Buffer(rawBuffer)
@@ -96,8 +96,8 @@ extension Memory.Buffer.Test.Unit {
         }
     }
 
-    @Test("subscript accesses byte at index")
-    func subscriptAccess() {
+    @Test
+    func `subscript accesses byte at index`() {
         let data: [UInt8] = [10, 20, 30, 40, 50]
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Buffer(rawBuffer)
@@ -111,8 +111,8 @@ extension Memory.Buffer.Test.Unit {
         }
     }
 
-    @Test("read loads value from buffer")
-    func read() {
+    @Test
+    func `read loads value from buffer`() {
         var value: UInt32 = 0x12345678
         unsafe withUnsafeBytes(of: &value) { rawBuffer in
             let buffer = unsafe Memory.Buffer(rawBuffer)
@@ -125,22 +125,22 @@ extension Memory.Buffer.Test.Unit {
 // MARK: - Edge Case Tests
 
 extension Memory.Buffer.Test.EdgeCase {
-    @Test("base.nullable returns nil for empty buffer (stdlib convention)")
-    func baseNullableEmpty() {
+    @Test
+    func `base.nullable returns nil for empty buffer (stdlib convention)`() {
         let buffer = Memory.Buffer()
         #expect(unsafe buffer.base.nullable.baseAddress == nil)
         #expect(unsafe buffer.base.nullable.count == 0)
     }
 
-    @Test("base.nonNull returns sentinel for empty buffer")
-    func baseNonNullEmpty() {
+    @Test
+    func `base.nonNull returns sentinel for empty buffer`() {
         let buffer = Memory.Buffer()
         #expect(unsafe buffer.base.nonNull.baseAddress != nil)
         #expect(unsafe buffer.base.nonNull.count == 0)
     }
 
-    @Test("slice returns nil for out-of-bounds offset")
-    func sliceOutOfBoundsOffset() {
+    @Test
+    func `slice returns nil for out-of-bounds offset`() {
         let data: [UInt8] = [1, 2, 3]
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Buffer(rawBuffer)
@@ -149,8 +149,8 @@ extension Memory.Buffer.Test.EdgeCase {
         }
     }
 
-    @Test("slice returns nil for out-of-bounds count")
-    func sliceOutOfBoundsCount() {
+    @Test
+    func `slice returns nil for out-of-bounds count`() {
         let data: [UInt8] = [1, 2, 3]
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Buffer(rawBuffer)
@@ -159,8 +159,8 @@ extension Memory.Buffer.Test.EdgeCase {
         }
     }
 
-    @Test("slice succeeds for valid bounds")
-    func sliceValid() {
+    @Test
+    func `slice succeeds for valid bounds`() {
         let data: [UInt8] = [1, 2, 3, 4, 5]
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Buffer(rawBuffer)
@@ -174,8 +174,8 @@ extension Memory.Buffer.Test.EdgeCase {
         }
     }
 
-    @Test("slice at offset 0 with full count returns equivalent buffer")
-    func sliceFullBuffer() {
+    @Test
+    func `slice at offset 0 with full count returns equivalent buffer`() {
         let data: [UInt8] = [1, 2, 3]
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Buffer(rawBuffer)
@@ -185,8 +185,8 @@ extension Memory.Buffer.Test.EdgeCase {
         }
     }
 
-    @Test("slice empty from empty buffer succeeds")
-    func sliceEmptyFromEmpty() {
+    @Test
+    func `slice empty from empty buffer succeeds`() {
         let buffer = Memory.Buffer()
         let slice = buffer.slice(start: 0, count: 0)
         #expect(slice != nil)
@@ -197,8 +197,8 @@ extension Memory.Buffer.Test.EdgeCase {
 // MARK: - Integration Tests
 
 extension Memory.Buffer.Test.Integration {
-    @Test("Equatable compares start and count")
-    func equatable() {
+    @Test
+    func `Equatable compares start and count`() {
         let data: [UInt8] = [1, 2, 3]
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer1 = unsafe Memory.Buffer(rawBuffer)
@@ -207,8 +207,8 @@ extension Memory.Buffer.Test.Integration {
         }
     }
 
-    @Test("Hashable produces consistent hash")
-    func hashable() {
+    @Test
+    func `Hashable produces consistent hash`() {
         let data: [UInt8] = [1, 2, 3]
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Buffer(rawBuffer)
@@ -216,16 +216,16 @@ extension Memory.Buffer.Test.Integration {
         }
     }
 
-    @Test("description includes start and count")
-    func description() {
+    @Test
+    func `description includes start and count`() {
         let buffer = Memory.Buffer()
         let desc = buffer.description
         #expect(desc.contains("Memory.Buffer"))
         #expect(desc.contains("count"))
     }
 
-    @Test("withRebound temporarily binds to different type")
-    func withRebound() {
+    @Test
+    func `withRebound temporarily binds to different type`() {
         let values: [UInt32] = [0x01020304, 0x05060708]
         unsafe values.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Buffer(rawBuffer)
@@ -239,8 +239,8 @@ extension Memory.Buffer.Test.Integration {
 // MARK: - Performance Tests
 
 extension Memory.Buffer.Test.Performance {
-    @Test("sequential read")
-    func sequentialRead() {
+    @Test
+    func `sequential read`() {
         let size = 10000
         let data = [UInt8](repeating: 42, count: size)
         unsafe data.withUnsafeBytes { rawBuffer in
@@ -266,8 +266,8 @@ extension Memory.Buffer.Test.Performance {
         }
     }
 
-    @Test("slice creation")
-    func sliceCreation() {
+    @Test
+    func `slice creation`() {
         let data = [UInt8](repeating: 0, count: 1000)
         unsafe data.withUnsafeBytes { rawBuffer in
             let buffer = unsafe Memory.Buffer(rawBuffer)

@@ -172,7 +172,7 @@ let scaled = offset * identity  // Still 42
 **Statement**: Compute element addresses as `base + index * stride`.
 
 ```swift
-let base: Memory.Mutable.Address = unsafe .init(rawBuffer.baseAddress!)
+let base: Memory.Address = unsafe .init(rawBuffer.baseAddress!)
 let stride: Affine.Discrete.Ratio<UInt64, Memory> = .init(MemoryLayout<UInt64>.stride)
 
 for i in 0..<5 {

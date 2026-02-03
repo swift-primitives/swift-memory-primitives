@@ -20,12 +20,16 @@ extension Memory {
     /// ## Invariants
     ///
     /// - Capacity is always > 0 (enforced at construction)
-    /// - `_buffer.start` is always non-null (sentinel-backed)
+    /// - `_storage` is always non-null
     @safe
     public struct Arena: ~Copyable {
         /// The backing storage.
         @usableFromInline
-        internal var _buffer: Buffer.Mutable
+        internal let _storage: UnsafeMutableRawPointer
+
+        /// Total capacity in bytes.
+        @usableFromInline
+        internal let _capacity: Memory.Address.Count
 
         /// Bytes currently allocated from the buffer.
         @usableFromInline
@@ -37,17 +41,18 @@ extension Memory {
         /// - Precondition: `capacity > .zero`
         @inlinable
         public init(capacity: Memory.Address.Count) {
-            precondition(capacity > .zero, "Arena capacity must be > 0")
-
-            self._buffer = Buffer.Mutable.allocate(
-                count: capacity,
-                alignment: Memory.Address.Count(UInt(MemoryLayout<Int>.alignment))
+            let alignment = MemoryLayout<Int>.alignment
+            let storage = UnsafeMutableRawPointer.allocate(
+                byteCount: Int(capacity.count.rawValue),
+                alignment: alignment
             )
+            unsafe self._storage = storage
+            self._capacity = capacity
             self._allocated = .zero
         }
 
         deinit {
-            _buffer.deallocate()
+            unsafe _storage.deallocate()
         }
     }
 }
@@ -57,7 +62,7 @@ extension Memory {
 extension Memory.Arena {
     /// The total capacity in bytes.
     @inlinable
-    public var capacity: Memory.Address.Count { _buffer.count }
+    public var capacity: Memory.Address.Count { _capacity }
 
     /// The number of bytes currently allocated.
     @inlinable
@@ -103,7 +108,7 @@ extension Memory.Arena {
 
         // Check if allocation fits (overflow-safe: use saturating add then compare)
         let (endAllocated, overflow) = alignedAllocated.addingReportingOverflow(count.count.rawValue)
-        guard !overflow, endAllocated <= capacity.count.rawValue else {
+        guard !overflow, endAllocated <= _capacity.count.rawValue else {
             return nil
         }
 
@@ -111,8 +116,9 @@ extension Memory.Arena {
         _allocated = Memory.Address.Count(Cardinal(endAllocated))
 
         // Return the allocated address
-        // Convert Count to Offset at boundary for pointer arithmetic
-        return _buffer.start + .init(alignedAllocated)
+        return unsafe Memory.Address(
+            _storage.advanced(by: Int(alignedAllocated))
+        )
     }
 }
 

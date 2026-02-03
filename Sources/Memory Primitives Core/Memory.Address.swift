@@ -11,7 +11,7 @@
 
 public import Ordinal_Primitives
 import Cardinal_Primitives
-public import Affine_Primitives
+import Affine_Primitives
 public import Identity_Primitives
 
 extension Memory {

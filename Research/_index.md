@@ -13,7 +13,7 @@ This directory consolidates all memory-related research from:
 | Document | Topic | Status |
 |----------|-------|--------|
 | memory-address-mutability.md | Address as capability vs position—resolved to position-only model | IMPLEMENTED |
-| buffer-base-nullability.md | `base` vs `baseNonNull` naming and API structure | DECISION |
+| ~~buffer-base-nullability.md~~ | Moved to `swift-storage-primitives/Research/` | — |
 | ordinal-cardinal-foundations.md | Foundational patterns for typed arithmetic (ordinals, cardinals, affine) | ANALYSIS |
 | affine-scaling-operations.md | Arithmetic patterns for memory operations | ANALYSIS |
 
@@ -44,12 +44,16 @@ This directory consolidates all memory-related research from:
 
 ## Buffer and Storage
 
-| Document | Topic | Status |
-|----------|-------|--------|
-| buffer-algebraic-structure.md | Algebraic modeling of buffer types | IN_PROGRESS |
-| storage-primitives-design.md | Core storage primitive design | IN_PROGRESS |
-| storage-primitives-first-principles.md | First-principles redesign of storage-primitives | IN_PROGRESS |
-| unified-storage-primitive.md | Unified storage primitive abstraction | RECOMMENDATION |
+Moved to `swift-storage-primitives/Research/`:
+
+| Document | New Location |
+|----------|-------------|
+| buffer-algebraic-structure.md | `swift-storage-primitives/Research/` |
+| buffer-base-nullability.md | `swift-storage-primitives/Research/` |
+| storage-primitives-design.md | `swift-storage-primitives/Research/` |
+| storage-primitives-first-principles.md | `swift-storage-primitives/Research/` |
+| unified-storage-primitive.md | `swift-storage-primitives/Research/` |
+| ring-buffer-index-arithmetic.md | `swift-storage-primitives/Research/` |
 
 ## Span and Contiguous Access
 
@@ -63,7 +67,7 @@ This directory consolidates all memory-related research from:
 | Document | Topic | Status |
 |----------|-------|--------|
 | typed-index-arithmetic-unification.md | Unifying typed index arithmetic patterns | DECISION |
-| ring-buffer-index-arithmetic.md | Type-safe modular arithmetic for ring buffer indices | IN_PROGRESS |
+| ~~ring-buffer-index-arithmetic.md~~ | Moved to `swift-storage-primitives/Research/` | — |
 | Index Type Safety Audit.md | Comprehensive audit of index type safety | ANALYSIS |
 | Typed Index Integration Audit.md | Integration audit for typed indices | ANALYSIS |
 | Input Index Bit Analysis.md | Bit-level analysis of index types | ANALYSIS |

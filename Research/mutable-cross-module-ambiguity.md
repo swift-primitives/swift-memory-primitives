@@ -20,7 +20,7 @@ satisfaction, producing `ambiguous type name 'Mutable'` in every file that refer
 
 Eight variants (A-H) were tested. **Variant H is the confirmed solution**: move the mutable
 address typealias from a `Tagged` extension to the `Memory.Mutable` enum, making it
-`Memory.Mutable.Address` instead of `Memory.Address.Mutable`. This ensures only ONE `Mutable`
+`Memory.Address` instead of `Memory.Address.Mutable`. This ensures only ONE `Mutable`
 exists on any `Tagged` extension (`Pointer<T>.Mutable`), eliminating the collision.
 
 ---
@@ -148,7 +148,7 @@ extension Tagged where RawValue == Tagged<Memory.Mutable, Ordinal>, Tag: ~Copyab
 
 ### 3.8 Variant H: Move Typealias to Memory.Mutable Enum
 
-**Hypothesis**: If `Memory.Mutable.Address` is a typealias on the `Memory.Mutable` enum (NOT on a Tagged extension), then `Pointer<T>.Mutable` is the ONLY `Mutable` on any Tagged extension. No collision possible.
+**Hypothesis**: If `Memory.Address` is a typealias on the `Memory.Mutable` enum (NOT on a Tagged extension), then `Pointer<T>.Mutable` is the ONLY `Mutable` on any Tagged extension. No collision possible.
 
 **Definition**:
 ```swift
@@ -159,11 +159,11 @@ extension Memory.Mutable {
 
 // PointerLayer: only Mutable on any Tagged extension
 extension Tagged where RawValue == Memory.Address, Tag: ~Copyable {
-    public typealias Mutable = Tagged<Tag, Memory.Mutable.Address>
+    public typealias Mutable = Tagged<Tag, Memory.Address>
 }
 
-// Extensions use Memory.Mutable.Address in constraints
-extension Tagged where RawValue == Memory.Mutable.Address, Tag: ~Copyable {
+// Extensions use Memory.Address in constraints
+extension Tagged where RawValue == Memory.Address, Tag: ~Copyable {
     // all operations...
 }
 ```
@@ -189,10 +189,10 @@ All 7 consumer tests pass:
 The resolution path for `Pointer<T>.Mutable` under Variant H:
 
 1. `Pointer<T>` -> `Tagged<T, Memory.Address>` (typealias on `Memory` enum)
-2. `.Mutable` -> finds `Mutable` on `Tagged where RawValue == Memory.Address` -> `Tagged<T, Memory.Mutable.Address>`
+2. `.Mutable` -> finds `Mutable` on `Tagged where RawValue == Memory.Address` -> `Tagged<T, Memory.Address>`
 3. Only ONE `Mutable` exists on any `Tagged` extension, so no ambiguity
 
-The resolution path for `Memory.Mutable.Address`:
+The resolution path for `Memory.Address`:
 
 1. `Memory.Mutable` -> the enum (member of `Memory` enum, NOT on Tagged)
 2. `.Address` -> typealias on `Memory.Mutable` enum -> `Tagged<Memory.Mutable, Ordinal>`
@@ -212,8 +212,8 @@ now the only `Mutable` there.
 |------|--------|--------|
 | `Memory.swift` | Added `extension Memory.Mutable { public typealias Address = ... }` | Done |
 | `Memory.Address.swift` | Removed `Mutable` typealias from `Tagged where Tag == Memory` extension | Done |
-| `Memory.Address.Mutable.swift` -> `Memory.Mutable.Address.swift` | Renamed file, updated all `Memory.Address.Mutable` refs | Done |
-| `Memory.Address.Buffer.Mutable.swift` | Updated `Memory.Address.Mutable` -> `Memory.Mutable.Address` | Done |
+| `Memory.Address.Mutable.swift` -> `Memory.Address.swift` | Renamed file, updated all `Memory.Address.Mutable` refs | Done |
+| `Memory.Address.Buffer.Mutable.swift` | Updated `Memory.Address.Mutable` -> `Memory.Address` | Done |
 | `Memory.Allocator.Protocol.swift` | Updated refs | Done |
 | `Memory.Allocator.swift` | Updated refs | Done |
 | `Memory.Arena.swift` | Updated `Address.Mutable` -> `Mutable.Address` (short form in Memory extension) | Done |
@@ -225,11 +225,11 @@ now the only `Mutable` there.
 
 | File | Change | Status |
 |------|--------|--------|
-| `Pointer.swift` | Updated `Mutable` typealias to use `Memory.Mutable.Address` | Done |
-| `Pointer.Mutable.swift` | Changed constraints from `Tagged<Memory.Mutable, Ordinal>` to `Memory.Mutable.Address`; updated body refs | Done |
+| `Pointer.swift` | Updated `Mutable` typealias to use `Memory.Address` | Done |
+| `Pointer.Mutable.swift` | Changed constraints from `Tagged<Memory.Mutable, Ordinal>` to `Memory.Address`; updated body refs | Done |
 | `Pointer+Range.swift` | Updated constraint and return type | Done |
 | `Pointer.Mutable+Allocator.swift` | Updated constraint | Done |
-| `Pointer.Mutable+Strided.swift` | Changed to `extension Memory.Mutable.Address` | Done |
+| `Pointer.Mutable+Strided.swift` | Changed to `extension Memory.Address` | Done |
 | `Pointer.Buffer.Mutable.swift` | Updated `Memory.Address.Buffer.Mutable` -> `Memory.Buffer.Mutable` | Done |
 
 ### Phase 3: Buffer Ambiguity (COMPLETED)
@@ -277,10 +277,10 @@ extension Memory {
 3. The fix is structural: ensure each name exists on at most ONE `Tagged` extension, by moving alternatives to enum namespaces
 4. Final type hierarchy after migration:
    - `Memory.Address` = `Tagged<Memory, Ordinal>` (unchanged)
-   - `Memory.Mutable.Address` = `Tagged<Memory.Mutable, Ordinal>` (was `Memory.Address.Mutable`)
+   - `Memory.Address` = `Tagged<Memory.Mutable, Ordinal>` (was `Memory.Address.Mutable`)
    - `Memory.Buffer` = struct on `Memory` enum (was `Memory.Address.Buffer`)
    - `Memory.Buffer.Mutable` = struct nested in `Memory.Buffer` (was `Memory.Address.Buffer.Mutable`)
    - `Pointer<T>` = `Tagged<T, Memory.Address>` (unchanged)
-   - `Pointer<T>.Mutable` = `Tagged<T, Memory.Mutable.Address>` (was `Tagged<T, Memory.Address.Mutable>`)
+   - `Pointer<T>.Mutable` = `Tagged<T, Memory.Address>` (was `Tagged<T, Memory.Address.Mutable>`)
    - `Pointer<T>.Buffer` = struct on `Tagged where RawValue == Memory.Address` (unchanged)
    - `Pointer<T>.Buffer.Mutable` = struct nested in `Pointer<T>.Buffer` (unchanged)

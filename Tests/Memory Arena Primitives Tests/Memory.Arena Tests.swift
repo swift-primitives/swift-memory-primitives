@@ -26,8 +26,8 @@ extension Memory.Arena {
 // MARK: - Unit Tests
 
 extension Memory.Arena.Test.Unit {
-    @Test("init creates arena with specified capacity")
-    func initWithCapacity() {
+    @Test
+    func `init creates arena with specified capacity`() {
         let capacity: Memory.Address.Count = 1024
         let arena = Memory.Arena(capacity: capacity)
         #expect(arena.capacity.rawValue == 1024)
@@ -35,8 +35,8 @@ extension Memory.Arena.Test.Unit {
         #expect(arena.remaining.rawValue == 1024)
     }
 
-    @Test("allocate returns address for valid request")
-    func allocateValid() {
+    @Test
+    func `allocate returns address for valid request`() {
         let capacity: Memory.Address.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
         let count: Memory.Address.Count = 100
@@ -45,8 +45,8 @@ extension Memory.Arena.Test.Unit {
         #expect(address != nil)
     }
 
-    @Test("allocate updates offset")
-    func allocateUpdatesOffset() {
+    @Test
+    func `allocate updates offset`() {
         let capacity: Memory.Address.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
         let count: Memory.Address.Count = 100
@@ -55,15 +55,15 @@ extension Memory.Arena.Test.Unit {
         #expect(arena.allocated.rawValue >= 100)
     }
 
-    @Test("capacity property returns total capacity")
-    func capacityProperty() {
+    @Test
+    func `capacity property returns total capacity`() {
         let capacity: Memory.Address.Count = 2048
         let arena = Memory.Arena(capacity: capacity)
         #expect(arena.capacity.rawValue == 2048)
     }
 
-    @Test("remaining decreases after allocation")
-    func remainingDecreases() {
+    @Test
+    func `remaining decreases after allocation`() {
         let capacity: Memory.Address.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
         let initialRemaining = arena.remaining.rawValue
@@ -75,8 +75,8 @@ extension Memory.Arena.Test.Unit {
         #expect(arena.remaining.rawValue < initialRemaining)
     }
 
-    @Test("reset restores full capacity")
-    func reset() {
+    @Test
+    func `reset restores full capacity`() {
         let capacity: Memory.Address.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
 
@@ -94,8 +94,8 @@ extension Memory.Arena.Test.Unit {
 // MARK: - Edge Case Tests
 
 extension Memory.Arena.Test.EdgeCase {
-    @Test("allocate returns nil when insufficient space")
-    func allocateInsufficientSpace() {
+    @Test
+    func `allocate returns nil when insufficient space`() {
         let capacity: Memory.Address.Count = 100
         var arena = Memory.Arena(capacity: capacity)
         let count: Memory.Address.Count = 200
@@ -104,8 +104,8 @@ extension Memory.Arena.Test.EdgeCase {
         #expect(address == nil)
     }
 
-    @Test("allocate respects alignment")
-    func allocateAlignment() {
+    @Test
+    func `allocate respects alignment`() {
         let capacity: Memory.Address.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
 
@@ -122,8 +122,8 @@ extension Memory.Arena.Test.EdgeCase {
         #expect(address != nil)
     }
 
-    @Test("multiple allocations succeed until exhausted")
-    func multipleAllocations() {
+    @Test
+    func `multiple allocations succeed until exhausted`() {
         let capacity: Memory.Address.Count = 256
         var arena = Memory.Arena(capacity: capacity)
         var allocations: [Memory.Address] = []
@@ -137,8 +137,8 @@ extension Memory.Arena.Test.EdgeCase {
         #expect(allocations.count >= 4)
     }
 
-    @Test("allocate zero bytes succeeds")
-    func allocateZeroBytes() {
+    @Test
+    func `allocate zero bytes succeeds`() {
         let capacity: Memory.Address.Count = 100
         var arena = Memory.Arena(capacity: capacity)
         let count: Memory.Address.Count = 0
@@ -147,8 +147,8 @@ extension Memory.Arena.Test.EdgeCase {
         #expect(address != nil)
     }
 
-    @Test("allocate exactly capacity succeeds")
-    func allocateExactCapacity() {
+    @Test
+    func `allocate exactly capacity succeeds`() {
         let capacity: Memory.Address.Count = 64
         var arena = Memory.Arena(capacity: capacity)
         let count: Memory.Address.Count = 64
@@ -157,8 +157,8 @@ extension Memory.Arena.Test.EdgeCase {
         #expect(address != nil)
     }
 
-    @Test("allocate after exact capacity returns nil")
-    func allocateAfterExact() {
+    @Test
+    func `allocate after exact capacity returns nil`() {
         let capacity: Memory.Address.Count = 64
         var arena = Memory.Arena(capacity: capacity)
         let count: Memory.Address.Count = 64
@@ -174,8 +174,8 @@ extension Memory.Arena.Test.EdgeCase {
 // MARK: - Integration Tests
 
 extension Memory.Arena.Test.Integration {
-    @Test("allocated memory is usable")
-    func allocatedMemoryUsable() {
+    @Test
+    func `allocated memory is usable`() {
         let capacity: Memory.Address.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
         let count: Memory.Address.Count = 8
@@ -192,8 +192,8 @@ extension Memory.Arena.Test.Integration {
         #expect(value == 42)
     }
 
-    @Test("multiple typed allocations")
-    func multipleTypedAllocations() {
+    @Test
+    func `multiple typed allocations`() {
         let capacity: Memory.Address.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
 
@@ -222,8 +222,8 @@ extension Memory.Arena.Test.Integration {
         #expect(unsafe doublePtr.load(as: Double.self) == 3.14159)
     }
 
-    @Test("reset allows reuse")
-    func resetAllowsReuse() {
+    @Test
+    func `reset allows reuse`() {
         let capacity: Memory.Address.Count = 100
         var arena = Memory.Arena(capacity: capacity)
 
@@ -241,8 +241,8 @@ extension Memory.Arena.Test.Integration {
 // MARK: - Performance Tests
 
 extension Memory.Arena.Test.Performance {
-    @Test("many small allocations")
-    func manySmallAllocations() {
+    @Test
+    func `many small allocations`() {
         let capacity: Memory.Address.Count = 1048576
         let count: Memory.Address.Count = 64
         let alignment: Memory.Address.Count = 8
@@ -264,8 +264,8 @@ extension Memory.Arena.Test.Performance {
         }
     }
 
-    @Test("allocate and reset cycle")
-    func allocateResetCycle() {
+    @Test
+    func `allocate and reset cycle`() {
         let capacity: Memory.Address.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
         let count: Memory.Address.Count = 8
