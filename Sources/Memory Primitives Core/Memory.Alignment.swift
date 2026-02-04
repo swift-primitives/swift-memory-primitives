@@ -179,28 +179,6 @@ extension Memory.Alignment {
         let mask: Scalar = shift.mask()
         return value & mask == 0
     }
-
-    /// Rounds an integer value up to the nearest alignment boundary.
-    ///
-    /// - Parameter value: The value to align.
-    /// - Returns: The aligned value (>= input).
-    /// - Precondition: `shift < Scalar.bitWidth`
-    @inlinable
-    public func alignUp<Scalar: FixedWidthInteger>(_ value: Scalar) -> Scalar {
-        let mask: Scalar = shift.mask()
-        return (value &+ mask) & ~mask
-    }
-
-    /// Rounds an integer value down to the nearest alignment boundary.
-    ///
-    /// - Parameter value: The value to align.
-    /// - Returns: The aligned value (<= input).
-    /// - Precondition: `shift < Scalar.bitWidth`
-    @inlinable
-    public func alignDown<Scalar: FixedWidthInteger>(_ value: Scalar) -> Scalar {
-        let mask: Scalar = shift.mask()
-        return value & ~mask
-    }
 }
 
 // MARK: - Comparable

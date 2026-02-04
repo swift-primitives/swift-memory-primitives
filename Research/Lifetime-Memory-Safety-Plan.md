@@ -34,7 +34,7 @@ This document records the experiment-driven investigation into Swift's lifetime 
 
 **Test**:
 ```swift
-extension Span where Element: ~Copyable {
+extension Swift.Span where Element: ~Copyable {
     @_lifetime(immortal)
     init(testStart start: UnsafePointer<Element>, testCount count: Int) {
         unsafe self.init(_unsafeStart: start, count: count)
@@ -56,10 +56,13 @@ error: lifetime-dependent variable 'self' escapes its scope
 
 **Test**:
 ```swift
-extension Span where Element: ~Copyable {
+extension Swift.Span where Element: ~Copyable {
     @_lifetime(immortal)
     init(wrapperStart start: PointerWrapper<Element>, wrapperCount count: Int) {
-        let span = unsafe Span(_unsafeStart: start.base, count: count)
+        let span = unsafe Swift.Span
+unsafe Swift.Span
+unsafe Swift.Span
+unsafe Swift.Span(_unsafeStart: start.base, count: count)
         self = unsafe _overrideLifetime(span, borrowing: ())
     }
 }
@@ -82,11 +85,14 @@ Array after modification: [999, 20, 30]
 ### 3.1 For Span Extensions
 
 ```swift
-extension Span where Element: ~Copyable {
+extension Swift.Span where Element: ~Copyable {
     @_lifetime(immortal)
     @inlinable
     public init(_unsafeStart start: Pointer<Element>, count: Int) {
-        let span = unsafe Span(_unsafeStart: start.base, count: count)
+        let span = unsafe Swift.Span
+unsafe Swift.Span
+unsafe Swift.Span
+unsafe Swift.Span(_unsafeStart: start.base, count: count)
         self = unsafe _overrideLifetime(span, borrowing: ())
     }
 }
@@ -95,11 +101,11 @@ extension Span where Element: ~Copyable {
 ### 3.2 For MutableSpan Extensions
 
 ```swift
-extension MutableSpan where Element: ~Copyable {
+extension Swift.MutableSpan where Element: ~Copyable {
     @_lifetime(immortal)
     @inlinable
     public init(_unsafeStart start: Pointer<Element>.Mutable, count: Int) {
-        let span = unsafe MutableSpan(_unsafeStart: start.base, count: count)
+        let span = unsafe Swift.MutableSpan(_unsafeStart: start.base, count: count)
         self = unsafe _overrideLifetime(span, borrowing: ())
     }
 }
@@ -110,7 +116,10 @@ extension MutableSpan where Element: ~Copyable {
 | Component | Required | Purpose |
 |-----------|----------|---------|
 | `@_lifetime(immortal)` | Yes | Declares no external lifetime dependency |
-| `let span = unsafe Span(...)` | Yes | Create intermediate span |
+| `let span = unsafe Swift.Span
+unsafe Swift.Span
+unsafe Swift.Span
+unsafe Swift.Span(...)` | Yes | Create intermediate span |
 | `self = unsafe _overrideLifetime(span, borrowing: ())` | Yes | Override inferred dependency |
 | `borrowing: ()` | Yes | Unit type signals "immortal" (no dependency) |
 

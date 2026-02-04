@@ -347,7 +347,10 @@ One might consider adding an internal initializer that bypasses lifetime checkin
 @inlinable
 @_lifetime(immortal)
 internal init(_unsafeStart pointer: UnsafePointer<UInt8>, count: Int) {
-    self.span = unsafe Span(_unsafeStart: pointer, count: count)
+    self.span = unsafe Swift.Span
+unsafe Swift.Span
+unsafe Swift.Span
+unsafe Swift.Span(_unsafeStart: pointer, count: count)
     self.position = 0
 }
 ```

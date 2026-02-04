@@ -42,7 +42,7 @@ When interfacing with stdlib APIs, conversions are required:
 ```swift
 // Current: Explicit .base at every call site
 return unsafe Swift.Span(_unsafeStart: _cachedPtr.base, count: count)
-return unsafe MutableSpan(_unsafeStart: _cachedPtr.base, count: count)
+return unsafe Swift.MutableSpan(_unsafeStart: _cachedPtr.base, count: count)
 return unsafe UnsafeBufferPointer(start: _cachedPtr.base, count: count)
 ```
 
@@ -56,7 +56,7 @@ This creates:
 ```swift
 // Goal: Direct use of our types at stdlib boundaries
 return unsafe Swift.Span(_unsafeStart: _cachedPtr, count: count)
-return unsafe MutableSpan(_unsafeStart: _cachedPtr, count: count)
+return unsafe Swift.MutableSpan(_unsafeStart: _cachedPtr, count: count)
 return unsafe UnsafeBufferPointer(start: _cachedPtr, count: count)
 ```
 
@@ -195,12 +195,12 @@ extension Pointer.Mutable: ExpressibleByPointer {
 │  │   init(start: Pointer<Element>.Mutable?, count: Int)        ││
 │  │ }                                                           ││
 │  ├─────────────────────────────────────────────────────────────┤│
-│  │ extension Span {                                            ││
+│  │ extension Swift.Span {                                            ││
 │  │   init(_unsafeStart: Pointer<Element>, count: Int)          ││
 │  │   init(_unsafeStart: Pointer<Element>.Mutable, count: Int)  ││
 │  │ }                                                           ││
 │  ├─────────────────────────────────────────────────────────────┤│
-│  │ extension MutableSpan {                                     ││
+│  │ extension Swift.MutableSpan {                                     ││
 │  │   init(_unsafeStart: Pointer<Element>.Mutable, count: Int)  ││
 │  │ }                                                           ││
 │  └─────────────────────────────────────────────────────────────┘│
@@ -286,7 +286,7 @@ extension UnsafeMutableBufferPointer {
 #### 3.2.3 Span Extensions
 
 ```swift
-extension Span {
+extension Swift.Span {
     /// Creates a span from a primitives Pointer and count.
     ///
     /// - Parameters:
@@ -316,7 +316,7 @@ extension Span {
 #### 3.2.4 MutableSpan Extensions
 
 ```swift
-extension MutableSpan {
+extension Swift.MutableSpan {
     /// Creates a mutable span from a primitives Mutable Pointer and count.
     ///
     /// - Parameters:
