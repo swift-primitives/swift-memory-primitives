@@ -146,10 +146,10 @@ extension Memory.Buffer.Mutable {
     @inlinable
     public subscript(index: Index<Memory>) -> UInt8 {
         get {
-            unsafe UnsafeMutableRawPointer(_start).load(fromByteOffset: Int(bitPattern: index), as: UInt8.self)
+            unsafe UnsafeMutableRawPointer(_start).load(fromByteOffset: index, as: UInt8.self)
         }
         nonmutating set {
-            unsafe UnsafeMutableRawPointer(_start).storeBytes(of: newValue, toByteOffset: Int(bitPattern: index), as: UInt8.self)
+            unsafe UnsafeMutableRawPointer(_start).storeBytes(of: newValue, toByteOffset: index, as: UInt8.self)
         }
     }
 }
@@ -249,7 +249,7 @@ extension Memory.Buffer.Mutable {
     public func extracting(_ bounds: Range.Lazy<Index<Memory>>) -> Self {
         // _start is always non-null (sentinel-backed), so pointer arithmetic is safe
         let newStart = unsafe Memory.Address(
-            UnsafeMutableRawPointer(_start).advanced(by: Int(bitPattern: bounds.start))
+            UnsafeMutableRawPointer(_start).advanced(by: bounds.start)
         )
         let newCount = bounds.count.retag(Memory.self)
         return Self(start: newStart, count: newCount)
@@ -292,7 +292,7 @@ extension Memory.Buffer.Mutable {
         // Compute new start using pointer arithmetic
         // _start is always non-null (sentinel-backed), so advanced(by:) is safe
         let newStart = unsafe Memory.Address(
-            UnsafeMutableRawPointer(_start).advanced(by: Int(bitPattern: start))
+            UnsafeMutableRawPointer(_start).advanced(by: start)
         )
         return Self(start: newStart, count: sliceCount)
     }

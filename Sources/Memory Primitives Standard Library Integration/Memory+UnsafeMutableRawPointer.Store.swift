@@ -6,6 +6,7 @@
 //
 
 import Property_Primitives
+public import Memory_Primitives_Core
 
 // MARK: - Tag Type
 

@@ -137,7 +137,7 @@ extension Memory.Buffer {
     /// Accesses the byte at the given index.
     @inlinable
     public subscript(index: Index<Memory>) -> UInt8 {
-        unsafe UnsafeRawPointer(_start).load(fromByteOffset: Int(bitPattern: index), as: UInt8.self)
+        unsafe UnsafeRawPointer(_start).load(fromByteOffset: index, as: UInt8.self)
     }
 }
 
@@ -167,7 +167,7 @@ extension Memory.Buffer {
     public func extracting(_ bounds: Range.Lazy<Index<Memory>>) -> Self {
         // _start is always non-null (sentinel-backed), so pointer arithmetic is safe
         let newStart = unsafe Memory.Address(
-            UnsafeRawPointer(_start).advanced(by: Int(bitPattern: bounds.start))
+            UnsafeRawPointer(_start).advanced(by: bounds.start)
         )
         let newCount = bounds.count.retag(Memory.self)
         return Self(start: newStart, count: newCount)
@@ -210,7 +210,7 @@ extension Memory.Buffer {
         // Compute new start using pointer arithmetic
         // _start is always non-null (sentinel-backed), so advanced(by:) is safe
         let newStart = unsafe Memory.Address(
-            UnsafeRawPointer(_start).advanced(by: Int(bitPattern: start))
+            UnsafeRawPointer(_start).advanced(by: start)
         )
         return Self(start: newStart, count: sliceCount)
     }

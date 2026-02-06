@@ -7,7 +7,7 @@
 
 // MARK: - UnsafeMutableRawPointer + Index
 
-import Memory_Primitives_Core
+public import Memory_Primitives_Core
 
 extension UnsafeMutableRawPointer {
     /// Allocates uninitialized memory with typed count and alignment.

@@ -7,6 +7,8 @@
 
 // MARK: - UnsafeMutableRawBufferPointer + Index
 
+public import Memory_Primitives_Core
+
 extension UnsafeMutableRawBufferPointer {
     /// Creates a mutable buffer pointer from a start address and typed count.
     ///

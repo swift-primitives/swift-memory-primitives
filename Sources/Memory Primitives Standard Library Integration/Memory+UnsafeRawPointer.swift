@@ -9,6 +9,8 @@
 //
 // ===----------------------------------------------------------------------===//
 
+public import Memory_Primitives_Core
+
 // MARK: - UnsafeRawPointer + Index
 
 extension UnsafeRawPointer {

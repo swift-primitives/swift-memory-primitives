@@ -5,6 +5,8 @@
 //  Created by Coen ten Thije Boonkkamp on 27/01/2026.
 //
 
+public import Memory_Primitives_Core
+
 // MARK: - UnsafeRawBufferPointer + Index
 
 extension UnsafeRawBufferPointer {
