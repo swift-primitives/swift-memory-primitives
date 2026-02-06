@@ -10,12 +10,21 @@
 // ===----------------------------------------------------------------------===//
 
 extension Memory.Contiguous {
-    /// Protocol for types providing contiguous memory access.
+    /// Protocol for types providing contiguous memory read access.
     ///
-    /// Conforming types provide safe, bounds-checked access to contiguous storage
-    /// via ``span`` and ``mutableSpan`` properties, plus unsafe escape hatches
-    /// for C interop via ``withUnsafeBufferPointer(_:)`` and
-    /// ``withUnsafeMutableBufferPointer(_:)``.
+    /// Conforming types provide safe, bounds-checked read access to contiguous
+    /// storage via ``span``, plus an unsafe escape hatch for C interop via
+    /// ``withUnsafeBufferPointer(_:)``.
+    ///
+    /// ## Design Rationale
+    ///
+    /// This protocol is **read-only by default**. Mutable access is type-specific:
+    ///
+    /// - **Structs** can provide `var mutableSpan: MutableSpan<Element> { mutating get }`
+    /// - **Classes** must use closure-based `func withMutableSpan(_:)` (no mutating getters)
+    ///
+    /// The protocol captures what ALL conforming types can provide. Read access is
+    /// universal; write access varies by type.
     ///
     /// ## Conforming to Memory.Contiguous.Protocol
     ///
@@ -28,26 +37,36 @@ extension Memory.Contiguous {
     /// extension MyContainer: Memory.Contiguous.Protocol {
     ///     var span: Span<Element> {
     ///         @_lifetime(borrow self)
-    ///         get { /* return span over storage */ }
-    ///     }
-    ///
-    ///     var mutableSpan: MutableSpan<Element> {
-    ///         @_lifetime(&self)
-    ///         mutating get { /* return mutable span */ }
+    ///         borrowing get {
+    ///             let ptr = /* get pointer to storage */
+    ///             let span = Span(_unsafeStart: ptr, count: count)
+    ///             return _overrideLifetime(span, borrowing: self)
+    ///         }
     ///     }
     ///
     ///     func withUnsafeBufferPointer<R, E: Swift.Error>(
-    ///         _ body: (UnsafeBufferPointer<Element>) throws -> R
+    ///         _ body: (UnsafeBufferPointer<Element>) throws(E) -> R
     ///     ) throws(E) -> R {
     ///         // provide unsafe access for C interop
     ///     }
-    ///
-    ///     mutating func withUnsafeMutableBufferPointer<R, E: Swift.Error>(
-    ///         _ body: (inout UnsafeMutableBufferPointer<Element>) throws -> R
-    ///     ) throws(E) -> R {
-    ///         // provide mutable unsafe access
-    ///     }
     /// }
+    /// ```
+    ///
+    /// ## Mutable Access (Type-Specific)
+    ///
+    /// Conforming types provide mutable access through type-specific APIs:
+    ///
+    /// ```swift
+    /// // Struct: property-based
+    /// var mutableSpan: MutableSpan<Element> {
+    ///     @_lifetime(&self)
+    ///     mutating get { ... }
+    /// }
+    ///
+    /// // Class: closure-based
+    /// func withMutableSpan<R, E: Swift.Error>(
+    ///     _ body: (inout MutableSpan<Element>) throws(E) -> R
+    /// ) throws(E) -> R { ... }
     /// ```
     ///
     /// ## Safe vs Unsafe Access
@@ -55,23 +74,19 @@ extension Memory.Contiguous {
     /// | Method | Safety | Use Case |
     /// |--------|--------|----------|
     /// | ``span`` | Safe | Swift code, annotated C APIs |
-    /// | ``mutableSpan`` | Safe | Swift code, annotated C APIs |
     /// | ``withUnsafeBufferPointer(_:)`` | Unsafe | Unannotated C APIs |
-    /// | ``withUnsafeMutableBufferPointer(_:)`` | Unsafe | Unannotated C APIs |
     ///
-    /// The safe properties use `Span`/`MutableSpan` which are bounds-checked and
-    /// lifetime-checked. The unsafe methods provide raw pointer access for C interop
-    /// with APIs that lack lifetime annotations.
+    /// The safe property uses `Span` which is bounds-checked and lifetime-checked.
+    /// The unsafe method provides raw pointer access for C interop with APIs that
+    /// lack lifetime annotations.
     ///
     /// ## Topics
     ///
     /// ### Safe Access
     /// - ``span``
-    /// - ``mutableSpan``
     ///
     /// ### Unsafe Access (C Interop)
     /// - ``withUnsafeBufferPointer(_:)``
-    /// - ``withUnsafeMutableBufferPointer(_:)``
     public protocol `Protocol`: ~Copyable {
         /// The type of element stored contiguously.
         ///
@@ -88,15 +103,6 @@ extension Memory.Contiguous {
         /// - Complexity: O(1)
         var span: Span<Element> { get }
 
-        /// Safe, bounds-checked write access to contiguous storage.
-        ///
-        /// Returns a `MutableSpan` that exclusively borrows `self`, preventing
-        /// concurrent access. Changes made through the span are reflected in
-        /// the container.
-        ///
-        /// - Complexity: O(1)
-        var mutableSpan: MutableSpan<Element> { mutating get }
-
         /// Unsafe read access for C interop with unannotated APIs.
         ///
         /// Use this method when calling C functions that take pointer parameters
@@ -108,20 +114,6 @@ extension Memory.Contiguous {
         /// - Warning: The buffer pointer is only valid within `body`.
         func withUnsafeBufferPointer<R, E: Swift.Error>(
             _ body: (UnsafeBufferPointer<Element>) throws(E) -> R
-        ) throws(E) -> R
-
-        /// Unsafe write access for C interop with unannotated APIs.
-        ///
-        /// Use this method when calling C functions that take mutable pointer
-        /// parameters without lifetime annotations. For annotated C APIs,
-        /// prefer ``mutableSpan``.
-        ///
-        /// - Parameter body: A closure that receives the mutable buffer pointer.
-        /// - Returns: The value returned by `body`.
-        /// - Complexity: O(1) plus the complexity of `body`.
-        /// - Warning: The buffer pointer is only valid within `body`.
-        mutating func withUnsafeMutableBufferPointer<R, E: Swift.Error>(
-            _ body: (UnsafeMutableBufferPointer<Element>) throws(E) -> R
         ) throws(E) -> R
     }
 }

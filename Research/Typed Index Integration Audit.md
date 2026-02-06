@@ -54,7 +54,7 @@ Typed Index Integration Audit: Maximizing Type Safety Across Swift Primitives
   ────────────────────────────────────────                                                                            
   Package: swift-heap-primitives                                                                                      
   Primary Types: Heap, Heap.Bounded, Heap.Inline, Heap.Small                                                          
-  Index Typealias: Heap<Element>.Index                                                                                
+  Index Typealias: Heap.Index                                                                                
   ────────────────────────────────────────                                                                            
   Package: swift-list-primitives                                                                                      
   Primary Types: List.Linked and variants                                                                             
