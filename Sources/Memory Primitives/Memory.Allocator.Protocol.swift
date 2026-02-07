@@ -28,12 +28,12 @@ extension Memory.Allocator {
         ///
         /// - Parameters:
         ///   - count: Number of bytes to allocate.
-        ///   - alignment: Required alignment in bytes (must be power of 2).
+        ///   - alignment: Required alignment (power of 2).
         /// - Returns: A mutable address to the allocated memory.
         /// - Throws: `Error` if allocation fails.
         mutating func allocate(
             count: Memory.Address.Count,
-            alignment: Memory.Address.Count
+            alignment: Memory.Alignment
         ) throws(Error) -> Memory.Address
 
         /// Deallocates previously allocated memory.
@@ -45,7 +45,7 @@ extension Memory.Allocator {
         mutating func deallocate(
             _ address: Memory.Address,
             count: Memory.Address.Count,
-            alignment: Memory.Address.Count
+            alignment: Memory.Alignment
         )
     }
 }

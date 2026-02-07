@@ -40,7 +40,7 @@ extension Memory.Arena.Test.Unit {
         let capacity: Memory.Address.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
         let count: Memory.Address.Count = 100
-        let alignment: Memory.Address.Count = 8
+        let alignment: Memory.Alignment = .doubleWord
         let address = arena.allocate(count: count, alignment: alignment)
         #expect(address != nil)
     }
@@ -50,7 +50,7 @@ extension Memory.Arena.Test.Unit {
         let capacity: Memory.Address.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
         let count: Memory.Address.Count = 100
-        let alignment: Memory.Address.Count = 8
+        let alignment: Memory.Alignment = .doubleWord
         _ = arena.allocate(count: count, alignment: alignment)
         #expect(arena.allocated.rawValue >= 100)
     }
@@ -69,7 +69,7 @@ extension Memory.Arena.Test.Unit {
         let initialRemaining = arena.remaining.rawValue
 
         let count: Memory.Address.Count = 256
-        let alignment: Memory.Address.Count = 8
+        let alignment: Memory.Alignment = .doubleWord
         _ = arena.allocate(count: count, alignment: alignment)
 
         #expect(arena.remaining.rawValue < initialRemaining)
@@ -81,7 +81,7 @@ extension Memory.Arena.Test.Unit {
         var arena = Memory.Arena(capacity: capacity)
 
         let count: Memory.Address.Count = 500
-        let alignment: Memory.Address.Count = 8
+        let alignment: Memory.Alignment = .doubleWord
         _ = arena.allocate(count: count, alignment: alignment)
         #expect(arena.remaining.rawValue < 1024)
 
@@ -99,7 +99,7 @@ extension Memory.Arena.Test.EdgeCase {
         let capacity: Memory.Address.Count = 100
         var arena = Memory.Arena(capacity: capacity)
         let count: Memory.Address.Count = 200
-        let alignment: Memory.Address.Count = 8
+        let alignment: Memory.Alignment = .doubleWord
         let address = arena.allocate(count: count, alignment: alignment)
         #expect(address == nil)
     }
@@ -111,12 +111,12 @@ extension Memory.Arena.Test.EdgeCase {
 
         // First allocation of 1 byte
         let count1: Memory.Address.Count = 1
-        let alignment1: Memory.Address.Count = 1
+        let alignment1: Memory.Alignment = .byte
         _ = arena.allocate(count: count1, alignment: alignment1)
 
         // Second allocation with 16-byte alignment
         let count2: Memory.Address.Count = 32
-        let alignment2: Memory.Address.Count = 16
+        let alignment2: Memory.Alignment = .quadWord
         let address = arena.allocate(count: count2, alignment: alignment2)
 
         #expect(address != nil)
@@ -129,7 +129,7 @@ extension Memory.Arena.Test.EdgeCase {
         var allocations: [Memory.Address] = []
 
         let count: Memory.Address.Count = 32
-        let alignment: Memory.Address.Count = 8
+        let alignment: Memory.Alignment = .doubleWord
         while let address = arena.allocate(count: count, alignment: alignment) {
             allocations.append(address)
         }
@@ -142,7 +142,7 @@ extension Memory.Arena.Test.EdgeCase {
         let capacity: Memory.Address.Count = 100
         var arena = Memory.Arena(capacity: capacity)
         let count: Memory.Address.Count = 0
-        let alignment: Memory.Address.Count = 8
+        let alignment: Memory.Alignment = .doubleWord
         let address = arena.allocate(count: count, alignment: alignment)
         #expect(address != nil)
     }
@@ -152,7 +152,7 @@ extension Memory.Arena.Test.EdgeCase {
         let capacity: Memory.Address.Count = 64
         var arena = Memory.Arena(capacity: capacity)
         let count: Memory.Address.Count = 64
-        let alignment: Memory.Address.Count = 1
+        let alignment: Memory.Alignment = .byte
         let address = arena.allocate(count: count, alignment: alignment)
         #expect(address != nil)
     }
@@ -162,7 +162,7 @@ extension Memory.Arena.Test.EdgeCase {
         let capacity: Memory.Address.Count = 64
         var arena = Memory.Arena(capacity: capacity)
         let count: Memory.Address.Count = 64
-        let alignment: Memory.Address.Count = 1
+        let alignment: Memory.Alignment = .byte
         _ = arena.allocate(count: count, alignment: alignment)
 
         let oneMore: Memory.Address.Count = 1
@@ -179,7 +179,7 @@ extension Memory.Arena.Test.Integration {
         let capacity: Memory.Address.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
         let count: Memory.Address.Count = 8
-        let alignment: Memory.Address.Count = 8
+        let alignment: Memory.Alignment = .doubleWord
         guard let address = arena.allocate(count: count, alignment: alignment) else {
             Issue.record("Allocation failed")
             return
@@ -198,14 +198,14 @@ extension Memory.Arena.Test.Integration {
         var arena = Memory.Arena(capacity: capacity)
 
         let intCount: Memory.Address.Count = 8
-        let intAlign: Memory.Address.Count = 8
+        let intAlign: Memory.Alignment = .doubleWord
         guard let intAddr: Memory.Address = arena.allocate(count: intCount, alignment: intAlign) else {
             Issue.record("Int allocation failed")
             return
         }
 
         let doubleCount: Memory.Address.Count = 8
-        let doubleAlign: Memory.Address.Count = 8
+        let doubleAlign: Memory.Alignment = .doubleWord
         guard let doubleAddr = arena.allocate(count: doubleCount, alignment: doubleAlign) else {
             Issue.record("Double allocation failed")
             return
@@ -228,7 +228,7 @@ extension Memory.Arena.Test.Integration {
         var arena = Memory.Arena(capacity: capacity)
 
         let count: Memory.Address.Count = 32
-        let alignment: Memory.Address.Count = 8
+        let alignment: Memory.Alignment = .doubleWord
         while arena.allocate(count: count, alignment: alignment) != nil {}
 
         arena.reset()
@@ -245,7 +245,7 @@ extension Memory.Arena.Test.Performance {
     func `many small allocations`() {
         let capacity: Memory.Address.Count = 1048576
         let count: Memory.Address.Count = 64
-        let alignment: Memory.Address.Count = 8
+        let alignment: Memory.Alignment = .doubleWord
 
         // Warmup
         for _ in 0..<10 {
@@ -269,7 +269,7 @@ extension Memory.Arena.Test.Performance {
         let capacity: Memory.Address.Count = 1024
         var arena = Memory.Arena(capacity: capacity)
         let count: Memory.Address.Count = 8
-        let alignment: Memory.Address.Count = 8
+        let alignment: Memory.Alignment = .doubleWord
 
         // Warmup
         for _ in 0..<10 {

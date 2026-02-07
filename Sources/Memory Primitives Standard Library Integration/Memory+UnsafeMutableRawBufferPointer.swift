@@ -32,11 +32,11 @@ extension UnsafeMutableRawBufferPointer {
     @_disfavoredOverload
     public static func allocate(
         count: Memory.Address.Count,
-        alignment: Memory.Address.Count
+        alignment: Memory.Alignment
     ) -> Self {
         Self.allocate(
             byteCount: Int(bitPattern: count.count),
-            alignment: Int(bitPattern: alignment.count)
+            alignment: alignment.magnitude()
         )
     }
 

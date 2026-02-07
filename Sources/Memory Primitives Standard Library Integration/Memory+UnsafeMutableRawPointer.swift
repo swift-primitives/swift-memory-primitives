@@ -14,9 +14,9 @@ extension UnsafeMutableRawPointer {
     @inlinable
     public static func allocate(
         count: Memory_Primitives_Core.Memory.Address.Count,
-        alignment: Memory_Primitives_Core.Memory.Address.Count
+        alignment: Memory_Primitives_Core.Memory.Alignment
     ) -> Self {
-        Self.allocate(byteCount: Int(bitPattern: count.count), alignment: Int(bitPattern: alignment.count))
+        Self.allocate(byteCount: Int(bitPattern: count.count), alignment: alignment.magnitude())
     }
 
     /// Returns a pointer offset by the specified typed byte offset.

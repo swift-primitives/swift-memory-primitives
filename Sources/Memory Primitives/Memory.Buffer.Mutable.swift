@@ -36,7 +36,7 @@ extension Memory.Buffer {
     /// ## Usage
     ///
     /// ```swift
-    /// var buffer: Memory.Buffer.Mutable = .allocate(count: 100, alignment: 8)
+    /// var buffer: Memory.Buffer.Mutable = .allocate(count: 100, alignment: .doubleWord)
     /// buffer.copy(from: source)
     /// buffer.deallocate()
     /// ```
@@ -123,7 +123,7 @@ extension Memory.Buffer.Mutable {
     @inlinable
     public static func allocate(
         count: Memory.Address.Count,
-        alignment: Memory.Address.Count
+        alignment: Memory.Alignment
     ) -> Self {
         let buffer = unsafe UnsafeMutableRawBufferPointer.allocate(
             count: count,
@@ -276,13 +276,13 @@ extension Memory.Buffer.Mutable {
         count sliceCount: Memory.Address.Count
     ) -> Self? {
         // Bounds check: start must be valid endpoint
-        guard start.rawValue.rawValue <= _count.count.rawValue else {
+        guard start <= _count else {
             return nil
         }
 
         // Bounds check: slice must fit
         // remaining = buffer count - start position
-        let startAsCount = Memory.Address.Count(start.rawValue.rawValue)
+        let startAsCount = Memory.Address.Count(start)
         let remaining = _count.count.subtract.saturating(startAsCount.count)
 
         guard sliceCount.count <= remaining else {

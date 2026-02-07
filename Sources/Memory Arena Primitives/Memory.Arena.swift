@@ -41,10 +41,9 @@ extension Memory {
         /// - Precondition: `capacity > .zero`
         @inlinable
         public init(capacity: Memory.Address.Count) {
-            let alignment = MemoryLayout<Int>.alignment
             let storage = UnsafeMutableRawPointer.allocate(
-                byteCount: Int(capacity.count.rawValue),
-                alignment: alignment
+                byteCount: Int(bitPattern: capacity.count),
+                alignment: Memory.Alignment.doubleWord.magnitude()
             )
             unsafe self._storage = storage
             self._capacity = capacity
@@ -90,24 +89,19 @@ extension Memory.Arena {
     ///
     /// - Parameters:
     ///   - count: Number of bytes to allocate.
-    ///   - alignment: Required alignment (must be power of 2).
+    ///   - alignment: Required alignment (power of 2).
     /// - Returns: Address to allocated memory, or nil if insufficient space.
     @inlinable
     public mutating func allocate(
         count: Memory.Address.Count,
-        alignment: Memory.Address.Count
+        alignment: Memory.Alignment
     ) -> Memory.Address? {
-        // Use rawValue (UInt) for bitwise alignment operations
-        let alignValue = alignment.count.rawValue
-        precondition(alignValue > 0 && (alignValue & (alignValue - 1)) == 0,
-                     "Alignment must be power of 2")
-
         // Round up allocated to alignment boundary
-        let alignMask = alignValue &- 1
-        let alignedAllocated = (_allocated.count.rawValue &+ alignMask) & ~alignMask
+        let alignedAllocated = alignment.align.up(_allocated)
 
-        // Check if allocation fits (overflow-safe: use saturating add then compare)
-        let (endAllocated, overflow) = alignedAllocated.addingReportingOverflow(count.count.rawValue)
+        // Check if allocation fits (overflow-safe)
+        let (endAllocated, overflow) = alignedAllocated.count.rawValue
+            .addingReportingOverflow(count.count.rawValue)
         guard !overflow, endAllocated <= _capacity.count.rawValue else {
             return nil
         }
@@ -117,7 +111,7 @@ extension Memory.Arena {
 
         // Return the allocated address
         return unsafe Memory.Address(
-            _storage.advanced(by: Int(alignedAllocated))
+            _storage.advanced(by: Int(bitPattern: alignedAllocated.count))
         )
     }
 }
