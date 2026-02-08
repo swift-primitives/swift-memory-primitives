@@ -21,9 +21,6 @@ extension Memory.Pool {
         /// The requested capacity is invalid (must be > 0).
         case invalidCapacity
 
-        /// The alignment value is not a power of 2.
-        case invalidAlignment(Int)
-
         /// The pointer does not belong to this pool.
         case foreignPointer
 

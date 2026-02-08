@@ -78,13 +78,13 @@ extension Memory {
         ///
         /// - Parameters:
         ///   - slotSize: Size of each slot in bytes. Must be ≥ `MemoryLayout<Int>.size`.
-        ///   - slotAlignment: Required alignment per slot. Must be power of 2.
+        ///   - slotAlignment: Required alignment per slot.
         ///   - capacity: Number of slots. Must be > 0.
         /// - Throws: `Pool.Error` if parameters are invalid.
         @inlinable
         public init(
-            slotSize: Int,
-            slotAlignment: Int,
+            slotSize: Memory.Address.Count,
+            slotAlignment: Memory.Alignment,
             capacity: Int
         ) throws(Pool.Error) {
             guard capacity > 0 else {
@@ -92,17 +92,15 @@ extension Memory {
             }
 
             let minimumSlotSize = MemoryLayout<Int>.size
-            guard slotSize >= minimumSlotSize else {
-                throw .slotSizeTooSmall(requested: slotSize, minimum: minimumSlotSize)
-            }
-
-            guard slotAlignment > 0, slotAlignment & (slotAlignment &- 1) == 0 else {
-                throw .invalidAlignment(slotAlignment)
+            guard Int(bitPattern: slotSize.count) >= minimumSlotSize else {
+                throw .slotSizeTooSmall(
+                    requested: Int(bitPattern: slotSize.count),
+                    minimum: minimumSlotSize
+                )
             }
 
             // Compute stride: round slotSize up to alignment boundary
-            let alignMask = slotAlignment &- 1
-            let stride = (slotSize &+ alignMask) & ~alignMask
+            let stride = Int(bitPattern: slotAlignment.align.up(slotSize).count)
 
             self._slotStride = stride
             self._capacity = capacity
@@ -115,7 +113,7 @@ extension Memory {
             let totalBytes = stride &* capacity
             let storage = UnsafeMutableRawPointer.allocate(
                 byteCount: totalBytes,
-                alignment: slotAlignment
+                alignment: slotAlignment.magnitude()
             )
             unsafe self._storage = storage
 
@@ -185,7 +183,7 @@ extension Memory.Pool {
         _freeHead = nextFree
 
         // Mark slot as allocated in the bitset.
-        _allocationBits[Bit.Index(__unchecked: (), Ordinal(UInt(slotIndex)))] = true
+        _allocationBits[Bit.Index(Ordinal(UInt(slotIndex)))] = true
 
         _allocated &+= 1
 
@@ -223,7 +221,7 @@ extension Memory.Pool {
 
         // Double-free detection via allocation bitset.
         let slotIndex = offset / _slotStride
-        let bitIndex = Bit.Index(__unchecked: (), Ordinal(UInt(slotIndex)))
+        let bitIndex = Bit.Index(Ordinal(UInt(slotIndex)))
         guard _allocationBits[bitIndex] else {
             throw .doubleFree
         }
