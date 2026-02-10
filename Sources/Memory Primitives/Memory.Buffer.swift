@@ -257,8 +257,7 @@ extension Memory.Buffer: CustomDebugStringConvertible {
 extension Memory.Buffer {
     @inlinable
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        unsafe Int(bitPattern: UnsafeRawPointer(lhs._start)) == Int(bitPattern: UnsafeRawPointer(rhs._start))
-            && lhs._count == rhs._count
+        lhs._start == rhs._start && lhs._count == rhs._count
     }
 }
 
@@ -267,7 +266,7 @@ extension Memory.Buffer {
 extension Memory.Buffer {
     @inlinable
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(unsafe Int(bitPattern: UnsafeRawPointer(_start)))
-        hasher.combine(_count.count)
+        hasher.combine(_start)
+        hasher.combine(_count)
     }
 }
