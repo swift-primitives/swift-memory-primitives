@@ -13,6 +13,6 @@ extension Memory.Arena {
     /// Errors that can occur during arena operations.
     public enum Error: Swift.Error, Equatable, Sendable {
         /// Insufficient space in arena.
-        case insufficientCapacity(requested: Int, available: Int)
+        case insufficientCapacity(requested: Memory.Address.Count, available: Memory.Address.Count)
     }
 }

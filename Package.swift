@@ -75,6 +75,7 @@ let package = Package(
             name: "Memory Arena Primitives",
             dependencies: [
                 .target(name: "Memory Primitives Core"),
+                .target(name: "Memory Primitives Standard Library Integration"),
             ]
         ),
         .target(

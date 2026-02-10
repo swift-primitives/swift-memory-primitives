@@ -41,9 +41,9 @@ extension Memory {
         /// - Precondition: `capacity > .zero`
         @inlinable
         public init(capacity: Memory.Address.Count) {
-            let storage = UnsafeMutableRawPointer.allocate(
-                byteCount: Int(bitPattern: capacity.count),
-                alignment: Memory.Alignment.doubleWord.magnitude()
+            let storage = unsafe UnsafeMutableRawPointer.allocate(
+                count: capacity,
+                alignment: .doubleWord
             )
             unsafe self._storage = storage
             self._capacity = capacity
@@ -70,7 +70,7 @@ extension Memory.Arena {
     /// The number of bytes remaining.
     @inlinable
     public var remaining: Memory.Address.Count {
-        Memory.Address.Count(capacity.count.subtract.saturating(_allocated.count))
+        _capacity.subtract.saturating(_allocated)
     }
 }
 
@@ -100,18 +100,17 @@ extension Memory.Arena {
         let alignedAllocated = alignment.align.up(_allocated)
 
         // Check if allocation fits (overflow-safe)
-        let (endAllocated, overflow) = alignedAllocated.count.rawValue
-            .addingReportingOverflow(count.count.rawValue)
-        guard !overflow, endAllocated <= _capacity.count.rawValue else {
+        guard let endAllocated = try? alignedAllocated.add.exact(count),
+              endAllocated <= _capacity else {
             return nil
         }
 
         // Update allocated count
-        _allocated = Memory.Address.Count(Cardinal(endAllocated))
+        _allocated = endAllocated
 
         // Return the allocated address
         return unsafe Memory.Address(
-            _storage.advanced(by: Int(bitPattern: alignedAllocated.count))
+            _storage.advanced(by: Memory.Address.Offset(alignedAllocated))
         )
     }
 }

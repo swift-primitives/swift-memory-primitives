@@ -6,3 +6,4 @@
 //
 
 @_exported public import Memory_Primitives_Core
+@_exported public import Memory_Primitives_Standard_Library_Integration
