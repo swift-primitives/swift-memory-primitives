@@ -10,7 +10,7 @@
 // ===----------------------------------------------------------------------===//
 
 public import Index_Primitives
-public import Range_Primitives
+public import Vector_Primitives
 
 /// Mutable sentinel re-exported from Memory.Buffer.swift.
 ///
@@ -246,7 +246,7 @@ extension Memory.Buffer.Mutable {
     /// - Parameter bounds: A lazy range of byte indices specifying the subregion.
     /// - Returns: A mutable buffer over the specified range.
     @inlinable
-    public func extracting(_ bounds: Range.Lazy<Index<Memory>>) -> Self {
+    public func extracting(_ bounds: Vector<Index<Memory>>) -> Self {
         // _start is always non-null (sentinel-backed), so pointer arithmetic is safe
         let newStart = unsafe Memory.Address(
             UnsafeMutableRawPointer(_start).advanced(by: bounds.start)

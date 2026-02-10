@@ -13,4 +13,4 @@
 
 @_exported public import Memory_Primitives
 @_exported public import Index_Primitives_Test_Support
-@_exported public import Range_Primitives_Test_Support
+@_exported public import Vector_Primitives_Test_Support

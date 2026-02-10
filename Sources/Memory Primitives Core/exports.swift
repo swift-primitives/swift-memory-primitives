@@ -9,5 +9,5 @@
 @_exported public import Cardinal_Primitives
 @_exported public import Affine_Primitives
 @_exported public import Identity_Primitives
-@_exported public import Range_Primitives
+@_exported public import Vector_Primitives
 @_exported public import Property_Primitives
