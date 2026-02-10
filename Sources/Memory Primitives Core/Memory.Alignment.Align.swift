@@ -2,7 +2,14 @@
 // Directional alignment operations on cardinal quantities.
 
 extension Memory.Alignment {
-    /// Directional alignment accessor.
+    /// Tag for directional alignment operations.
+    public enum Align {}
+}
+
+// MARK: - Accessor
+
+extension Memory.Alignment {
+    /// Directional alignment operations.
     ///
     /// Provides `.up(_:)` and `.down(_:)` for rounding any
     /// `Cardinal.Protocol` conformer to the nearest alignment boundary.
@@ -17,30 +24,15 @@ extension Memory.Alignment {
     /// let count: Index<Storage>.Count = ...
     /// let aligned = page.align.up(count)             // Index<Storage>.Count
     /// ```
-    public struct Align: Sendable {
-        @usableFromInline
-        internal let shift: Memory.Shift
-
-        @inlinable
-        internal init(shift: Memory.Shift) {
-            self.shift = shift
-        }
-    }
-}
-
-// MARK: - Accessor
-
-extension Memory.Alignment {
-    /// Directional alignment operations.
     @inlinable
-    public var align: Align {
-        Align(shift: shift)
+    public var align: Property<Align, Memory.Alignment> {
+        .init(self)
     }
 }
 
 // MARK: - Operations
 
-extension Memory.Alignment.Align {
+extension Property where Tag == Memory.Alignment.Align, Base == Memory.Alignment {
     /// Rounds a cardinal quantity up to the nearest alignment boundary.
     ///
     /// Accepts any `Cardinal.Protocol` conformer and preserves its type.
@@ -50,7 +42,7 @@ extension Memory.Alignment.Align {
     /// - Precondition: `shift < UInt.bitWidth`
     @inlinable
     public func up<C: Cardinal.`Protocol`>(_ value: C) -> C {
-        let mask: UInt = shift.mask()
+        let mask: UInt = base.shift.mask()
         return C(Cardinal((value.cardinal.rawValue &+ mask) & ~mask))
     }
 
@@ -63,7 +55,7 @@ extension Memory.Alignment.Align {
     /// - Precondition: `shift < UInt.bitWidth`
     @inlinable
     public func down<C: Cardinal.`Protocol`>(_ value: C) -> C {
-        let mask: UInt = shift.mask()
+        let mask: UInt = base.shift.mask()
         return C(Cardinal(value.cardinal.rawValue & ~mask))
     }
 }

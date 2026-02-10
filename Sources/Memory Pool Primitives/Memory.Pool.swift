@@ -132,10 +132,7 @@ extension Memory {
             var slot: Index<Slot> = .zero
             while slot < end {
                 let next = slot + .one
-                unsafe _pointer(at: slot).storeBytes(
-                    of: (next < end) ? next.rawValue.rawValue : .max,
-                    as: UInt.self
-                )
+                _storeFreeNext((next < end) ? next : nil, at: slot)
                 slot += .one
             }
         }
@@ -154,6 +151,32 @@ extension Memory.Pool {
     internal func _pointer(at index: Index<Slot>) -> UnsafeMutableRawPointer {
         let byteOffset = Index<Slot>.Offset(fromZero: index) * _slotStride
         return unsafe _storage.advanced(by: byteOffset)
+    }
+}
+
+// MARK: - Free List Serialization Boundary
+
+extension Memory.Pool {
+    /// Stores the next-free index into a slot's in-band free list storage.
+    ///
+    /// This is a serialization boundary: `.rawValue.rawValue` extraction is
+    /// confined here. `nil` is stored as `UInt.max` (end-of-list sentinel).
+    @inlinable
+    internal func _storeFreeNext(_ next: Index<Slot>?, at slot: Index<Slot>) {
+        unsafe _pointer(at: slot).storeBytes(
+            of: next?.rawValue.rawValue ?? .max,
+            as: UInt.self
+        )
+    }
+
+    /// Loads the next-free index from a slot's in-band free list storage.
+    ///
+    /// This is a deserialization boundary: `__unchecked` reconstruction is
+    /// confined here. `UInt.max` is interpreted as `nil` (end-of-list sentinel).
+    @inlinable
+    internal func _loadFreeNext(at slot: Index<Slot>) -> Index<Slot>? {
+        let raw = unsafe _pointer(at: slot).load(as: UInt.self)
+        return raw != .max ? Index<Slot>(__unchecked: (), Ordinal(raw)) : nil
     }
 }
 
@@ -201,9 +224,8 @@ extension Memory.Pool {
             throw .exhausted(capacity: _capacity)
         }
 
-        // Read next-free from head slot.
-        let raw = unsafe _pointer(at: head).load(as: UInt.self)
-        _freeHead = raw != .max ? Index<Slot>(__unchecked: (), Ordinal(raw)) : nil
+        // Advance free list head.
+        _freeHead = _loadFreeNext(at: head)
 
         // Mark slot as allocated.
         _allocationBits[head.retag(Bit.self)] = true
@@ -237,10 +259,7 @@ extension Memory.Pool {
 
         // Push current head into this slot's memory, then make this slot the new head.
         _allocationBits[bitIndex] = false
-        unsafe _pointer(at: slot).storeBytes(
-            of: _freeHead?.rawValue.rawValue ?? .max,
-            as: UInt.self
-        )
+        _storeFreeNext(_freeHead, at: slot)
         _freeHead = slot
         _allocated = _allocated.subtract.saturating(.one)
     }
@@ -257,10 +276,7 @@ extension Memory.Pool {
         var slot: Index<Slot> = .zero
         while slot < end {
             let next = slot + .one
-            unsafe _pointer(at: slot).storeBytes(
-                of: (next < end) ? next.rawValue.rawValue : .max,
-                as: UInt.self
-            )
+            _storeFreeNext((next < end) ? next : nil, at: slot)
             slot += .one
         }
         _freeHead = .zero
