@@ -20,7 +20,7 @@ extension Memory {
     ///
     /// ## Invariants
     ///
-    /// - Slot size ≥ `MemoryLayout<UInt>.size` (in-band free list storage)
+    /// - Slot size ≥ `MemoryLayout<Index<Slot>>.size` (in-band free list storage)
     /// - Slot alignment is power of 2
     /// - Capacity is fixed at construction, immutable
     /// - `0 ≤ allocated ≤ capacity`
@@ -29,11 +29,15 @@ extension Memory {
     ///
     /// ## Free List Design
     ///
-    /// Free slots store the index of the next free slot in-band (at the slot's own
-    /// memory location). This is the canonical Bonwick slab allocator technique:
-    /// zero auxiliary storage overhead. A separate `Bit.Vector` tracks which slots
-    /// are allocated, enabling correct double-free detection even when consumers
-    /// store typed content in allocated slots.
+    /// Free slots store the `Index<Slot>` of the next free slot in-band (at the
+    /// slot's own memory location) via `storeBytes(of:as:)` / `load(as:)`. The
+    /// sentinel value `_sentinel` (one-past-last, analogous to `endIndex`) marks
+    /// end-of-list. No raw value extraction is needed — the typed index flows
+    /// directly through memory operations.
+    ///
+    /// A separate `Bit.Vector` tracks which slots are allocated, enabling correct
+    /// double-free detection even when consumers store typed content in allocated
+    /// slots.
     ///
     /// ## Typed Access
     ///
@@ -74,9 +78,13 @@ extension Memory {
         @usableFromInline
         internal var _allocated: Index<Slot>.Count
 
-        /// Index of the first free slot, or `nil` if exhausted.
+        /// Head of the free list. Equal to `_sentinel` when exhausted.
+        ///
+        /// This is a typed `Index<Slot>`, not an Optional. The sentinel
+        /// value (`_capacity.map(Ordinal.init)`, one-past-last) represents
+        /// end-of-list — analogous to `endIndex` in Swift collections.
         @usableFromInline
-        internal var _freeHead: Index<Slot>?
+        internal var _freeHead: Index<Slot>
 
         /// Tracks which slots are currently allocated for double-free detection.
         @usableFromInline
@@ -85,7 +93,7 @@ extension Memory {
         /// Creates a pool with the specified slot geometry and capacity.
         ///
         /// - Parameters:
-        ///   - slotSize: Size of each slot in bytes. Must be ≥ `MemoryLayout<UInt>.size`.
+        ///   - slotSize: Size of each slot in bytes. Must be ≥ `MemoryLayout<Index<Slot>>.size`.
         ///   - slotAlignment: Required alignment per slot.
         ///   - capacity: Number of slots. Must be > 0.
         /// - Throws: `Pool.Error` if parameters are invalid.
@@ -127,12 +135,15 @@ extension Memory {
             unsafe self._storage = storage
 
             // All properties initialized — build the free list.
+            let sentinel = capacity.map(Ordinal.init)
             self._freeHead = .zero
-            let end = capacity.map(Ordinal.init)
             var slot: Index<Slot> = .zero
-            while slot < end {
+            while slot < sentinel {
                 let next = slot + .one
-                _storeFreeNext((next < end) ? next : nil, at: slot)
+                unsafe _pointer(at: slot).storeBytes(
+                    of: (next < sentinel) ? next : sentinel,
+                    as: Index<Slot>.self
+                )
                 slot += .one
             }
         }
@@ -154,30 +165,16 @@ extension Memory.Pool {
     }
 }
 
-// MARK: - Free List Serialization Boundary
+// MARK: - Free List Sentinel
 
 extension Memory.Pool {
-    /// Stores the next-free index into a slot's in-band free list storage.
+    /// The end-of-list sentinel: one-past-last valid slot index.
     ///
-    /// This is a serialization boundary: `.rawValue.rawValue` extraction is
-    /// confined here. `nil` is stored as `UInt.max` (end-of-list sentinel).
+    /// Analogous to `endIndex` in Swift collections. A free list link
+    /// equal to the sentinel means "no next free slot." Derived from
+    /// capacity — not an arbitrary magic constant.
     @inlinable
-    internal func _storeFreeNext(_ next: Index<Slot>?, at slot: Index<Slot>) {
-        unsafe _pointer(at: slot).storeBytes(
-            of: next?.rawValue.rawValue ?? .max,
-            as: UInt.self
-        )
-    }
-
-    /// Loads the next-free index from a slot's in-band free list storage.
-    ///
-    /// This is a deserialization boundary: `__unchecked` reconstruction is
-    /// confined here. `UInt.max` is interpreted as `nil` (end-of-list sentinel).
-    @inlinable
-    internal func _loadFreeNext(at slot: Index<Slot>) -> Index<Slot>? {
-        let raw = unsafe _pointer(at: slot).load(as: UInt.self)
-        return raw != .max ? Index<Slot>(__unchecked: (), Ordinal(raw)) : nil
-    }
+    internal var _sentinel: Index<Slot> { _capacity.map(Ordinal.init) }
 }
 
 // MARK: - Properties
@@ -203,7 +200,7 @@ extension Memory.Pool {
 
     /// Whether all slots are allocated (no free slots remain).
     @inlinable
-    public var isExhausted: Bool { _freeHead == nil }
+    public var isExhausted: Bool { _freeHead == _sentinel }
 }
 
 // MARK: - Operations
@@ -220,12 +217,14 @@ extension Memory.Pool {
     /// - Complexity: O(1)
     @inlinable
     public mutating func allocate() throws(Memory.Pool.Error) -> UnsafeMutableRawPointer {
-        guard let head = _freeHead else {
+        guard _freeHead != _sentinel else {
             throw .exhausted(capacity: _capacity)
         }
 
-        // Advance free list head.
-        _freeHead = _loadFreeNext(at: head)
+        let head = _freeHead
+
+        // Advance free list head: load the typed next-free index directly.
+        _freeHead = unsafe _pointer(at: head).load(as: Index<Slot>.self)
 
         // Mark slot as allocated.
         _allocationBits[head.retag(Bit.self)] = true
@@ -259,7 +258,7 @@ extension Memory.Pool {
 
         // Push current head into this slot's memory, then make this slot the new head.
         _allocationBits[bitIndex] = false
-        _storeFreeNext(_freeHead, at: slot)
+        unsafe _pointer(at: slot).storeBytes(of: _freeHead, as: Index<Slot>.self)
         _freeHead = slot
         _allocated = _allocated.subtract.saturating(.one)
     }
@@ -272,11 +271,14 @@ extension Memory.Pool {
     /// - Complexity: O(n) where n is capacity.
     @inlinable
     public mutating func reset() {
-        let end = _capacity.map(Ordinal.init)
+        let sentinel = _sentinel
         var slot: Index<Slot> = .zero
-        while slot < end {
+        while slot < sentinel {
             let next = slot + .one
-            _storeFreeNext((next < end) ? next : nil, at: slot)
+            unsafe _pointer(at: slot).storeBytes(
+                of: (next < sentinel) ? next : sentinel,
+                as: Index<Slot>.self
+            )
             slot += .one
         }
         _freeHead = .zero

@@ -17,6 +17,12 @@ This directory consolidates all memory-related research from:
 | ordinal-cardinal-foundations.md | Foundational patterns for typed arithmetic (ordinals, cardinals, affine) | ANALYSIS |
 | affine-scaling-operations.md | Arithmetic patterns for memory operations | ANALYSIS |
 
+## Pool
+
+| Document | Topic | Status |
+|----------|-------|--------|
+| pool-free-list-representation.md | Type-theoretically correct free list link representation | DECISION |
+
 ## Pointer Architecture
 
 | Document | Topic | Status |
