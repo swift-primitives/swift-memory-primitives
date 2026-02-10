@@ -283,9 +283,9 @@ extension Memory.Buffer.Mutable {
         // Bounds check: slice must fit
         // remaining = buffer count - start position
         let startAsCount = Memory.Address.Count(start)
-        let remaining = _count.count.subtract.saturating(startAsCount.count)
+        let remaining = _count.subtract.saturating(startAsCount)
 
-        guard sliceCount.count <= remaining else {
+        guard sliceCount <= remaining else {
             return nil
         }
 
