@@ -20,7 +20,7 @@ extension Memory {
     ///
     /// ## Invariants
     ///
-    /// - Slot size ≥ `MemoryLayout<Int>.size` (in-band free list storage)
+    /// - Slot size ≥ `MemoryLayout<UInt>.size` (in-band free list storage)
     /// - Slot alignment is power of 2
     /// - Capacity is fixed at construction, immutable
     /// - `0 ≤ allocated ≤ capacity`
@@ -40,7 +40,7 @@ extension Memory {
     /// Pool operates on untyped bytes. Typed access is composed at the call site:
     ///
     /// ```swift
-    /// var pool = try Memory.Pool(slotSize: ..., slotAlignment: ..., capacity: 1024)
+    /// var pool = try Memory.Pool(slotSize: ..., slotAlignment: ..., capacity: ...)
     /// let address = try pool.allocate()
     /// let pointer = address.assumingMemoryBound(to: Node.self)
     /// pointer.initialize(to: node)
@@ -50,25 +50,33 @@ extension Memory {
     /// ```
     @safe
     public struct Pool: ~Copyable {
+
+        // MARK: - Phantom Type
+
+        /// Phantom type for slot-level indexing within a pool.
+        public enum Slot {}
+
+        // MARK: - Stored Properties
+
         /// Backing storage for all slots.
         @usableFromInline
         internal let _storage: UnsafeMutableRawPointer
 
-        /// Number of bytes per slot (stride-aligned).
+        /// Scaling factor from slot domain to byte domain.
         @usableFromInline
-        internal let _slotStride: Int
+        internal let _slotStride: Affine.Discrete.Ratio<Slot, Memory>
 
         /// Total number of slots.
         @usableFromInline
-        internal let _capacity: Int
+        internal let _capacity: Index<Slot>.Count
 
         /// Number of currently allocated (in-use) slots.
         @usableFromInline
-        internal var _allocated: Int
+        internal var _allocated: Index<Slot>.Count
 
-        /// Index of the first free slot, or `-1` if exhausted.
+        /// Index of the first free slot, or `nil` if exhausted.
         @usableFromInline
-        internal var _freeHead: Int
+        internal var _freeHead: Index<Slot>?
 
         /// Tracks which slots are currently allocated for double-free detection.
         @usableFromInline
@@ -77,7 +85,7 @@ extension Memory {
         /// Creates a pool with the specified slot geometry and capacity.
         ///
         /// - Parameters:
-        ///   - slotSize: Size of each slot in bytes. Must be ≥ `MemoryLayout<Int>.size`.
+        ///   - slotSize: Size of each slot in bytes. Must be ≥ `MemoryLayout<UInt>.size`.
         ///   - slotAlignment: Required alignment per slot.
         ///   - capacity: Number of slots. Must be > 0.
         /// - Throws: `Pool.Error` if parameters are invalid.
@@ -85,46 +93,51 @@ extension Memory {
         public init(
             slotSize: Memory.Address.Count,
             slotAlignment: Memory.Alignment,
-            capacity: Int
+            capacity: Index<Slot>.Count
         ) throws(Pool.Error) {
-            guard capacity > 0 else {
+            guard capacity > .zero else {
                 throw .invalidCapacity
             }
 
-            let minimumSlotSize = MemoryLayout<Int>.size
-            guard Int(bitPattern: slotSize.count) >= minimumSlotSize else {
+            let minimumSlotSize = Memory.Address.Count(UInt(MemoryLayout<UInt>.size))
+            guard slotSize >= minimumSlotSize else {
                 throw .slotSizeTooSmall(
-                    requested: Int(bitPattern: slotSize.count),
+                    requested: slotSize,
                     minimum: minimumSlotSize
                 )
             }
 
             // Compute stride: round slotSize up to alignment boundary
-            let stride = Int(bitPattern: slotAlignment.align.up(slotSize).count)
+            let alignedSize = slotAlignment.align.up(slotSize)
+            let stride = Affine.Discrete.Ratio<Slot, Memory>(alignedSize)
 
             self._slotStride = stride
             self._capacity = capacity
-            self._allocated = 0
+            self._allocated = .zero
             self._allocationBits = Bit.Vector(
-                capacity: Bit.Index.Count(Cardinal(UInt(capacity)))
+                capacity: capacity.retag(Bit.self)
             )
 
             // Allocate backing storage
-            let totalBytes = stride &* capacity
-            let storage = UnsafeMutableRawPointer.allocate(
-                byteCount: totalBytes,
-                alignment: slotAlignment.magnitude()
+            let totalBytes = capacity * stride
+            let storage = unsafe UnsafeMutableRawPointer.allocate(
+                count: totalBytes,
+                alignment: slotAlignment
             )
             unsafe self._storage = storage
 
-            // Initialize free list: each slot stores the index of the next free slot.
-            // Slot 0 → 1, Slot 1 → 2, ..., Slot (N-2) → (N-1), Slot (N-1) → -1 (end).
-            for i in 0..<capacity {
-                let slotPointer = unsafe storage.advanced(by: i &* stride)
-                let nextFree = (i &+ 1 < capacity) ? (i &+ 1) : -1
-                unsafe slotPointer.storeBytes(of: nextFree, as: Int.self)
+            // All properties initialized — build the free list.
+            self._freeHead = .zero
+            let end = capacity.map(Ordinal.init)
+            var slot: Index<Slot> = .zero
+            while slot < end {
+                let next = slot + .one
+                unsafe _pointer(at: slot).storeBytes(
+                    of: (next < end) ? next.rawValue.rawValue : .max,
+                    as: UInt.self
+                )
+                slot += .one
             }
-            self._freeHead = 0
         }
 
         deinit {
@@ -133,28 +146,41 @@ extension Memory {
     }
 }
 
+// MARK: - Pointer Primitive
+
+extension Memory.Pool {
+    /// Returns the pointer to the slot at the given index (no bounds check).
+    @inlinable
+    internal func _pointer(at index: Index<Slot>) -> UnsafeMutableRawPointer {
+        let byteOffset = Index<Slot>.Offset(fromZero: index) * _slotStride
+        return unsafe _storage.advanced(by: byteOffset)
+    }
+}
+
 // MARK: - Properties
 
 extension Memory.Pool {
     /// Total number of slots.
     @inlinable
-    public var capacity: Int { _capacity }
+    public var capacity: Index<Slot>.Count { _capacity }
 
     /// Number of currently allocated (in-use) slots.
     @inlinable
-    public var allocated: Int { _allocated }
+    public var allocated: Index<Slot>.Count { _allocated }
 
     /// Number of free slots remaining.
     @inlinable
-    public var available: Int { _capacity &- _allocated }
+    public var available: Index<Slot>.Count {
+        _capacity.subtract.saturating(_allocated)
+    }
 
-    /// Size of each slot in bytes (stride-aligned).
+    /// Scaling factor from slot domain to byte domain (stride-aligned).
     @inlinable
-    public var slotStride: Int { _slotStride }
+    public var slotStride: Affine.Discrete.Ratio<Slot, Memory> { _slotStride }
 
     /// Whether all slots are allocated (no free slots remain).
     @inlinable
-    public var isExhausted: Bool { _freeHead == -1 }
+    public var isExhausted: Bool { _freeHead == nil }
 }
 
 // MARK: - Operations
@@ -171,23 +197,19 @@ extension Memory.Pool {
     /// - Complexity: O(1)
     @inlinable
     public mutating func allocate() throws(Memory.Pool.Error) -> UnsafeMutableRawPointer {
-        guard _freeHead != -1 else {
+        guard let head = _freeHead else {
             throw .exhausted(capacity: _capacity)
         }
 
-        let slotIndex = _freeHead
-        let slotPointer = unsafe _storage.advanced(by: slotIndex &* _slotStride)
+        // Read next-free from head slot.
+        let raw = unsafe _pointer(at: head).load(as: UInt.self)
+        _freeHead = raw != .max ? Index<Slot>(__unchecked: (), Ordinal(raw)) : nil
 
-        // Read next-free from this slot before we hand it to the consumer.
-        let nextFree = unsafe slotPointer.load(as: Int.self)
-        _freeHead = nextFree
+        // Mark slot as allocated.
+        _allocationBits[head.retag(Bit.self)] = true
+        _allocated += .one
 
-        // Mark slot as allocated in the bitset.
-        _allocationBits[Bit.Index(Ordinal(UInt(slotIndex)))] = true
-
-        _allocated &+= 1
-
-        return unsafe slotPointer
+        return unsafe _pointer(at: head)
     }
 
     /// Returns a slot to the free list.
@@ -203,37 +225,24 @@ extension Memory.Pool {
     public mutating func deallocate(
         _ pointer: UnsafeMutableRawPointer
     ) throws(Memory.Pool.Error) {
-        // Validate: pointer must be within our backing storage range.
-        let offset = unsafe pointer - _storage
-        guard offset >= 0 else {
-            throw .foreignPointer
-        }
-
-        let totalBytes = _slotStride &* _capacity
-        guard offset < totalBytes else {
-            throw .foreignPointer
-        }
-
-        // Validate: pointer must be slot-aligned (exact slot boundary).
-        guard offset % _slotStride == 0 else {
+        guard let slot = unsafe slotIndex(for: pointer) else {
             throw .foreignPointer
         }
 
         // Double-free detection via allocation bitset.
-        let slotIndex = offset / _slotStride
-        let bitIndex = Bit.Index(Ordinal(UInt(slotIndex)))
+        let bitIndex = slot.retag(Bit.self)
         guard _allocationBits[bitIndex] else {
             throw .doubleFree
         }
 
-        // Mark slot as free in the bitset.
+        // Push current head into this slot's memory, then make this slot the new head.
         _allocationBits[bitIndex] = false
-
-        // Push onto free list: store current head, then update head.
-        unsafe pointer.storeBytes(of: _freeHead, as: Int.self)
-        _freeHead = slotIndex
-
-        _allocated &-= 1
+        unsafe _pointer(at: slot).storeBytes(
+            of: _freeHead?.rawValue.rawValue ?? .max,
+            as: UInt.self
+        )
+        _freeHead = slot
+        _allocated = _allocated.subtract.saturating(.one)
     }
 
     /// Returns all slots to the free list.
@@ -244,13 +253,18 @@ extension Memory.Pool {
     /// - Complexity: O(n) where n is capacity.
     @inlinable
     public mutating func reset() {
-        for i in 0..<_capacity {
-            let slotPointer = unsafe _storage.advanced(by: i &* _slotStride)
-            let nextFree = (i &+ 1 < _capacity) ? (i &+ 1) : -1
-            unsafe slotPointer.storeBytes(of: nextFree, as: Int.self)
+        let end = _capacity.map(Ordinal.init)
+        var slot: Index<Slot> = .zero
+        while slot < end {
+            let next = slot + .one
+            unsafe _pointer(at: slot).storeBytes(
+                of: (next < end) ? next.rawValue.rawValue : .max,
+                as: UInt.self
+            )
+            slot += .one
         }
-        _freeHead = 0
-        _allocated = 0
+        _freeHead = .zero
+        _allocated = .zero
         _allocationBits.clear.all()
     }
 }
@@ -260,13 +274,13 @@ extension Memory.Pool {
 extension Memory.Pool {
     /// Returns the pointer to the slot at the given index.
     ///
-    /// - Parameter index: Slot index in `0..<capacity`.
+    /// - Parameter index: A slot index. Must be < capacity.
     /// - Returns: Pointer to the slot's memory.
-    /// - Precondition: `index >= 0 && index < capacity`
+    /// - Precondition: `index < capacity`
     @inlinable
-    public func pointer(at index: Int) -> UnsafeMutableRawPointer {
-        precondition(index >= 0 && index < _capacity, "Slot index out of bounds")
-        return unsafe _storage.advanced(by: index &* _slotStride)
+    public func pointer(at index: Index<Slot>) -> UnsafeMutableRawPointer {
+        precondition(index < _capacity, "Slot index out of bounds")
+        return unsafe _pointer(at: index)
     }
 
     /// Returns the slot index for a pointer previously returned by `allocate()`.
@@ -274,15 +288,18 @@ extension Memory.Pool {
     /// - Parameter pointer: A pointer belonging to this pool.
     /// - Returns: The slot index, or `nil` if the pointer is foreign.
     @inlinable
-    public func slotIndex(for pointer: UnsafeMutableRawPointer) -> Int? {
-        let offset = unsafe pointer - _storage
-        guard offset >= 0, offset < _slotStride &* _capacity else {
-            return nil
-        }
-        guard offset % _slotStride == 0 else {
-            return nil
-        }
-        return offset / _slotStride
+    public func slotIndex(for pointer: UnsafeMutableRawPointer) -> Index<Slot>? {
+        let rawOffset = unsafe pointer - _storage
+        guard rawOffset >= 0 else { return nil }
+
+        let byteCount = Memory.Address.Count(UInt(rawOffset))
+        let totalBytes = _capacity * _slotStride
+        guard byteCount < totalBytes else { return nil }
+
+        let (slotCount, remainder) = _slotStride.quotientAndRemainder(dividing: byteCount)
+        guard remainder == .zero else { return nil }
+
+        return slotCount.map(Ordinal.init)
     }
 }
 

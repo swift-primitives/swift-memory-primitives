@@ -82,7 +82,9 @@ let package = Package(
             name: "Memory Pool Primitives",
             dependencies: [
                 .target(name: "Memory Primitives Core"),
+                .target(name: "Memory Primitives Standard Library Integration"),
                 .product(name: "Bit Vector Primitives", package: "swift-bit-vector-primitives"),
+                .product(name: "Index Primitives", package: "swift-index-primitives"),
             ]
         ),
         .target(

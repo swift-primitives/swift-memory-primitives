@@ -13,10 +13,10 @@ extension Memory.Pool {
     /// Errors that can occur during pool operations.
     public enum Error: Swift.Error, Equatable, Sendable {
         /// No free slots remain.
-        case exhausted(capacity: Int)
+        case exhausted(capacity: Index<Slot>.Count)
 
         /// The slot size is too small to hold the in-band free list pointer.
-        case slotSizeTooSmall(requested: Int, minimum: Int)
+        case slotSizeTooSmall(requested: Memory.Address.Count, minimum: Memory.Address.Count)
 
         /// The requested capacity is invalid (must be > 0).
         case invalidCapacity

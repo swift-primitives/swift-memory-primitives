@@ -32,7 +32,7 @@ extension Memory.Pool.Test.Unit {
         #expect(pool.capacity == 16)
         #expect(pool.allocated == 0)
         #expect(pool.available == 16)
-        #expect(pool.slotStride == 64)
+        #expect(pool.slotStride == .init(64))
         #expect(!pool.isExhausted == true)
     }
 
@@ -70,13 +70,13 @@ extension Memory.Pool.Test.Unit {
     func `slotStride reflects alignment padding`() throws {
         // slotSize 10 with alignment 8 → stride 16
         let pool = try Memory.Pool(slotSize: 10, slotAlignment: .doubleWord, capacity: 4)
-        #expect(pool.slotStride == 16)
+        #expect(pool.slotStride == .init(16))
     }
 
     @Test
     func `slotStride matches slot size when already aligned`() throws {
         let pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 4)
-        #expect(pool.slotStride == 64)
+        #expect(pool.slotStride == .init(64))
     }
 
     @Test
