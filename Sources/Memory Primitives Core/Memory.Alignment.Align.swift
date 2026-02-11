@@ -55,7 +55,6 @@ extension Property where Tag == Memory.Alignment.Align, Base == Memory.Alignment
     /// - Precondition: `shift < UInt.bitWidth`
     @inlinable
     public func down<C: Cardinal.`Protocol`>(_ value: C) -> C {
-        let mask: UInt = base.shift.mask()
-        return C(Cardinal(value.cardinal.rawValue & ~mask))
+        C(Cardinal(value.cardinal.rawValue & ~base.shift.mask()))
     }
 }

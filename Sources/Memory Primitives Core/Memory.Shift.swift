@@ -128,8 +128,7 @@ extension Memory.Shift {
     public func magnitude<Carrier: FixedWidthInteger>(
         as _: Carrier.Type = Carrier.self
     ) -> Carrier {
-        precondition(Int(rawValue) < Carrier.bitWidth, "Shift exceeds carrier bit width")
-        return Carrier(1) &<< Int(rawValue)
+        Carrier(1) << self
     }
 
     /// Computes the mask `(2^shift) - 1` in the given carrier type.
@@ -140,8 +139,7 @@ extension Memory.Shift {
     public func mask<Carrier: FixedWidthInteger>(
         as _: Carrier.Type = Carrier.self
     ) -> Carrier {
-        precondition(Int(rawValue) < Carrier.bitWidth, "Shift exceeds carrier bit width")
-        return (Carrier(1) &<< Int(rawValue)) &- 1
+        (Carrier(1) << self) &- 1
     }
 
     /// Validates that this shift is usable with the given carrier type.
@@ -166,35 +164,6 @@ extension Memory.Shift: Comparable {
         lhs.rawValue < rhs.rawValue
     }
 }
-
-// MARK: - Arithmetic (Throwing)
-
-extension Memory.Shift {
-    /// Adds two shifts (equivalent to multiplying alignments).
-    ///
-    /// - Throws: `Memory.Shift.Error.outOfRange` if result > 63.
-    @inlinable
-    public static func + (
-        lhs: Memory.Shift,
-        rhs: Memory.Shift
-    ) throws(Memory.Shift.Error) -> Memory.Shift {
-        let result = Int(lhs.rawValue) + Int(rhs.rawValue)
-        return try Memory.Shift(result)
-    }
-
-    /// Subtracts two shifts (equivalent to dividing alignments).
-    ///
-    /// - Throws: `Memory.Shift.Error.outOfRange` if result < 0.
-    @inlinable
-    public static func - (
-        lhs: Memory.Shift,
-        rhs: Memory.Shift
-    ) throws(Memory.Shift.Error) -> Memory.Shift {
-        let result = Int(lhs.rawValue) - Int(rhs.rawValue)
-        return try Memory.Shift(result)
-    }
-}
-
 // MARK: - CustomStringConvertible
 
 extension Memory.Shift: CustomStringConvertible {

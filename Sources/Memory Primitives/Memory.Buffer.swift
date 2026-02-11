@@ -165,12 +165,10 @@ extension Memory.Buffer {
     /// - Returns: A buffer over the specified range.
     @inlinable
     public func extracting(_ bounds: Vector<Index<Memory>>) -> Self {
-        // _start is always non-null (sentinel-backed), so pointer arithmetic is safe
-        let newStart = unsafe Memory.Address(
-            UnsafeRawPointer(_start).advanced(by: bounds.start)
+        Self(
+            start: unsafe Memory.Address(UnsafeRawPointer(_start).advanced(by: bounds.start)),
+            count: bounds.count.retag(Memory.self)
         )
-        let newCount = bounds.count.retag(Memory.self)
-        return Self(start: newStart, count: newCount)
     }
 }
 
@@ -200,8 +198,7 @@ extension Memory.Buffer {
 
         // Bounds check: slice must fit
         // remaining = buffer count - start position
-        let startAsCount = Memory.Address.Count(start)
-        let remaining = _count.subtract.saturating(startAsCount)
+        let remaining = _count.subtract.saturating(Memory.Address.Count(start))
 
         guard sliceCount <= remaining else {
             return nil

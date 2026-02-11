@@ -311,8 +311,7 @@ extension Memory.Pool {
         guard rawOffset >= 0 else { return nil }
 
         let byteCount = Memory.Address.Count(UInt(rawOffset))
-        let totalBytes = _capacity * _slotStride
-        guard byteCount < totalBytes else { return nil }
+        guard byteCount < _capacity * _slotStride else { return nil }
 
         let (slotCount, remainder) = _slotStride.quotientAndRemainder(dividing: byteCount)
         guard remainder == .zero else { return nil }

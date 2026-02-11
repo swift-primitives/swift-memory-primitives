@@ -62,8 +62,7 @@ extension Tagged where Tag == Memory, RawValue == Ordinal {
     /// - Parameter pointer: A non-null raw pointer.
     @inlinable
     public init(_ pointer: UnsafeRawPointer) {
-        let bits = UInt(bitPattern: pointer)
-        self.init(__unchecked: (), Ordinal(bits))
+        self.init(__unchecked: (), Ordinal(UInt(bitPattern: pointer)))
     }
 
     /// Creates an address from a non-null typed pointer.

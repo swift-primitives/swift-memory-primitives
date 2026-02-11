@@ -150,9 +150,7 @@ extension Memory.Alignment {
     /// - Parameter pointer: The pointer to check.
     /// - Returns: `true` if the pointer address is a multiple of this alignment.
     public func isAligned(_ pointer: UnsafeRawPointer) -> Bool {
-        let address = UInt(bitPattern: pointer)
-        let mask: UInt = shift.mask()
-        return address & mask == 0
+        UInt(bitPattern: pointer) & shift.mask() == 0
     }
 
     /// Checks if a mutable pointer is aligned.
@@ -160,9 +158,7 @@ extension Memory.Alignment {
     /// - Parameter pointer: The pointer to check.
     /// - Returns: `true` if the pointer address is a multiple of this alignment.
     public func isAligned(_ pointer: UnsafeMutableRawPointer) -> Bool {
-        let address = UInt(bitPattern: pointer)
-        let mask: UInt = shift.mask()
-        return address & mask == 0
+        UInt(bitPattern: pointer) & shift.mask() == 0
     }
 }
 
@@ -176,8 +172,7 @@ extension Memory.Alignment {
     /// - Precondition: `shift < Scalar.bitWidth`
     @inlinable
     public func isAligned<Scalar: FixedWidthInteger>(_ value: Scalar) -> Bool {
-        let mask: Scalar = shift.mask()
-        return value & mask == 0
+        value & shift.mask() == 0
     }
 }
 
@@ -193,7 +188,6 @@ extension Memory.Alignment: Comparable {
 
 extension Memory.Alignment: CustomStringConvertible {
     public var description: String {
-        let mag: Int = magnitude()
-        return "\(mag)"
+        "\(magnitude() as Int)"
     }
 }

@@ -41,6 +41,7 @@ let package = Package(
         .package(path: "../swift-vector-primitives"),
         .package(path: "../swift-property-primitives"),
         .package(path: "../swift-index-primitives"),
+        .package(path: "../swift-bit-primitives"),
         .package(path: "../swift-bit-vector-primitives"),
     ],
     targets: [
@@ -69,6 +70,7 @@ let package = Package(
                 .product(name: "Identity Primitives", package: "swift-identity-primitives"),
                 .product(name: "Vector Primitives", package: "swift-vector-primitives"),
                 .product(name: "Property Primitives", package: "swift-property-primitives"),
+                .product(name: "Bit Primitives", package: "swift-bit-primitives"),
             ]
         ),
         .target(
