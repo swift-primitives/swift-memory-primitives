@@ -59,6 +59,12 @@ extension Memory {
 // MARK: - Properties
 
 extension Memory.Arena {
+    /// The base address of the arena's backing storage.
+    ///
+    /// Storage.Arena uses this to compute typed pointers from slot indices.
+    @inlinable
+    public var baseAddress: UnsafeMutableRawPointer { unsafe _storage }
+
     /// The total capacity in bytes.
     @inlinable
     public var capacity: Memory.Address.Count { _capacity }

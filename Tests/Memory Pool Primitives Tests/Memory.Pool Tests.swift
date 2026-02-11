@@ -339,6 +339,201 @@ extension Memory.Pool.Test.Integration {
     }
 }
 
+// MARK: - Index-Based API Tests
+
+extension Memory.Pool.Test.Unit {
+    @Test
+    func `allocateSlot returns sequential indices`() throws {
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 4)
+        let s0 = try pool.allocateSlot()
+        let s1 = try pool.allocateSlot()
+        let s2 = try pool.allocateSlot()
+
+        #expect(s0 == 0)
+        #expect(s1 == 1)
+        #expect(s2 == 2)
+    }
+
+    @Test
+    func `deallocate(at:) roundtrip`() throws {
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 4)
+        let slot = try pool.allocateSlot()
+        #expect(pool.allocated == 1)
+
+        try pool.deallocate(at: slot)
+        #expect(pool.allocated == 0)
+        #expect(pool.available == 4)
+    }
+
+    @Test
+    func `deallocate(at:) detects double free`() throws {
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 4)
+        let slot = try pool.allocateSlot()
+        try pool.deallocate(at: slot)
+
+        #expect(throws: Memory.Pool.Error.doubleFree) {
+            try pool.deallocate(at: slot)
+        }
+    }
+
+    @Test
+    func `allocatedSlotIndices tracks state`() throws {
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 8)
+
+        // Initially empty.
+        var indices: [Index<Memory.Pool.Slot>] = []
+        pool.allocatedSlotIndices.forEach { indices.append($0.retag(Memory.Pool.Slot.self)) }
+        #expect(indices.isEmpty)
+
+        // Allocate three slots.
+        let s0 = try pool.allocateSlot()
+        let s1 = try pool.allocateSlot()
+        let s2 = try pool.allocateSlot()
+
+        indices.removeAll()
+        pool.allocatedSlotIndices.forEach { indices.append($0.retag(Memory.Pool.Slot.self)) }
+        #expect(indices.count == 3)
+        #expect(indices.contains(s0))
+        #expect(indices.contains(s1))
+        #expect(indices.contains(s2))
+
+        // Deallocate the middle one.
+        try pool.deallocate(at: s1)
+
+        indices.removeAll()
+        pool.allocatedSlotIndices.forEach { indices.append($0.retag(Memory.Pool.Slot.self)) }
+        #expect(indices.count == 2)
+        #expect(indices.contains(s0))
+        #expect(!indices.contains(s1))
+        #expect(indices.contains(s2))
+    }
+
+    @Test
+    func `allocateSlot reuses freed slots via LIFO`() throws {
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 4)
+
+        let a = try pool.allocateSlot()
+        let b = try pool.allocateSlot()
+
+        try pool.deallocate(at: b)
+        try pool.deallocate(at: a)
+
+        // LIFO: last freed (a) is first allocated
+        let first = try pool.allocateSlot()
+        #expect(first == a)
+        let second = try pool.allocateSlot()
+        #expect(second == b)
+    }
+
+    @Test
+    func `allocate delegates to allocateSlot`() throws {
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 4)
+
+        // allocate() should return pointer at slot 0
+        let pointer = try unsafe pool.allocate()
+        let expectedPointer = unsafe pool.pointer(at: 0)
+        #expect(unsafe pointer == expectedPointer)
+    }
+
+    @Test
+    func `isExhausted with virgin cursor and free list`() throws {
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 2)
+
+        // Allocate 1 via virgin cursor — not exhausted
+        let s0 = try pool.allocateSlot()
+        #expect(pool.isExhausted == false)
+
+        // Allocate 2nd — exhausted (virgin cursor at sentinel, free list empty)
+        _ = try pool.allocateSlot()
+        #expect(pool.isExhausted == true)
+
+        // Free s0 — not exhausted (free list has an entry)
+        try pool.deallocate(at: s0)
+        #expect(pool.isExhausted == false)
+    }
+
+    @Test
+    func `reset with virgin cursor`() throws {
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 4)
+
+        // Allocate 2 (via virgin cursor)
+        _ = try pool.allocateSlot()
+        _ = try pool.allocateSlot()
+
+        pool.reset()
+
+        #expect(pool.allocated == 0)
+        #expect(pool.available == 4)
+        #expect(pool.isExhausted == false)
+
+        // Should allocate from virgin cursor again at slot 0
+        let s0 = try pool.allocateSlot()
+        #expect(s0 == 0)
+    }
+}
+
+// MARK: - Duplicate Tests
+
+extension Memory.Pool.Test.Integration {
+    @Test
+    func `duplicate creates independent copy`() throws {
+        var pool = try Memory.Pool(
+            slotSize: Memory.Address.Count(Cardinal(UInt(MemoryLayout<Int>.stride))),
+            slotAlignment: .doubleWord,
+            capacity: 4
+        )
+
+        let s0 = try pool.allocateSlot()
+        let s1 = try pool.allocateSlot()
+        let s2 = try pool.allocateSlot()
+
+        // Initialize typed content
+        let p0 = unsafe pool.pointer(at: s0).assumingMemoryBound(to: Int.self)
+        let p1 = unsafe pool.pointer(at: s1).assumingMemoryBound(to: Int.self)
+        let p2 = unsafe pool.pointer(at: s2).assumingMemoryBound(to: Int.self)
+        unsafe p0.initialize(to: 100)
+        unsafe p1.initialize(to: 200)
+        unsafe p2.initialize(to: 300)
+
+        // Free the middle slot
+        _ = unsafe p1.move()
+        try pool.deallocate(at: s1)
+
+        // Duplicate
+        var copy = unsafe pool.duplicate { src, dst in
+            unsafe dst.storeBytes(
+                of: src.load(as: Int.self),
+                as: Int.self
+            )
+        }
+
+        // Verify copy has same allocation state
+        #expect(copy.allocated == 2)
+        #expect(copy.capacity == 4)
+        #expect(copy.available == 2)
+
+        // Verify typed content in copy
+        let cp0 = unsafe copy.pointer(at: s0).assumingMemoryBound(to: Int.self)
+        let cp2 = unsafe copy.pointer(at: s2).assumingMemoryBound(to: Int.self)
+        #expect(unsafe cp0.pointee == 100)
+        #expect(unsafe cp2.pointee == 300)
+
+        // Verify independence: modify original, copy unaffected
+        unsafe p0.pointee = 999
+        #expect(unsafe cp0.pointee == 100)
+
+        // Verify freed slot is reusable in copy
+        let reused = try copy.allocateSlot()
+        #expect(reused == s1)
+
+        // Cleanup
+        _ = unsafe p0.move()
+        _ = unsafe p2.move()
+        _ = unsafe cp0.move()
+        _ = unsafe cp2.move()
+    }
+}
+
 // MARK: - Performance Tests
 
 extension Memory.Pool.Test.Performance {

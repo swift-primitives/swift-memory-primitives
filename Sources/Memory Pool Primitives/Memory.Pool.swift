@@ -13,7 +13,7 @@ extension Memory {
     /// A fixed-slot allocator with O(1) allocate and deallocate via in-band free list.
     ///
     /// Pool allocation provides:
-    /// - O(1) allocation (pop from free list)
+    /// - O(1) allocation (virgin cursor or free list pop)
     /// - O(1) deallocation (push to free list)
     /// - Per-slot reuse (unlike Arena, which only supports bulk reset)
     /// - Zero fragmentation (all slots are the same size)
@@ -24,7 +24,7 @@ extension Memory {
     /// - Slot alignment is power of 2
     /// - Capacity is fixed at construction, immutable
     /// - `0 ≤ allocated ≤ capacity`
-    /// - Free list is acyclic and contained within `[0, capacity)`
+    /// - Free list is acyclic and contained within `[0, _nextUnused)`
     /// - Every address returned by `allocate()` belongs to this pool's backing buffer
     ///
     /// ## Free List Design
@@ -34,6 +34,9 @@ extension Memory {
     /// sentinel value `_sentinel` (one-past-last, analogous to `endIndex`) marks
     /// end-of-list. No raw value extraction is needed — the typed index flows
     /// directly through memory operations.
+    ///
+    /// Virgin slots (never allocated) are tracked by `_nextUnused` cursor,
+    /// providing O(1) initialization (no free list pre-build).
     ///
     /// A separate `Bit.Vector` tracks which slots are allocated, enabling correct
     /// double-free detection even when consumers store typed content in allocated
@@ -45,12 +48,12 @@ extension Memory {
     ///
     /// ```swift
     /// var pool = try Memory.Pool(slotSize: ..., slotAlignment: ..., capacity: ...)
-    /// let address = try pool.allocate()
-    /// let pointer = address.assumingMemoryBound(to: Node.self)
+    /// let slot = try pool.allocateSlot()
+    /// let pointer = pool.pointer(at: slot).assumingMemoryBound(to: Node.self)
     /// pointer.initialize(to: node)
     /// // ... use ...
     /// _ = pointer.move()
-    /// try pool.deallocate(address)
+    /// try pool.deallocate(at: slot)
     /// ```
     @safe
     public struct Pool: ~Copyable {
@@ -78,7 +81,8 @@ extension Memory {
         @usableFromInline
         internal var _allocated: Index<Slot>.Count
 
-        /// Head of the free list. Equal to `_sentinel` when exhausted.
+        /// Head of the free list (previously used then freed slots).
+        /// Equal to `_sentinel` when no freed slots are available.
         ///
         /// This is a typed `Index<Slot>`, not an Optional. The sentinel
         /// value (`_capacity.map(Ordinal.init)`, one-past-last) represents
@@ -86,11 +90,19 @@ extension Memory {
         @usableFromInline
         internal var _freeHead: Index<Slot>
 
+        /// Next virgin (never-used) slot. Advances monotonically from `.zero` to sentinel.
+        /// Provides O(1) init by deferring free list construction.
+        @usableFromInline
+        internal var _nextUnused: Index<Slot>
+
         /// Tracks which slots are currently allocated for double-free detection.
         @usableFromInline
         internal var _allocationBits: Bit.Vector
 
         /// Creates a pool with the specified slot geometry and capacity.
+        ///
+        /// All slots start uninitialized. Uses O(1) virgin cursor initialization
+        /// instead of O(n) free list pre-build.
         ///
         /// - Parameters:
         ///   - slotSize: Size of each slot in bytes. Must be ≥ `MemoryLayout<Index<Slot>>.size`.
@@ -134,18 +146,29 @@ extension Memory {
             )
             unsafe self._storage = storage
 
-            // All properties initialized — build the free list.
-            let sentinel = capacity.map(Ordinal.init)
-            self._freeHead = .zero
-            var slot: Index<Slot> = .zero
-            while slot < sentinel {
-                let next = slot + .one
-                unsafe _pointer(at: slot).storeBytes(
-                    of: (next < sentinel) ? next : sentinel,
-                    as: Index<Slot>.self
-                )
-                slot += .one
-            }
+            // O(1) initialization via virgin cursor — no free list pre-build.
+            self._freeHead = capacity.map(Ordinal.init) // sentinel
+            self._nextUnused = .zero
+        }
+
+        /// Internal initializer for copy construction (used by `duplicate`).
+        @usableFromInline
+        internal init(
+            _copying storage: UnsafeMutableRawPointer,
+            slotStride: Affine.Discrete.Ratio<Slot, Memory>,
+            capacity: Index<Slot>.Count,
+            allocated: Index<Slot>.Count,
+            freeHead: Index<Slot>,
+            nextUnused: Index<Slot>,
+            allocationBits: consuming Bit.Vector
+        ) {
+            unsafe self._storage = storage
+            self._slotStride = slotStride
+            self._capacity = capacity
+            self._allocated = allocated
+            self._freeHead = freeHead
+            self._nextUnused = nextUnused
+            self._allocationBits = allocationBits
         }
 
         deinit {
@@ -198,12 +221,80 @@ extension Memory.Pool {
     @inlinable
     public var slotStride: Affine.Discrete.Ratio<Slot, Memory> { _slotStride }
 
-    /// Whether all slots are allocated (no free slots remain).
+    /// Whether all slots are allocated (no free or virgin slots remain).
     @inlinable
-    public var isExhausted: Bool { _freeHead == _sentinel }
+    public var isExhausted: Bool {
+        _freeHead == _sentinel && _nextUnused >= _sentinel
+    }
+
+    /// Indices of all currently allocated slots.
+    @inlinable
+    public var allocatedSlotIndices: Bit.Vector.Ones.View {
+        _allocationBits.ones
+    }
 }
 
-// MARK: - Operations
+// MARK: - Index-Based Operations
+
+extension Memory.Pool {
+    /// Allocates a slot and returns its index.
+    ///
+    /// Prefers reusing freed slots (free list). Falls back to virgin cursor.
+    /// The returned slot contains uninitialized memory — the caller must
+    /// initialize it before use.
+    ///
+    /// - Returns: Index of the allocated slot.
+    /// - Throws: `.exhausted` if no free or virgin slots remain.
+    /// - Complexity: O(1)
+    @inlinable
+    public mutating func allocateSlot() throws(Memory.Pool.Error) -> Index<Slot> {
+        // Try free list first (reused slots)
+        if _freeHead != _sentinel {
+            let slot = _freeHead
+            _freeHead = unsafe _pointer(at: slot).load(as: Index<Slot>.self)
+            _allocationBits[slot.retag(Bit.self)] = true
+            _allocated += .one
+            return slot
+        }
+
+        // Try virgin cursor
+        guard _nextUnused < _sentinel else {
+            throw .exhausted(capacity: _capacity)
+        }
+
+        let slot = _nextUnused
+        _nextUnused = _nextUnused + .one
+        _allocationBits[slot.retag(Bit.self)] = true
+        _allocated += .one
+        return slot
+    }
+
+    /// Returns a slot to the free list by index.
+    ///
+    /// The caller MUST deinitialize any typed content stored in the slot
+    /// before calling this method.
+    ///
+    /// - Parameter slot: A slot index previously returned by `allocateSlot()`.
+    /// - Throws: `.doubleFree` if the slot is already free.
+    /// - Complexity: O(1)
+    @inlinable
+    public mutating func deallocate(at slot: Index<Slot>) throws(Memory.Pool.Error) {
+        let bitIndex = slot.retag(Bit.self)
+        guard _allocationBits[bitIndex] else {
+            throw .doubleFree
+        }
+
+        // Clear allocation bit.
+        _allocationBits[bitIndex] = false
+
+        // Push current head into this slot, make slot new head (LIFO).
+        unsafe _pointer(at: slot).storeBytes(of: _freeHead, as: Index<Slot>.self)
+        _freeHead = slot
+        _allocated = _allocated.subtract.saturating(.one)
+    }
+}
+
+// MARK: - Pointer-Based Operations
 
 extension Memory.Pool {
     /// Allocates a slot and returns a pointer to its memory.
@@ -217,20 +308,8 @@ extension Memory.Pool {
     /// - Complexity: O(1)
     @inlinable
     public mutating func allocate() throws(Memory.Pool.Error) -> UnsafeMutableRawPointer {
-        guard _freeHead != _sentinel else {
-            throw .exhausted(capacity: _capacity)
-        }
-
-        let head = _freeHead
-
-        // Advance free list head: load the typed next-free index directly.
-        _freeHead = unsafe _pointer(at: head).load(as: Index<Slot>.self)
-
-        // Mark slot as allocated.
-        _allocationBits[head.retag(Bit.self)] = true
-        _allocated += .one
-
-        return unsafe _pointer(at: head)
+        let slot = try allocateSlot()
+        return unsafe _pointer(at: slot)
     }
 
     /// Returns a slot to the free list.
@@ -249,18 +328,7 @@ extension Memory.Pool {
         guard let slot = unsafe slotIndex(for: pointer) else {
             throw .foreignPointer
         }
-
-        // Double-free detection via allocation bitset.
-        let bitIndex = slot.retag(Bit.self)
-        guard _allocationBits[bitIndex] else {
-            throw .doubleFree
-        }
-
-        // Push current head into this slot's memory, then make this slot the new head.
-        _allocationBits[bitIndex] = false
-        unsafe _pointer(at: slot).storeBytes(of: _freeHead, as: Index<Slot>.self)
-        _freeHead = slot
-        _allocated = _allocated.subtract.saturating(.one)
+        try deallocate(at: slot)
     }
 
     /// Returns all slots to the free list.
@@ -268,20 +336,11 @@ extension Memory.Pool {
     /// - Warning: All previously returned pointers become invalid.
     ///   The caller MUST deinitialize any typed content in all allocated
     ///   slots before calling this method.
-    /// - Complexity: O(n) where n is capacity.
+    /// - Complexity: O(n/64) where n is capacity (clear bits only).
     @inlinable
     public mutating func reset() {
-        let sentinel = _sentinel
-        var slot: Index<Slot> = .zero
-        while slot < sentinel {
-            let next = slot + .one
-            unsafe _pointer(at: slot).storeBytes(
-                of: (next < sentinel) ? next : sentinel,
-                as: Index<Slot>.self
-            )
-            slot += .one
-        }
-        _freeHead = .zero
+        _freeHead = _sentinel
+        _nextUnused = .zero
         _allocated = .zero
         _allocationBits.clear.all()
     }
