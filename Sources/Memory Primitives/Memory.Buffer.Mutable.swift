@@ -133,8 +133,13 @@ extension Memory.Buffer.Mutable {
     }
 
     /// Deallocates the memory referenced by this buffer.
+    ///
+    /// No-op for empty (sentinel-backed) buffers. The caller must ensure
+    /// the buffer represents an owned allocation.
     @inlinable
     public func deallocate() {
+        let sentinel = unsafe Memory.Address(_emptyMutableBufferSentinel)
+        guard _start != sentinel else { return }
         unsafe UnsafeMutableRawPointer(_start).deallocate()
     }
 }

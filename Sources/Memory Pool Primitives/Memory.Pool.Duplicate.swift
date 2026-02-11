@@ -31,9 +31,9 @@ extension Memory.Pool {
     ) -> Memory.Pool {
         // Allocate new backing storage with same geometry.
         let totalBytes = _capacity * _slotStride
-        let newStorage = UnsafeMutableRawPointer.allocate(
-            byteCount: Int(bitPattern: totalBytes),
-            alignment: MemoryLayout<UInt>.alignment
+        let newStorage = unsafe UnsafeMutableRawPointer.allocate(
+            count: totalBytes,
+            alignment: _slotAlignment
         )
 
         // Copy used region (bounded by virgin cursor).
@@ -68,6 +68,7 @@ extension Memory.Pool {
         return unsafe Memory.Pool(
             _copying: newStorage,
             slotStride: _slotStride,
+            slotAlignment: _slotAlignment,
             capacity: _capacity,
             allocated: _allocated,
             freeHead: _freeHead,

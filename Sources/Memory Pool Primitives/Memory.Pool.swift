@@ -73,6 +73,10 @@ extension Memory {
         @usableFromInline
         internal let _slotStride: Affine.Discrete.Ratio<Slot, Memory>
 
+        /// Alignment requirement for each slot (cannot be recovered from stride).
+        @usableFromInline
+        internal let _slotAlignment: Memory.Alignment
+
         /// Total number of slots.
         @usableFromInline
         internal let _capacity: Index<Slot>.Count
@@ -119,7 +123,7 @@ extension Memory {
                 throw .invalidCapacity
             }
 
-            let minimumSlotSize = Memory.Address.Count(UInt(MemoryLayout<UInt>.size))
+            let minimumSlotSize = Memory.Address.Count(UInt(MemoryLayout<Index<Slot>>.size))
             guard slotSize >= minimumSlotSize else {
                 throw .slotSizeTooSmall(
                     requested: slotSize,
@@ -132,6 +136,7 @@ extension Memory {
             let stride = Affine.Discrete.Ratio<Slot, Memory>(alignedSize)
 
             self._slotStride = stride
+            self._slotAlignment = slotAlignment
             self._capacity = capacity
             self._allocated = .zero
             self._allocationBits = Bit.Vector(
@@ -156,6 +161,7 @@ extension Memory {
         internal init(
             _copying storage: UnsafeMutableRawPointer,
             slotStride: Affine.Discrete.Ratio<Slot, Memory>,
+            slotAlignment: Memory.Alignment,
             capacity: Index<Slot>.Count,
             allocated: Index<Slot>.Count,
             freeHead: Index<Slot>,
@@ -164,6 +170,7 @@ extension Memory {
         ) {
             unsafe self._storage = storage
             self._slotStride = slotStride
+            self._slotAlignment = slotAlignment
             self._capacity = capacity
             self._allocated = allocated
             self._freeHead = freeHead
@@ -220,6 +227,10 @@ extension Memory.Pool {
     /// Scaling factor from slot domain to byte domain (stride-aligned).
     @inlinable
     public var slotStride: Affine.Discrete.Ratio<Slot, Memory> { _slotStride }
+
+    /// Alignment requirement for each slot.
+    @inlinable
+    public var slotAlignment: Memory.Alignment { _slotAlignment }
 
     /// Whether all slots are allocated (no free or virgin slots remain).
     @inlinable
