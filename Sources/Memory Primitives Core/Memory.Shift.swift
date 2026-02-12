@@ -102,18 +102,24 @@ extension Memory.Shift {
     public static let four = Memory.Shift(unchecked: 4)
 
     /// 9-bit shift (2^9 = 512, legacy sector).
+    public static let nine = Memory.Shift(unchecked: 9)
+    @available(*, deprecated, message: "Use '.nine'")
     public static let sector512 = Memory.Shift(unchecked: 9)
 
     /// 10-bit shift (2^10 = 1024).
     public static let kilo = Memory.Shift(unchecked: 10)
 
     /// 12-bit shift (2^12 = 4096, x86 page).
+    public static let twelve = Memory.Shift(unchecked: 12)
+    @available(*, deprecated, message: "Use '.twelve'")
     public static let page4096 = Memory.Shift(unchecked: 12)
 
     /// 13-bit shift (2^13 = 8192).
     public static let `8k` = Memory.Shift(unchecked: 13)
 
     /// 14-bit shift (2^14 = 16384, Apple Silicon page).
+    public static let fourteen = Memory.Shift(unchecked: 14)
+    @available(*, deprecated, message: "Use '.fourteen'")
     public static let page16384 = Memory.Shift(unchecked: 14)
 }
 

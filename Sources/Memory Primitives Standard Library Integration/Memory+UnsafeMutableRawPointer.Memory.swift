@@ -6,9 +6,6 @@
 //
 
 import Property_Primitives
-import Memory_Primitives_Core
-
-
 public import Memory_Primitives_Core
 
 // MARK: - Accessor

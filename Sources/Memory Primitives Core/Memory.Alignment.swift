@@ -70,38 +70,44 @@ extension Memory.Alignment {
     public static let `1` = Memory.Alignment(uncheckedShift: 0)
 
     /// 2-byte alignment.
-    public static let halfWord = Memory.Alignment(uncheckedShift: 1)
     public static let `2` = Memory.Alignment(uncheckedShift: 1)
+    @available(*, deprecated, message: "Use '.2'")
+    public static let halfWord = Memory.Alignment(uncheckedShift: 1)
 
     /// 4-byte alignment.
     public static let word = Memory.Alignment(uncheckedShift: 2)
     public static let `4` = Memory.Alignment(uncheckedShift: 2)
 
     /// 8-byte alignment.
-    public static let doubleWord = Memory.Alignment(uncheckedShift: 3)
     public static let `8` = Memory.Alignment(uncheckedShift: 3)
+    @available(*, deprecated, message: "Use '.8'")
+    public static let doubleWord = Memory.Alignment(uncheckedShift: 3)
 
     /// 16-byte alignment.
-    public static let quadWord = Memory.Alignment(uncheckedShift: 4)
     public static let `16` = Memory.Alignment(uncheckedShift: 4)
+    @available(*, deprecated, message: "Use '.16'")
+    public static let quadWord = Memory.Alignment(uncheckedShift: 4)
 
     /// 512-byte alignment (legacy disk sector).
-    public static let sector512 = Memory.Alignment(uncheckedShift: 9)
     public static let `512` = Memory.Alignment(uncheckedShift: 9)
+    @available(*, deprecated, message: "Use '.512'")
+    public static let sector512 = Memory.Alignment(uncheckedShift: 9)
 
     /// 1024-byte alignment.
     public static let `1024` = Memory.Alignment(uncheckedShift: 10)
 
     /// 4096-byte alignment (modern SSD sector, x86 page).
-    public static let page4096 = Memory.Alignment(uncheckedShift: 12)
     public static let `4096` = Memory.Alignment(uncheckedShift: 12)
+    @available(*, deprecated, message: "Use '.4096'")
+    public static let page4096 = Memory.Alignment(uncheckedShift: 12)
 
     /// 8192-byte alignment.
     public static let `8192` = Memory.Alignment(uncheckedShift: 13)
 
     /// 16384-byte alignment (Apple Silicon page).
-    public static let page16384 = Memory.Alignment(uncheckedShift: 14)
     public static let `16384` = Memory.Alignment(uncheckedShift: 14)
+    @available(*, deprecated, message: "Use '.16384'")
+    public static let page16384 = Memory.Alignment(uncheckedShift: 14)
 }
 
 // MARK: - Magnitude Access

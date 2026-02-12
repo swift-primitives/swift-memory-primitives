@@ -204,12 +204,11 @@ extension Memory.Buffer {
             return nil
         }
 
-        // Compute new start using pointer arithmetic
         // _start is always non-null (sentinel-backed), so advanced(by:) is safe
-        let newStart = unsafe Memory.Address(
-            UnsafeRawPointer(_start).advanced(by: start)
+        return Self(
+            start: unsafe Memory.Address(UnsafeRawPointer(_start).advanced(by: start)),
+            count: sliceCount
         )
-        return Self(start: newStart, count: sliceCount)
     }
 }
 

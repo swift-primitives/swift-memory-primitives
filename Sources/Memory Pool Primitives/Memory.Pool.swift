@@ -131,11 +131,7 @@ extension Memory {
                 )
             }
 
-            // Compute stride: round slotSize up to alignment boundary
-            let alignedSize = slotAlignment.align.up(slotSize)
-            let stride = Affine.Discrete.Ratio<Slot, Memory>(alignedSize)
-
-            self._slotStride = stride
+            self._slotStride = Affine.Discrete.Ratio<Slot, Memory>(slotAlignment.align.up(slotSize))
             self._slotAlignment = slotAlignment
             self._capacity = capacity
             self._allocated = .zero
@@ -144,12 +140,10 @@ extension Memory {
             )
 
             // Allocate backing storage
-            let totalBytes = capacity * stride
-            let storage = unsafe UnsafeMutableRawPointer.allocate(
-                count: totalBytes,
+            unsafe self._storage = UnsafeMutableRawPointer.allocate(
+                count: capacity * _slotStride,
                 alignment: slotAlignment
             )
-            unsafe self._storage = storage
 
             // O(1) initialization via virgin cursor — no free list pre-build.
             self._freeHead = capacity.map(Ordinal.init) // sentinel
@@ -190,8 +184,7 @@ extension Memory.Pool {
     /// Returns the pointer to the slot at the given index (no bounds check).
     @inlinable
     internal func _pointer(at index: Index<Slot>) -> UnsafeMutableRawPointer {
-        let byteOffset = Index<Slot>.Offset(fromZero: index) * _slotStride
-        return unsafe _storage.advanced(by: byteOffset)
+        unsafe _storage.advanced(by: Index<Slot>.Offset(fromZero: index) * _slotStride)
     }
 }
 
@@ -319,8 +312,7 @@ extension Memory.Pool {
     /// - Complexity: O(1)
     @inlinable
     public mutating func allocate() throws(Memory.Pool.Error) -> UnsafeMutableRawPointer {
-        let slot = try allocateSlot()
-        return unsafe _pointer(at: slot)
+        try unsafe _pointer(at: allocateSlot())
     }
 
     /// Returns a slot to the free list.

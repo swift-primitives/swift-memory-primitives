@@ -30,27 +30,28 @@ extension Memory.Pool {
         ) -> Void
     ) -> Memory.Pool {
         // Allocate new backing storage with same geometry.
-        let totalBytes = _capacity * _slotStride
         let newStorage = unsafe UnsafeMutableRawPointer.allocate(
-            count: totalBytes,
+            count: _capacity * _slotStride,
             alignment: _slotAlignment
         )
 
         // Copy used region (bounded by virgin cursor).
         var slot: Index<Slot> = .zero
         while slot < _nextUnused {
-            let bitIndex = slot.retag(Bit.self)
             let srcPointer = unsafe _pointer(at: slot)
-            let byteOffset = Index<Slot>.Offset(fromZero: slot) * _slotStride
-            let dstPointer = unsafe newStorage.advanced(by: byteOffset)
+            let dstPointer = unsafe newStorage.advanced(
+                by: Index<Slot>.Offset(fromZero: slot) * _slotStride
+            )
 
-            if _allocationBits[bitIndex] {
+            if _allocationBits[slot.retag(Bit.self)] {
                 // Allocated slot: call closure for type-correct copy.
                 unsafe copySlotContents(srcPointer, dstPointer)
             } else {
                 // Freed slot: raw-copy the in-band free list link.
-                let link = unsafe srcPointer.load(as: Index<Slot>.self)
-                unsafe dstPointer.storeBytes(of: link, as: Index<Slot>.self)
+                unsafe dstPointer.storeBytes(
+                    of: srcPointer.load(as: Index<Slot>.self),
+                    as: Index<Slot>.self
+                )
             }
             slot = slot + .one
         }

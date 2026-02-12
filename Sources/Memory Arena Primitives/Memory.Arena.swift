@@ -41,11 +41,10 @@ extension Memory {
         /// - Precondition: `capacity > .zero`
         @inlinable
         public init(capacity: Memory.Address.Count) {
-            let storage = unsafe UnsafeMutableRawPointer.allocate(
+            unsafe self._storage = UnsafeMutableRawPointer.allocate(
                 count: capacity,
-                alignment: .doubleWord
+                alignment: .`8`
             )
-            unsafe self._storage = storage
             self._capacity = capacity
             self._allocated = .zero
         }
@@ -59,9 +58,14 @@ extension Memory {
 // MARK: - Properties
 
 extension Memory.Arena {
-    /// The base address of the arena's backing storage.
+    /// The start address of the arena's backing storage.
     ///
     /// Storage.Arena uses this to compute typed pointers from slot indices.
+    @inlinable
+    public var start: UnsafeMutableRawPointer { unsafe _storage }
+
+    /// The base address of the arena's backing storage.
+    @available(*, deprecated, renamed: "start")
     @inlinable
     public var baseAddress: UnsafeMutableRawPointer { unsafe _storage }
 

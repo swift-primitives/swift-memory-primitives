@@ -125,11 +125,9 @@ extension Memory.Buffer.Mutable {
         count: Memory.Address.Count,
         alignment: Memory.Alignment
     ) -> Self {
-        let buffer = unsafe UnsafeMutableRawBufferPointer.allocate(
-            count: count,
-            alignment: alignment
+        return unsafe Self(
+            UnsafeMutableRawBufferPointer.allocate(count: count, alignment: alignment)
         )
-        return unsafe Self(buffer)
     }
 
     /// Deallocates the memory referenced by this buffer.
@@ -138,8 +136,7 @@ extension Memory.Buffer.Mutable {
     /// the buffer represents an owned allocation.
     @inlinable
     public func deallocate() {
-        let sentinel = unsafe Memory.Address(_emptyMutableBufferSentinel)
-        guard _start != sentinel else { return }
+        guard unsafe _start != Memory.Address(_emptyMutableBufferSentinel) else { return }
         unsafe UnsafeMutableRawPointer(_start).deallocate()
     }
 }
@@ -291,12 +288,11 @@ extension Memory.Buffer.Mutable {
             return nil
         }
 
-        // Compute new start using pointer arithmetic
         // _start is always non-null (sentinel-backed), so advanced(by:) is safe
-        let newStart = unsafe Memory.Address(
-            UnsafeMutableRawPointer(_start).advanced(by: start)
+        return Self(
+            start: unsafe Memory.Address(UnsafeMutableRawPointer(_start).advanced(by: start)),
+            count: sliceCount
         )
-        return Self(start: newStart, count: sliceCount)
     }
 }
 
