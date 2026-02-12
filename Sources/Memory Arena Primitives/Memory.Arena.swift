@@ -64,11 +64,6 @@ extension Memory.Arena {
     @inlinable
     public var start: UnsafeMutableRawPointer { unsafe _storage }
 
-    /// The base address of the arena's backing storage.
-    @available(*, deprecated, renamed: "start")
-    @inlinable
-    public var baseAddress: UnsafeMutableRawPointer { unsafe _storage }
-
     /// The total capacity in bytes.
     @inlinable
     public var capacity: Memory.Address.Count { _capacity }

@@ -212,28 +212,12 @@ extension Memory.Pool {
         _capacity.subtract.saturating(_allocated)
     }
 
-    /// Scaling factor from slot domain to byte domain (stride-aligned).
-    @available(*, deprecated, renamed: "slot.stride")
-    @inlinable
-    public var slotStride: Affine.Discrete.Ratio<Slot, Memory> { _slotStride }
-
-    /// Alignment requirement for each slot.
-    @available(*, deprecated, renamed: "slot.alignment")
-    @inlinable
-    public var slotAlignment: Memory.Alignment { _slotAlignment }
-
     /// Whether all slots are allocated (no free or virgin slots remain).
     @inlinable
     public var isExhausted: Bool {
         _freeHead == _sentinel && _nextUnused >= _sentinel
     }
 
-    /// Indices of all currently allocated slots.
-    @available(*, deprecated, renamed: "allocation.indices")
-    @inlinable
-    public var allocatedSlotIndices: Bit.Vector.Ones.View {
-        _allocationBits.ones
-    }
 }
 
 // MARK: - Index-Based Operations
@@ -379,12 +363,6 @@ extension Memory.Pool {
         return slotCount.map(Ordinal.init)
     }
 
-    /// Returns the slot index for a pointer previously returned by `allocate()`.
-    @available(*, deprecated, renamed: "index(for:)")
-    @inlinable
-    public func slotIndex(for pointer: UnsafeMutableRawPointer) -> Index<Slot>? {
-        unsafe index(for: pointer)
-    }
 }
 
 // MARK: - Sendable

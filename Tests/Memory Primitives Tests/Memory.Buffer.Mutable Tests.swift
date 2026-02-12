@@ -35,7 +35,7 @@ extension Memory.Buffer.Mutable.Test.Unit {
 
     @Test
     func `allocate creates buffer with specified size`() {
-        let buffer = Memory.Buffer.Mutable.allocate(count: 100, alignment: .doubleWord)
+        let buffer = Memory.Buffer.Mutable.allocate(count: 100, alignment: .`8`)
         defer { buffer.deallocate() }
 
         #expect(!buffer.isEmpty)
@@ -64,7 +64,7 @@ extension Memory.Buffer.Mutable.Test.Unit {
 
     @Test
     func `store writes value to buffer`() {
-        let buffer = Memory.Buffer.Mutable.allocate(count: 8, alignment: .doubleWord)
+        let buffer = Memory.Buffer.Mutable.allocate(count: 8, alignment: .`8`)
         defer { buffer.deallocate() }
 
         buffer.store(0xDEADBEEFCAFEBABE, as: UInt64.self)

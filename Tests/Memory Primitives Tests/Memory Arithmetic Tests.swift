@@ -273,7 +273,7 @@ extension Memory.Arithmetic.Count {
     @Test
     func `Count as allocation size for Buffer.Mutable`() {
         let count: Memory.Address.Count = 64
-        let alignment: Memory.Alignment = .doubleWord
+        let alignment: Memory.Alignment = .`8`
         let buffer = Memory.Buffer.Mutable.allocate(count: count, alignment: alignment)
 
         #expect(buffer.count == count)
@@ -284,7 +284,7 @@ extension Memory.Arithmetic.Count {
     @Test
     func `Count in store/read with correct byte size`() {
         let byteCount: Memory.Address.Count = .init(UInt(MemoryLayout<UInt64>.size))
-        let alignment: Memory.Alignment = .doubleWord
+        let alignment: Memory.Alignment = .`8`
         var arena: Memory.Arena = .init(capacity: 1024)
 
         guard let address = arena.allocate(count: byteCount, alignment: alignment) else {
@@ -379,7 +379,7 @@ extension Memory.Arithmetic.Composition {
             capacity: .init(UInt(intStride * count + MemoryLayout<Int>.alignment))
         )
 
-        let alignment: Memory.Alignment = .doubleWord
+        let alignment: Memory.Alignment = .`8`
         let byteCount: Memory.Address.Count = .init(UInt(intStride * count))
         guard let base = arena.allocate(count: byteCount, alignment: alignment) else {
             Issue.record("Allocation failed")
@@ -406,7 +406,7 @@ extension Memory.Arithmetic.Composition {
     func `Struct field layout: compute addresses at known byte offsets`() {
         // Simulate a struct with two fields: UInt32 at offset 0, UInt64 at offset 8
         let size: Memory.Address.Count = 16
-        let alignment: Memory.Alignment = .doubleWord
+        let alignment: Memory.Alignment = .`8`
         var arena: Memory.Arena = .init(capacity: 1024)
 
         guard let base = arena.allocate(count: size, alignment: alignment) else {
@@ -436,7 +436,7 @@ extension Memory.Arithmetic.Composition {
         let elementCount: Index<UInt64>.Count = 4
         let byteCount: Memory.Address.Count = elementCount * stride
 
-        let alignment: Memory.Alignment = .doubleWord
+        let alignment: Memory.Alignment = .`8`
         var arena: Memory.Arena = .init(capacity: 4096)
 
         guard let src = arena.allocate(count: byteCount, alignment: alignment),

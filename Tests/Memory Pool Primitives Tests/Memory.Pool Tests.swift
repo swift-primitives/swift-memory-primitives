@@ -28,24 +28,24 @@ extension Memory.Pool {
 extension Memory.Pool.Test.Unit {
     @Test
     func `init creates pool with specified capacity`() throws {
-        let pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 16)
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 16)
         #expect(pool.capacity == 16)
         #expect(pool.allocated == 0)
         #expect(pool.available == 16)
-        #expect(pool.slotStride == .init(64))
+        #expect(pool.slot.stride == .init(64))
         #expect(!pool.isExhausted == true)
     }
 
     @Test
     func `allocate returns valid pointer`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 16)
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 16)
         let pointer = try unsafe pool.allocate()
         #expect(unsafe pointer != UnsafeMutableRawPointer(bitPattern: 0))
     }
 
     @Test
     func `allocate updates count`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 16)
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 16)
         _ = try unsafe pool.allocate()
         #expect(pool.allocated == 1)
         #expect(pool.available == 15)
@@ -53,7 +53,7 @@ extension Memory.Pool.Test.Unit {
 
     @Test
     func `deallocate returns slot to pool`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 16)
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 16)
         let pointer = try unsafe pool.allocate()
         try unsafe pool.deallocate(pointer)
         #expect(pool.allocated == 0)
@@ -62,26 +62,26 @@ extension Memory.Pool.Test.Unit {
 
     @Test
     func `capacity property returns total capacity`() throws {
-        let pool = try Memory.Pool(slotSize: 32, slotAlignment: .doubleWord, capacity: 100)
+        let pool = try Memory.Pool(slotSize: 32, slotAlignment: .`8`, capacity: 100)
         #expect(pool.capacity == 100)
     }
 
     @Test
-    func `slotStride reflects alignment padding`() throws {
+    func `slot stride reflects alignment padding`() throws {
         // slotSize 10 with alignment 8 → stride 16
-        let pool = try Memory.Pool(slotSize: 10, slotAlignment: .doubleWord, capacity: 4)
-        #expect(pool.slotStride == .init(16))
+        var pool = try Memory.Pool(slotSize: 10, slotAlignment: .`8`, capacity: 4)
+        #expect(pool.slot.stride == .init(16))
     }
 
     @Test
-    func `slotStride matches slot size when already aligned`() throws {
-        let pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 4)
-        #expect(pool.slotStride == .init(64))
+    func `slot stride matches slot size when already aligned`() throws {
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 4)
+        #expect(pool.slot.stride == .init(64))
     }
 
     @Test
     func `reset restores full availability`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 8)
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 8)
         for _ in 0..<8 {
             _ = try unsafe pool.allocate()
         }
@@ -95,7 +95,7 @@ extension Memory.Pool.Test.Unit {
 
     @Test
     func `pointer(at:) returns correct slot address`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 4)
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 4)
 
         // Allocate first slot — should match pointer(at: 0)
         let first = try unsafe pool.allocate()
@@ -104,10 +104,10 @@ extension Memory.Pool.Test.Unit {
     }
 
     @Test
-    func `slotIndex(for:) returns correct index`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 4)
+    func `index(for:) returns correct index`() throws {
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 4)
         let pointer = try unsafe pool.allocate()
-        let index = unsafe pool.slotIndex(for: pointer)
+        let index = unsafe pool.index(for: pointer)
         #expect(index == 0)
     }
 }
@@ -117,7 +117,7 @@ extension Memory.Pool.Test.Unit {
 extension Memory.Pool.Test.EdgeCase {
     @Test
     func `init with capacity 1 succeeds`() throws {
-        var pool = try Memory.Pool(slotSize: 8, slotAlignment: .doubleWord, capacity: 1)
+        var pool = try Memory.Pool(slotSize: 8, slotAlignment: .`8`, capacity: 1)
         let pointer = try unsafe pool.allocate()
         #expect(pool.isExhausted == true)
         try unsafe pool.deallocate(pointer)
@@ -127,20 +127,20 @@ extension Memory.Pool.Test.EdgeCase {
     @Test
     func `init with zero capacity throws`() {
         #expect(throws: Memory.Pool.Error.invalidCapacity) {
-            _ = try Memory.Pool(slotSize: 8, slotAlignment: .doubleWord, capacity: 0)
+            _ = try Memory.Pool(slotSize: 8, slotAlignment: .`8`, capacity: 0)
         }
     }
 
     @Test
     func `init with too-small slot size throws`() {
         #expect(throws: Memory.Pool.Error.self) {
-            _ = try Memory.Pool(slotSize: 2, slotAlignment: .halfWord, capacity: 4)
+            _ = try Memory.Pool(slotSize: 2, slotAlignment: .`2`, capacity: 4)
         }
     }
 
     @Test
     func `allocate throws when exhausted`() throws {
-        var pool = try Memory.Pool(slotSize: 8, slotAlignment: .doubleWord, capacity: 2)
+        var pool = try Memory.Pool(slotSize: 8, slotAlignment: .`8`, capacity: 2)
         _ = try unsafe pool.allocate()
         _ = try unsafe pool.allocate()
         #expect(throws: Memory.Pool.Error.exhausted(capacity: 2)) {
@@ -150,7 +150,7 @@ extension Memory.Pool.Test.EdgeCase {
 
     @Test
     func `deallocate detects double free`() throws {
-        var pool = try Memory.Pool(slotSize: 8, slotAlignment: .doubleWord, capacity: 4)
+        var pool = try Memory.Pool(slotSize: 8, slotAlignment: .`8`, capacity: 4)
         let pointer = try unsafe pool.allocate()
         try unsafe pool.deallocate(pointer)
         #expect(throws: Memory.Pool.Error.doubleFree) {
@@ -160,7 +160,7 @@ extension Memory.Pool.Test.EdgeCase {
 
     @Test
     func `deallocate detects foreign pointer`() throws {
-        var pool = try Memory.Pool(slotSize: 8, slotAlignment: .doubleWord, capacity: 4)
+        var pool = try Memory.Pool(slotSize: 8, slotAlignment: .`8`, capacity: 4)
         let foreign = UnsafeMutableRawPointer.allocate(byteCount: 8, alignment: 8)
         defer { unsafe foreign.deallocate() }
         #expect(throws: Memory.Pool.Error.foreignPointer) {
@@ -170,7 +170,7 @@ extension Memory.Pool.Test.EdgeCase {
 
     @Test
     func `deallocate detects misaligned pointer within pool range`() throws {
-        var pool = try Memory.Pool(slotSize: 16, slotAlignment: .doubleWord, capacity: 4)
+        var pool = try Memory.Pool(slotSize: 16, slotAlignment: .`8`, capacity: 4)
         let valid = try unsafe pool.allocate()
         // Offset by 1 byte — still in range but not slot-aligned
         let misaligned = unsafe valid.advanced(by: 1)
@@ -180,16 +180,16 @@ extension Memory.Pool.Test.EdgeCase {
     }
 
     @Test
-    func `slotIndex returns nil for foreign pointer`() throws {
-        let pool = try Memory.Pool(slotSize: 8, slotAlignment: .doubleWord, capacity: 4)
+    func `index(for:) returns nil for foreign pointer`() throws {
+        let pool = try Memory.Pool(slotSize: 8, slotAlignment: .`8`, capacity: 4)
         let foreign = UnsafeMutableRawPointer.allocate(byteCount: 8, alignment: 8)
         defer { unsafe foreign.deallocate() }
-        unsafe #expect(pool.slotIndex(for: foreign) == nil)
+        unsafe #expect(pool.index(for: foreign) == nil)
     }
 
     @Test
     func `allocate all then deallocate all succeeds`() throws {
-        var pool = try Memory.Pool(slotSize: 8, slotAlignment: .doubleWord, capacity: 4)
+        var pool = try Memory.Pool(slotSize: 8, slotAlignment: .`8`, capacity: 4)
         var pointers: [UnsafeMutableRawPointer] = unsafe []
         for _ in 0..<4 {
             try unsafe pointers.append(pool.allocate())
@@ -211,7 +211,7 @@ extension Memory.Pool.Test.Integration {
     func `allocated memory is usable for typed storage`() throws {
         var pool = try Memory.Pool(
             slotSize: Memory.Address.Count(Cardinal(UInt(MemoryLayout<Int>.stride))),
-            slotAlignment: .doubleWord,
+            slotAlignment: .`8`,
             capacity: 8
         )
         let pointer = try unsafe pool.allocate()
@@ -226,7 +226,7 @@ extension Memory.Pool.Test.Integration {
     func `multiple typed allocations with different values`() throws {
         var pool = try Memory.Pool(
             slotSize: Memory.Address.Count(Cardinal(UInt(MemoryLayout<Int>.stride))),
-            slotAlignment: .doubleWord,
+            slotAlignment: .`8`,
             capacity: 4
         )
 
@@ -257,7 +257,7 @@ extension Memory.Pool.Test.Integration {
 
     @Test
     func `deallocated slot is reused on next allocate`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 2)
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 2)
 
         let first = try unsafe pool.allocate()
         _ = try unsafe pool.allocate()
@@ -274,7 +274,7 @@ extension Memory.Pool.Test.Integration {
 
     @Test
     func `LIFO reuse: last freed is first allocated`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 4)
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 4)
 
         let a = try unsafe pool.allocate()
         let b = try unsafe pool.allocate()
@@ -294,7 +294,7 @@ extension Memory.Pool.Test.Integration {
     func `reset allows full reuse cycle`() throws {
         var pool = try Memory.Pool(
             slotSize: Memory.Address.Count(Cardinal(UInt(MemoryLayout<Int>.stride))),
-            slotAlignment: .doubleWord,
+            slotAlignment: .`8`,
             capacity: 4
         )
 
@@ -325,7 +325,7 @@ extension Memory.Pool.Test.Integration {
 
         var pool = try Memory.Pool(
             slotSize: Memory.Address.Count(Cardinal(UInt(MemoryLayout<Point>.stride))),
-            slotAlignment: .doubleWord,
+            slotAlignment: .`8`,
             capacity: 8
         )
 
@@ -344,7 +344,7 @@ extension Memory.Pool.Test.Integration {
 extension Memory.Pool.Test.Unit {
     @Test
     func `allocateSlot returns sequential indices`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 4)
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 4)
         let s0 = try pool.allocateSlot()
         let s1 = try pool.allocateSlot()
         let s2 = try pool.allocateSlot()
@@ -356,7 +356,7 @@ extension Memory.Pool.Test.Unit {
 
     @Test
     func `deallocate(at:) roundtrip`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 4)
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 4)
         let slot = try pool.allocateSlot()
         #expect(pool.allocated == 1)
 
@@ -367,7 +367,7 @@ extension Memory.Pool.Test.Unit {
 
     @Test
     func `deallocate(at:) detects double free`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 4)
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 4)
         let slot = try pool.allocateSlot()
         try pool.deallocate(at: slot)
 
@@ -377,12 +377,12 @@ extension Memory.Pool.Test.Unit {
     }
 
     @Test
-    func `allocatedSlotIndices tracks state`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 8)
+    func `allocation indices tracks state`() throws {
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 8)
 
         // Initially empty.
         var indices: [Index<Memory.Pool.Slot>] = []
-        pool.allocatedSlotIndices.forEach { indices.append($0.retag(Memory.Pool.Slot.self)) }
+        pool.allocation.indices.forEach { indices.append($0.retag(Memory.Pool.Slot.self)) }
         #expect(indices.isEmpty)
 
         // Allocate three slots.
@@ -391,7 +391,7 @@ extension Memory.Pool.Test.Unit {
         let s2 = try pool.allocateSlot()
 
         indices.removeAll()
-        pool.allocatedSlotIndices.forEach { indices.append($0.retag(Memory.Pool.Slot.self)) }
+        pool.allocation.indices.forEach { indices.append($0.retag(Memory.Pool.Slot.self)) }
         #expect(indices.count == 3)
         #expect(indices.contains(s0))
         #expect(indices.contains(s1))
@@ -401,7 +401,7 @@ extension Memory.Pool.Test.Unit {
         try pool.deallocate(at: s1)
 
         indices.removeAll()
-        pool.allocatedSlotIndices.forEach { indices.append($0.retag(Memory.Pool.Slot.self)) }
+        pool.allocation.indices.forEach { indices.append($0.retag(Memory.Pool.Slot.self)) }
         #expect(indices.count == 2)
         #expect(indices.contains(s0))
         #expect(!indices.contains(s1))
@@ -410,7 +410,7 @@ extension Memory.Pool.Test.Unit {
 
     @Test
     func `allocateSlot reuses freed slots via LIFO`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 4)
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 4)
 
         let a = try pool.allocateSlot()
         let b = try pool.allocateSlot()
@@ -427,7 +427,7 @@ extension Memory.Pool.Test.Unit {
 
     @Test
     func `allocate delegates to allocateSlot`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 4)
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 4)
 
         // allocate() should return pointer at slot 0
         let pointer = try unsafe pool.allocate()
@@ -437,7 +437,7 @@ extension Memory.Pool.Test.Unit {
 
     @Test
     func `isExhausted with virgin cursor and free list`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 2)
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 2)
 
         // Allocate 1 via virgin cursor — not exhausted
         let s0 = try pool.allocateSlot()
@@ -454,7 +454,7 @@ extension Memory.Pool.Test.Unit {
 
     @Test
     func `reset with virgin cursor`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 4)
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 4)
 
         // Allocate 2 (via virgin cursor)
         _ = try pool.allocateSlot()
@@ -479,7 +479,7 @@ extension Memory.Pool.Test.Integration {
     func `duplicate creates independent copy`() throws {
         var pool = try Memory.Pool(
             slotSize: Memory.Address.Count(Cardinal(UInt(MemoryLayout<Int>.stride))),
-            slotAlignment: .doubleWord,
+            slotAlignment: .`8`,
             capacity: 4
         )
 
@@ -539,7 +539,7 @@ extension Memory.Pool.Test.Integration {
 extension Memory.Pool.Test.Performance {
     @Test
     func `many allocate-deallocate cycles`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 1024)
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 1024)
 
         // Warmup
         for _ in 0..<10 {
@@ -560,7 +560,7 @@ extension Memory.Pool.Test.Performance {
 
     @Test
     func `fill then drain`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 4096)
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 4096)
         var pointers: [UnsafeMutableRawPointer] = unsafe []
         unsafe pointers.reserveCapacity(4096)
 
@@ -589,7 +589,7 @@ extension Memory.Pool.Test.Performance {
 
     @Test
     func `allocate and reset cycle`() throws {
-        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .doubleWord, capacity: 1024)
+        var pool = try Memory.Pool(slotSize: 64, slotAlignment: .`8`, capacity: 1024)
 
         // Warmup
         for _ in 0..<10 {
