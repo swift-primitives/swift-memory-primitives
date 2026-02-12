@@ -282,7 +282,7 @@ extension Memory.Buffer.Mutable {
 
         // Bounds check: slice must fit
         // remaining = buffer count - start position
-        let remaining = _count.subtract.saturating(Memory.Address.Count(start))
+        let remaining = _count.subtract.saturating(start.map(Cardinal.init))
 
         guard sliceCount <= remaining else {
             return nil

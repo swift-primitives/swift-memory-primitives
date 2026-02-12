@@ -58,11 +58,6 @@ extension Memory {
     @safe
     public struct Pool: ~Copyable {
 
-        // MARK: - Phantom Type
-
-        /// Phantom type for slot-level indexing within a pool.
-        public enum Slot {}
-
         // MARK: - Stored Properties
 
         /// Backing storage for all slots.
@@ -218,10 +213,12 @@ extension Memory.Pool {
     }
 
     /// Scaling factor from slot domain to byte domain (stride-aligned).
+    @available(*, deprecated, renamed: "slot.stride")
     @inlinable
     public var slotStride: Affine.Discrete.Ratio<Slot, Memory> { _slotStride }
 
     /// Alignment requirement for each slot.
+    @available(*, deprecated, renamed: "slot.alignment")
     @inlinable
     public var slotAlignment: Memory.Alignment { _slotAlignment }
 
@@ -232,6 +229,7 @@ extension Memory.Pool {
     }
 
     /// Indices of all currently allocated slots.
+    @available(*, deprecated, renamed: "allocation.indices")
     @inlinable
     public var allocatedSlotIndices: Bit.Vector.Ones.View {
         _allocationBits.ones
@@ -328,7 +326,7 @@ extension Memory.Pool {
     public mutating func deallocate(
         _ pointer: UnsafeMutableRawPointer
     ) throws(Memory.Pool.Error) {
-        guard let slot = unsafe slotIndex(for: pointer) else {
+        guard let slot = unsafe index(for: pointer) else {
             throw .foreignPointer
         }
         try deallocate(at: slot)
@@ -368,7 +366,7 @@ extension Memory.Pool {
     /// - Parameter pointer: A pointer belonging to this pool.
     /// - Returns: The slot index, or `nil` if the pointer is foreign.
     @inlinable
-    public func slotIndex(for pointer: UnsafeMutableRawPointer) -> Index<Slot>? {
+    public func index(for pointer: UnsafeMutableRawPointer) -> Index<Slot>? {
         let rawOffset = unsafe pointer - _storage
         guard rawOffset >= 0 else { return nil }
 
@@ -379,6 +377,13 @@ extension Memory.Pool {
         guard remainder == .zero else { return nil }
 
         return slotCount.map(Ordinal.init)
+    }
+
+    /// Returns the slot index for a pointer previously returned by `allocate()`.
+    @available(*, deprecated, renamed: "index(for:)")
+    @inlinable
+    public func slotIndex(for pointer: UnsafeMutableRawPointer) -> Index<Slot>? {
+        unsafe index(for: pointer)
     }
 }
 
