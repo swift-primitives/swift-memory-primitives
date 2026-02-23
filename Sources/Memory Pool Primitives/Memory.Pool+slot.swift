@@ -19,9 +19,9 @@ extension Memory.Pool {
     /// - `pool.slot.alignment` — alignment requirement for each slot
     @inlinable
     public var slot: Property<Slot, Self>.View.Read {
-        mutating _read {
-            yield unsafe Property<Slot, Self>.View.Read(
-                UnsafePointer(Property<Slot, Self>.View(&self).base)
+        _read {
+            yield Property<Slot, Self>.View.Read(
+                borrowing: self
             )
         }
     }

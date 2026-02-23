@@ -18,9 +18,9 @@ extension Memory.Pool {
     /// - `pool.allocation.indices` — indices of all currently allocated slots
     @inlinable
     public var allocation: Property<Allocation, Self>.View.Read {
-        mutating _read {
-            yield unsafe Property<Allocation, Self>.View.Read(
-                UnsafePointer(Property<Allocation, Self>.View(&self).base)
+        _read {
+            yield Property<Allocation, Self>.View.Read(
+                borrowing: self
             )
         }
     }
