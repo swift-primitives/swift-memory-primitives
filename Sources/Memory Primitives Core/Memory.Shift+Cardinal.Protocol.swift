@@ -2,6 +2,9 @@
 // Cardinal.Protocol conformance for Memory.Shift.
 
 extension Memory.Shift: Cardinal.`Protocol` {
+    /// Shifts are unscoped (not phantom-typed).
+    public typealias Domain = Never
+
     @inlinable
     public var cardinal: Cardinal {
         Cardinal(UInt(rawValue))

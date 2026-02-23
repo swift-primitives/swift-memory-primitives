@@ -89,10 +89,7 @@ extension Memory.Contiguous {
     /// - ``withUnsafeBufferPointer(_:)``
     public protocol `Protocol`: ~Copyable {
         /// The type of element stored contiguously.
-        ///
-        /// - Note: Due to SE-0427 limitations, associated types cannot suppress
-        ///   the Copyable requirement. Conforming types must have `Element: Copyable`.
-        associatedtype Element
+        associatedtype Element: ~Copyable
 
         /// Safe, bounds-checked read access to contiguous storage.
         ///
