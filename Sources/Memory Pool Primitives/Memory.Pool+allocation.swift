@@ -17,9 +17,9 @@ extension Memory.Pool {
     /// Provides namespaced access to allocation state:
     /// - `pool.allocation.indices` — indices of all currently allocated slots
     @inlinable
-    public var allocation: Property<Allocation, Self>.View.Read {
+    public var allocation: Property<Memory.Allocation, Self>.View.Read {
         _read {
-            yield Property<Allocation, Self>.View.Read(
+            yield Property<Memory.Allocation, Self>.View.Read(
                 borrowing: self
             )
         }
@@ -28,7 +28,7 @@ extension Memory.Pool {
 
 // MARK: - Allocation Property.View.Read Extensions
 
-extension Property.View.Read where Tag == Memory.Pool.Allocation, Base == Memory.Pool {
+extension Property.View.Read where Tag == Memory.Allocation, Base == Memory.Pool {
     /// Indices of all currently allocated slots.
     @inlinable
     public var indices: Bit.Vector.Ones.View {

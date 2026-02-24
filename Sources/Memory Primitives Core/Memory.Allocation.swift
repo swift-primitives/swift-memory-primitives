@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-extension Memory.Pool {
-    /// Property tag for allocation-level accessors on ``Memory.Pool``.
+extension Memory {
+    /// Namespace for allocation tracking, profiling, and related accessors.
     public enum Allocation {}
 }
