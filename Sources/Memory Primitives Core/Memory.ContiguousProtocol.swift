@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-extension Memory.Contiguous {
+extension Memory {
     /// Protocol for types providing contiguous memory read access.
     ///
     /// Conforming types provide safe, bounds-checked read access to contiguous
@@ -87,7 +87,7 @@ extension Memory.Contiguous {
     ///
     /// ### Unsafe Access (C Interop)
     /// - ``withUnsafeBufferPointer(_:)``
-    public protocol `Protocol`: ~Copyable {
+    public protocol ContiguousProtocol: ~Copyable {
         /// The type of element stored contiguously.
         associatedtype Element: ~Copyable
 

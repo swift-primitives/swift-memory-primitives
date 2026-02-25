@@ -16,6 +16,6 @@
 ///
 /// ## Overview
 ///
-/// - ``Memory/Contiguous``: Contiguous memory access patterns
+/// - ``Memory/Contiguous``: Self-owning contiguous typed memory region
 ///   - ``Memory/Contiguous/Protocol``: Protocol for types with contiguous storage
 public enum Memory {}
