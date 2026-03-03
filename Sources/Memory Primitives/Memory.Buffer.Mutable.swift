@@ -10,7 +10,6 @@
 // ===----------------------------------------------------------------------===//
 
 public import Index_Primitives
-public import Vector_Primitives
 
 /// Mutable sentinel re-exported from Memory.Buffer.swift.
 ///
@@ -235,26 +234,13 @@ extension Memory.Buffer.Mutable {
     ///
     /// - Parameter source: A collection of bytes to copy.
     @inlinable
-    public func copy<C: Collection>(bytes source: C) where C.Element == UInt8 {
+    public func copy<C: Swift.Collection>(bytes source: C) where C.Element == UInt8 {
         unsafe base.nullable.copyBytes(from: source)
     }
 }
 
 // MARK: - Extraction (Slicing)
 
-extension Memory.Buffer.Mutable {
-    /// Returns a mutable buffer over the bytes within the specified range.
-    ///
-    /// - Parameter bounds: A lazy range of byte indices specifying the subregion.
-    /// - Returns: A mutable buffer over the specified range.
-    @inlinable
-    public func extracting(_ bounds: Vector<Index<Memory>>) -> Self {
-        Self(
-            start: unsafe Memory.Address(UnsafeMutableRawPointer(_start).advanced(by: bounds.start)),
-            count: bounds.count.retag(Memory.self)
-        )
-    }
-}
 
 // MARK: - Safe Slicing
 

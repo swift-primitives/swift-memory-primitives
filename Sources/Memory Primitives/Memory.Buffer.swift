@@ -10,7 +10,6 @@
 // ===----------------------------------------------------------------------===//
 
 public import Index_Primitives
-public import Vector_Primitives
 
 /// Mutable singleton sentinel for empty buffers.
 ///
@@ -158,19 +157,6 @@ extension Memory.Buffer {
 
 // MARK: - Extraction (Slicing)
 
-extension Memory.Buffer {
-    /// Returns a buffer over the bytes within the specified range.
-    ///
-    /// - Parameter bounds: A lazy range of byte indices specifying the subregion.
-    /// - Returns: A buffer over the specified range.
-    @inlinable
-    public func extracting(_ bounds: Vector<Index<Memory>>) -> Self {
-        Self(
-            start: unsafe Memory.Address(UnsafeRawPointer(_start).advanced(by: bounds.start)),
-            count: bounds.count.retag(Memory.self)
-        )
-    }
-}
 
 // MARK: - Safe Slicing
 

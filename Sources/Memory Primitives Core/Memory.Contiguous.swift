@@ -48,6 +48,13 @@ extension Memory {
         @usableFromInline
         internal let pointer: UnsafePointer<Element>
 
+        /// The base address of the memory region.
+        ///
+        /// - Warning: The pointer is only valid for the lifetime of this value.
+        @unsafe
+        @inlinable
+        public var unsafeBaseAddress: UnsafePointer<Element> { unsafe pointer }
+
         /// The number of elements in the region.
         public let count: Int
 
@@ -64,6 +71,20 @@ extension Memory {
         public init(adopting pointer: UnsafeMutablePointer<Element>, count: Int) {
             unsafe self.pointer = UnsafePointer(pointer)
             self.count = count
+        }
+
+        /// Transfers ownership of the underlying buffer to the caller.
+        ///
+        /// Returns the pointer and count. The caller is responsible for
+        /// deallocation. This instance is consumed without deallocating.
+        ///
+        /// - Returns: A tuple of (pointer, count).
+        @unsafe
+        @inlinable
+        public consuming func take() -> (pointer: UnsafeMutablePointer<Element>, count: Int) {
+            let result = unsafe (UnsafeMutablePointer(mutating: pointer), count)
+            discard self
+            return unsafe result
         }
 
         @inlinable

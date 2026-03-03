@@ -9,11 +9,6 @@ applies_to: [swift-memory-primitives]
 normative: false
 ---
 -->
-
-@Metadata {
-    @TitleHeading("Memory Primitives")
-}
-
 Design decisions, implementation patterns, and lessons learned specific to this package.
 
 ## Overview
@@ -81,9 +76,7 @@ Changing from `Count` to `Ratio` was a breaking API change. But the previous API
 
 ---
 
-## Topics
+## Related
 
-### Related Documents
-
-- <doc:Memory-Address>
-- <doc:Memory-Arena>
+- Memory-Address
+- Memory-Arena

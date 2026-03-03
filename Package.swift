@@ -38,7 +38,6 @@ let package = Package(
         .package(path: "../swift-cardinal-primitives"),
         .package(path: "../swift-affine-primitives"),
         .package(path: "../swift-identity-primitives"),
-        .package(path: "../swift-vector-primitives"),
         .package(path: "../swift-property-primitives"),
         .package(path: "../swift-index-primitives"),
         .package(path: "../swift-bit-primitives"),
@@ -68,7 +67,6 @@ let package = Package(
                 .product(name: "Cardinal Primitives", package: "swift-cardinal-primitives"),
                 .product(name: "Affine Primitives", package: "swift-affine-primitives"),
                 .product(name: "Identity Primitives", package: "swift-identity-primitives"),
-                .product(name: "Vector Primitives", package: "swift-vector-primitives"),
                 .product(name: "Property Primitives", package: "swift-property-primitives"),
                 .product(name: "Bit Primitives", package: "swift-bit-primitives"),
             ]
@@ -95,7 +93,6 @@ let package = Package(
                 "Memory Primitives",
                 .product(name: "Identity Primitives Test Support", package: "swift-identity-primitives"),
                 .product(name: "Index Primitives Test Support", package: "swift-index-primitives"),
-                .product(name: "Vector Primitives Test Support", package: "swift-vector-primitives"),
                 .product(name: "Ordinal Primitives Test Support", package: "swift-ordinal-primitives"),
                 .product(name: "Cardinal Primitives Test Support", package: "swift-cardinal-primitives"),
                 .product(name: "Affine Primitives Test Support", package: "swift-affine-primitives"),
@@ -139,7 +136,9 @@ for target in package.targets where ![.system, .binary, .plugin, .macro].contain
         .enableExperimentalFeature("SuppressedAssociatedTypesWithDefaults"),
     ]
 
-    let package: [SwiftSetting] = []
+    let package: [SwiftSetting] = [
+        .enableExperimentalFeature("RawLayout"),
+    ]
 
     target.swiftSettings = (target.swiftSettings ?? []) + ecosystem + package
 }

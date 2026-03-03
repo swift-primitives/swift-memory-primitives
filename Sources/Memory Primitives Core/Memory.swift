@@ -16,6 +16,7 @@
 ///
 /// ## Overview
 ///
+/// - ``Memory/Inline``: Fixed-capacity typed inline storage (zero overhead)
 /// - ``Memory/Contiguous``: Self-owning contiguous typed memory region
 ///   - ``Memory/Contiguous/Protocol``: Protocol for types with contiguous storage
 public enum Memory {}
