@@ -33,6 +33,7 @@ This directory consolidates all memory-related research from:
 | pointer-mutable-pointee-semantics.md | `Pointer.Mutable.pointee` mutation semantics (nonmutating vs var) | DECISION |
 | mutable-cross-module-ambiguity.md | Cross-module `Mutable`/`Buffer` typealias ambiguity on `Tagged` | COMPLETED |
 | unique-package-placement.md | Package organization and placement decisions | IN_PROGRESS |
+| memory-inline-package-placement.md | Memory.Inline package placement to avoid SPM dependency cycle | DECISION |
 
 ## Pointer Interop and Migration
 
