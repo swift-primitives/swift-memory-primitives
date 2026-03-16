@@ -1,5 +1,12 @@
-Foundational Primitives for Type-Safe Data Structure Design in Swift                                                
-                                                                                                                    
+Foundational Primitives for Type-Safe Data Structure Design in Swift
+<!--
+---
+version: 1.0.0
+last_updated: 2026-01-20
+status: RECOMMENDATION
+---
+-->
+
 Abstract                                                                                                            
                                                                                                                     
 This paper examines three foundational primitive packages in the Swift Institute                                    

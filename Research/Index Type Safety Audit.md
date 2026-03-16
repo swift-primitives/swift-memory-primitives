@@ -1,4 +1,11 @@
 # Type-Safe Indexing in Low-Level Swift Collections: An Architectural Audit and Path Forward
+<!--
+---
+version: 1.0.0
+last_updated: 2026-01-22
+status: RECOMMENDATION
+---
+-->
 
 **A Technical Report on Index Type Integration in the Swift Institute Primitives Ecosystem**
 

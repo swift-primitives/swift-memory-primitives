@@ -1,4 +1,11 @@
 # Pointer Architecture Comparison
+<!--
+---
+version: 1.0.0
+last_updated: 2026-01-28
+status: DECISION
+---
+-->
 
 ## Context
 

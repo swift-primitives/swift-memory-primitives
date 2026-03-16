@@ -1,4 +1,11 @@
 # Lifetime-Dependent Borrowed Cursors in Swift: A Comprehensive Analysis of Non-Escapable Types, Closure Integration Gaps, and the Non-Closure Runner Surface
+<!--
+---
+version: 1.0.0
+last_updated: 2026-01-27
+status: RECOMMENDATION
+---
+-->
 
 **A Technical Research Paper on Safe Zero-Copy Parsing APIs**
 

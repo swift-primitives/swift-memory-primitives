@@ -1,5 +1,12 @@
-Typed Index Integration Audit: Maximizing Type Safety Across Swift Primitives                                       
-                                                                                                                      
+Typed Index Integration Audit: Maximizing Type Safety Across Swift Primitives
+<!--
+---
+version: 1.0.0
+last_updated: 2026-02-05
+status: RECOMMENDATION
+---
+-->
+
   Abstract                                                                                                            
                                                                                                                       
   This document establishes the methodology and requirements for auditing fourteen Swift data structure packages to   
