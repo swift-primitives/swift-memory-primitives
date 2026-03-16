@@ -4,7 +4,7 @@
 ---
 version: 1.0.0
 last_updated: 2026-01-23
-status: DECIDED
+status: DECISION
 tier: 3
 ---
 -->
