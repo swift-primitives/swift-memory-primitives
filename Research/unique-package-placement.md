@@ -2,9 +2,9 @@
 
 <!--
 ---
-version: 1.0.0
-last_updated: 2026-01-27
-status: IN_PROGRESS
+version: 1.0.1
+last_updated: 2026-03-15
+status: DEFERRED
 tier: 3
 ---
 -->
@@ -323,3 +323,11 @@ But this would require significant restructuring.
 - [PRIM-ORG-005] Factor the Law, Not the Module
 - [PRIM-SCOPE-001] Domain Identification
 - [PRIM-SCOPE-002] Semantic Coherence Test
+
+### Deferral
+
+**Date**: 2026-03-15
+
+**Reason**: The document reached a preliminary recommendation (Option C short-term: keep `Unique` in pointer-primitives) but awaits user input on three open questions about package placement strategy. Meanwhile, pointer-primitives was deprecated -- storage-primitives now uses stdlib pointer types directly. This deprecation invalidates the dependency analysis (Options A, C, D, E all assumed pointer-primitives as the implementation substrate). The placement question must be revisited in the context of the post-deprecation architecture.
+
+**Resume when**: The ownership type taxonomy is revisited, or when additional ownership-related types (beyond `Unique`) emerge that would justify a dedicated package.

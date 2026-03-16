@@ -2,9 +2,9 @@
 
 <!--
 ---
-version: 1.0.0
-last_updated: 2026-01-28
-status: IN_PROGRESS
+version: 1.0.1
+last_updated: 2026-03-15
+status: DEFERRED
 tier: 3
 ---
 -->
@@ -641,3 +641,11 @@ extension Tagged where Tag == Memory, RawValue == Ordinal {
 - `address-as-tagged-ordinal` experiment. swift-memory-primitives.
 - `tagged-mutable-ambiguity` experiment. swift-pointer-primitives.
 - `storage-primitives-design` research. swift-primitives (IN_PROGRESS).
+
+### Deferral
+
+**Date**: 2026-03-15
+
+**Reason**: The analysis reached a preliminary recommendation (Option B: ad-hoc structs, not Tagged intervals) with strong evidence from prior art survey, formal semantics, and cognitive dimensions analysis. The core finding -- that Tagged typealiases provide no "free" algebraic operations for composite types like intervals, unlike scalar types -- resolves the original design question. The remaining open question (whether `Affine.Discrete.Interval` should exist for value-space intervals independent of buffer modeling) is a separate concern with no immediate consumer.
+
+**Resume when**: A concrete use case for value-space interval types emerges in the primitives ecosystem, or when the theoretical analysis is needed as a reference for new buffer type designs.

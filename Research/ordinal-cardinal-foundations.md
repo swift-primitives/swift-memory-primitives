@@ -1,3 +1,15 @@
+
+<!--
+---
+version: 1.0.1
+last_updated: 2026-03-15
+status: DEFERRED
+tier: 3
+applies_to: [swift-affine-primitives, swift-index-primitives]
+normative: false
+---
+-->
+
 # Ordinal and Cardinal Foundations for Swift Primitives
 
 ## Abstract
@@ -867,3 +879,15 @@ toCardinal (suc i) = suc (toCardinal i)
 ---
 
 *Document version 1.0.0 — 2026-01-26 — Status: IN_PROGRESS*
+
+---
+
+## Deferral
+
+**Date**: 2026-03-15
+**Previous status**: RECOMMENDATION (since 2026-01-26, no frontmatter existed)
+**New status**: DEFERRED
+
+**Blocker/Reason**: Document reached RECOMMENDATION status: proposes Option B (full separation into swift-ordinal-primitives and swift-cardinal-primitives). The mathematical analysis is thorough (set theory, type theory, operational semantics, soundness argument). Three open questions remain (Section 12.4): naming precision for Ordinal.Finite vs Ordinal, phantom type location, and whether Affine.Discrete should continue to exist. Implementation requires creating two new packages and migrating existing Affine.Discrete types. Deferred because this is a large-scope architectural change that affects the entire primitives tier hierarchy and has not been prioritized.
+
+**Resumption trigger**: When affine-primitives or index-primitives undergo a major refactor, or when the open questions in Section 12.4 are addressed.

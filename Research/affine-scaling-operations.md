@@ -1,3 +1,15 @@
+
+<!--
+---
+version: 1.0.1
+last_updated: 2026-03-15
+status: DEFERRED
+tier: 3
+applies_to: [swift-affine-primitives, swift-index-primitives, swift-bit-primitives]
+normative: false
+---
+-->
+
 # Affine Space Scaling Operations
 
 ## Abstract
@@ -617,3 +629,15 @@ The w-component tracks validity: points have w=1, vectors have w=0.
 
 *Document version 1.0.0 — 2026-01-27 — Status: IN_PROGRESS*
 
+
+---
+
+## Deferral
+
+**Date**: 2026-03-15
+**Previous status**: RECOMMENDATION (since 2026-01-27, no frontmatter existed)
+**New status**: DEFERRED
+
+**Blocker/Reason**: Document reached RECOMMENDATION status: (1) no Position * Scalar operator, (2) Vector * Scalar is valid and should be added to Affine_Primitives, (3) unit conversions are typed morphisms (init-based), (4) Count * Scalar is acceptable as cardinal magnitude scaling. Depends on the ordinal-cardinal-foundations.md decision (also DEFERRED). Three open questions remain (Section 8): Index.Offset scaling, negative scaling, fractional scaling. Deferred because implementation depends on the ordinal/cardinal package reorganization, which is itself deferred.
+
+**Resumption trigger**: When ordinal-cardinal-foundations.md is implemented, or when byte-to-bit index conversion patterns are revisited.
