@@ -44,6 +44,8 @@ let package = Package(
         .package(path: "../swift-bit-vector-primitives"),
     ],
     targets: [
+
+        // MARK: - Umbrella
         .target(
             name: "Memory Primitives",
             dependencies: [
@@ -54,12 +56,16 @@ let package = Package(
                 .product(name: "Index Primitives", package: "swift-index-primitives"),
             ]
         ),
+
+        // MARK: - StdLib Integration
         .target(
             name: "Memory Primitives Standard Library Integration",
             dependencies: [
                 .target(name: "Memory Primitives Core"),
             ]
         ),
+
+        // MARK: - Core
         .target(
             name: "Memory Primitives Core",
             dependencies: [
@@ -71,6 +77,8 @@ let package = Package(
                 .product(name: "Bit Primitives", package: "swift-bit-primitives"),
             ]
         ),
+
+        // MARK: - Arena
         .target(
             name: "Memory Arena Primitives",
             dependencies: [
@@ -78,6 +86,8 @@ let package = Package(
                 .target(name: "Memory Primitives Standard Library Integration"),
             ]
         ),
+
+        // MARK: - Pool
         .target(
             name: "Memory Pool Primitives",
             dependencies: [
@@ -87,6 +97,8 @@ let package = Package(
                 .product(name: "Index Primitives", package: "swift-index-primitives"),
             ]
         ),
+
+        // MARK: - Test Support
         .target(
             name: "Memory Primitives Test Support",
             dependencies: [
@@ -99,6 +111,8 @@ let package = Package(
             ],
             path: "Tests/Support"
         ),
+
+        // MARK: - Tests
         .testTarget(
             name: "Memory Arena Primitives Tests",
             dependencies: [
