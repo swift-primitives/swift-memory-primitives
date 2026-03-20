@@ -129,13 +129,33 @@ extension Tagged where Tag == Memory, RawValue == Ordinal {
 }
 
 
+// MARK: - Bit Pattern
+
+extension Tagged where Tag == Memory, RawValue == Ordinal {
+    /// The raw bit pattern of this address as a `UInt`.
+    ///
+    /// Use this for interop with stdlib APIs that require `UInt` (e.g.,
+    /// `UnsafeRawPointer(bitPattern:)`). Prefer typed pointer conversions
+    /// when possible.
+    @inlinable
+    public var bitPattern: UInt { rawValue.rawValue }
+}
+
 // MARK: - UnsafeRawPointer Interop
 
 extension UnsafeRawPointer {
     /// Creates a raw pointer from a memory address.
     @inlinable
     public init(_ address: Memory.Address) {
-        unsafe self = UnsafeRawPointer(bitPattern: address.rawValue.rawValue)!
+        unsafe self = UnsafeRawPointer(bitPattern: address.bitPattern)!
+    }
+
+    /// Creates a raw pointer from a tagged memory address.
+    ///
+    /// Unwraps the phantom type tag and delegates to the `Memory.Address` conversion.
+    @inlinable
+    public init<Tag: ~Copyable>(_ address: Tagged<Tag, Memory.Address>) {
+        unsafe self.init(address.rawValue)
     }
 }
 
@@ -143,7 +163,13 @@ extension UnsafeMutableRawPointer {
     /// Creates a mutable raw pointer from a memory address.
     @inlinable
     public init(_ address: Memory.Address) {
-        unsafe self = UnsafeMutableRawPointer(bitPattern: address.rawValue.rawValue)!
+        unsafe self = UnsafeMutableRawPointer(bitPattern: address.bitPattern)!
+    }
+
+    /// Creates a mutable raw pointer from a tagged memory address.
+    @inlinable
+    public init<Tag: ~Copyable>(_ address: Tagged<Tag, Memory.Address>) {
+        unsafe self.init(address.rawValue)
     }
 }
 
