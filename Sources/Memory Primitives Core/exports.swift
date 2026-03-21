@@ -11,3 +11,4 @@
 @_exported public import Identity_Primitives
 @_exported public import Property_Primitives
 @_exported public import Bit_Primitives
+@_exported public import Index_Primitives

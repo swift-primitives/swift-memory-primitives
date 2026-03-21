@@ -53,7 +53,6 @@ let package = Package(
                 .target(name: "Memory Primitives Standard Library Integration"),
                 .target(name: "Memory Arena Primitives"),
                 .target(name: "Memory Pool Primitives"),
-                .product(name: "Index Primitives", package: "swift-index-primitives"),
             ]
         ),
 
@@ -75,6 +74,7 @@ let package = Package(
                 .product(name: "Identity Primitives", package: "swift-identity-primitives"),
                 .product(name: "Property Primitives", package: "swift-property-primitives"),
                 .product(name: "Bit Primitives", package: "swift-bit-primitives"),
+                .product(name: "Index Primitives", package: "swift-index-primitives"),
             ]
         ),
 
@@ -94,7 +94,6 @@ let package = Package(
                 .target(name: "Memory Primitives Core"),
                 .target(name: "Memory Primitives Standard Library Integration"),
                 .product(name: "Bit Vector Primitives", package: "swift-bit-vector-primitives"),
-                .product(name: "Index Primitives", package: "swift-index-primitives"),
             ]
         ),
 
