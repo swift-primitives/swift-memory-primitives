@@ -148,7 +148,9 @@ for target in package.targets where ![.system, .binary, .plugin, .macro].contain
         .enableExperimentalFeature("SuppressedAssociatedTypes"),
     ]
 
-    let package: [SwiftSetting] = []
+    let package: [SwiftSetting] = [
+        .enableExperimentalFeature("RawLayout"),
+    ]
 
     target.swiftSettings = (target.swiftSettings ?? []) + ecosystem + package
 }

@@ -26,7 +26,6 @@ extension Memory.Inline where Element: ~Copyable {
     /// - Returns: A mutable pointer to the element at `slot`.
     /// - Precondition: `slot` must be in `0 ..< capacity`.
     @unsafe
-    @_lifetime(borrow self)
     @inlinable
     public func pointer(at slot: Int) -> UnsafeMutablePointer<Element> {
         precondition(slot >= 0 && slot < capacity, "Memory.Inline slot \(slot) out of range 0..<\(capacity)")
@@ -48,7 +47,6 @@ extension Memory.Inline where Element: ~Copyable {
     /// - Returns: An immutable pointer to the element at `slot`.
     /// - Precondition: `slot` must be in `0 ..< capacity`.
     @unsafe
-    @_lifetime(borrow self)
     @inlinable
     @_disfavoredOverload
     public func pointer(at slot: Int) -> UnsafePointer<Element> {
