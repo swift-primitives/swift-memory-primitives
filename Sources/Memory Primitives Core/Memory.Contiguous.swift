@@ -40,6 +40,7 @@ extension Memory {
     ///
     /// - `Memory.Contiguous<Element>` — the owned form (this type)
     /// - `Memory.Contiguous<Element>.View` (= `Span<Element>`) — the borrowed form
+    @frozen
     @safe
     public struct Contiguous<Element: BitwiseCopyable>: ~Copyable, @unchecked Sendable {
         /// Preserves `Memory.Contiguous.Protocol` naming for all consumer code.
