@@ -12,6 +12,8 @@ requires:
 
 applies_to:
   - swift-memory-primitives
+
+last_reviewed: 2026-03-26
 ---
 
 # Memory Arithmetic
