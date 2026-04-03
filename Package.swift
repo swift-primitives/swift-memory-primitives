@@ -21,6 +21,10 @@ let package = Package(
             targets: ["Memory Primitives Core"]
         ),
         .library(
+            name: "Memory Primitives Standard Library Integration",
+            targets: ["Memory Primitives Standard Library Integration"]
+        ),
+        .library(
             name: "Memory Arena Primitives",
             targets: ["Memory Arena Primitives"]
         ),
