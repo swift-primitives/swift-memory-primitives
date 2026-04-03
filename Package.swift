@@ -97,7 +97,7 @@ let package = Package(
             dependencies: [
                 .target(name: "Memory Primitives Core"),
                 .target(name: "Memory Primitives Standard Library Integration"),
-                .product(name: "Bit Vector Primitives", package: "swift-bit-vector-primitives"),
+                .product(name: "Bit Vector Primitives Core", package: "swift-bit-vector-primitives"),
             ]
         ),
 
