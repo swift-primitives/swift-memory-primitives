@@ -7,4 +7,4 @@
 
 public import Memory_Primitives_Core
 
-extension Swift.Array: Memory.Contiguous.`Protocol` {}
+extension Array: Memory.Contiguous.`Protocol` {}
