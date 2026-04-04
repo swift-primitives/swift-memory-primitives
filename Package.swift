@@ -46,6 +46,7 @@ let package = Package(
         .package(path: "../swift-index-primitives"),
         .package(path: "../swift-bit-primitives"),
         .package(path: "../swift-bit-vector-primitives"),
+        .package(path: "../swift-vector-primitives"),
     ],
     targets: [
 
@@ -111,6 +112,7 @@ let package = Package(
                 .product(name: "Ordinal Primitives Test Support", package: "swift-ordinal-primitives"),
                 .product(name: "Cardinal Primitives Test Support", package: "swift-cardinal-primitives"),
                 .product(name: "Affine Primitives Test Support", package: "swift-affine-primitives"),
+                .product(name: "Vector Primitives Test Support", package: "swift-vector-primitives"),
             ],
             path: "Tests/Support"
         ),

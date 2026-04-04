@@ -15,16 +15,18 @@ import Memory_Primitives_Test_Support
 
 // MARK: - Test Suite
 
-extension Memory.Inline {
-    @Suite
-    struct Test {
-        @Suite struct Unit {}
-    }
+// Note: Memory.Inline<Element, let capacity: Int> is generic, so @Suite
+// cannot nest inside its extension (static stored properties not supported
+// in generic types). Use a top-level test struct instead.
+
+@Suite("Memory.Inline")
+struct MemoryInlineTest {
+    @Suite struct Unit {}
 }
 
 // MARK: - Size Verification
 
-extension Memory.Inline<Int, 1>.Test.Unit {
+extension MemoryInlineTest.Unit {
     @Test
     func `size matches single element`() {
         let inlineSize = MemoryLayout<Memory.Inline<Int, 1>>.size
@@ -40,9 +42,7 @@ extension Memory.Inline<Int, 1>.Test.Unit {
         #expect(inlineStride == intStride)
         #expect(inlineStride == 8)
     }
-}
 
-extension Memory.Inline<Int, 4>.Test.Unit {
     @Test
     func `size matches element stride times capacity`() {
         let inlineSize = MemoryLayout<Memory.Inline<Int, 4>>.size
@@ -54,7 +54,7 @@ extension Memory.Inline<Int, 4>.Test.Unit {
 
 // MARK: - Pointer Initialize / Read / Deinitialize
 
-extension Memory.Inline<Int, 1>.Test.Unit {
+extension MemoryInlineTest.Unit {
     @Test
     func `pointer initialize read deinitialize cycle`() {
         var inline = Memory.Inline<Int, 1>()
@@ -77,7 +77,7 @@ extension Memory.Inline<Int, 1>.Test.Unit {
 
 // MARK: - Multi-Element Indexed Access
 
-extension Memory.Inline<Int, 4>.Test.Unit {
+extension MemoryInlineTest.Unit {
     @Test
     func `multi element indexed access`() {
         var inline = Memory.Inline<Int, 4>()
@@ -108,16 +108,14 @@ extension Memory.Inline<Int, 4>.Test.Unit {
 
 // MARK: - Properties
 
-extension Memory.Inline<Int, 1>.Test.Unit {
+extension MemoryInlineTest.Unit {
     @Test
     func `elementStride matches MemoryLayout`() {
         let inline = Memory.Inline<Int, 1>()
         #expect(inline.elementStride == MemoryLayout<Int>.stride)
         #expect(inline.elementStride == 8)
     }
-}
 
-extension Memory.Inline<UInt8, 16>.Test.Unit {
     @Test
     func `elementStride for UInt8`() {
         let inline = Memory.Inline<UInt8, 16>()
