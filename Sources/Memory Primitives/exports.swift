@@ -7,5 +7,6 @@
 
 @_exported public import Memory_Primitives_Core
 @_exported public import Memory_Primitives_Standard_Library_Integration
+@_exported public import Memory_Buffer_Primitives
 @_exported public import Memory_Arena_Primitives
 @_exported public import Memory_Pool_Primitives

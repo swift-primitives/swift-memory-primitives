@@ -29,6 +29,10 @@ let package = Package(
             targets: ["Memory Arena Primitives"]
         ),
         .library(
+            name: "Memory Buffer Primitives",
+            targets: ["Memory Buffer Primitives"]
+        ),
+        .library(
             name: "Memory Pool Primitives",
             targets: ["Memory Pool Primitives"]
         ),
@@ -56,6 +60,7 @@ let package = Package(
             dependencies: [
                 .target(name: "Memory Primitives Core"),
                 .target(name: "Memory Primitives Standard Library Integration"),
+                .target(name: "Memory Buffer Primitives"),
                 .target(name: "Memory Arena Primitives"),
                 .target(name: "Memory Pool Primitives"),
             ]
@@ -86,6 +91,15 @@ let package = Package(
         // MARK: - Arena
         .target(
             name: "Memory Arena Primitives",
+            dependencies: [
+                .target(name: "Memory Primitives Core"),
+                .target(name: "Memory Primitives Standard Library Integration"),
+            ]
+        ),
+
+        // MARK: - Buffer
+        .target(
+            name: "Memory Buffer Primitives",
             dependencies: [
                 .target(name: "Memory Primitives Core"),
                 .target(name: "Memory Primitives Standard Library Integration"),
