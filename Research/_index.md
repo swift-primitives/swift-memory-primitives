@@ -75,8 +75,7 @@ Moved to `swift-storage-primitives/Research/`:
 |----------|-------|--------|
 | typed-index-arithmetic-unification.md | Unifying typed index arithmetic patterns | DECISION |
 | ~~ring-buffer-index-arithmetic.md~~ | Moved to `swift-storage-primitives/Research/` | — |
-| Index Type Safety Audit.md | Comprehensive audit of index type safety | ANALYSIS |
-| Typed Index Integration Audit.md | Integration audit for typed indices | ANALYSIS |
+| audit.md | Consolidated audit (legacy: Index Type Safety Audit.md, Typed Index Integration Audit.md) | AUDIT |
 | Input Index Bit Analysis.md | Bit-level analysis of index types | ANALYSIS |
 
 ## Status Legend
