@@ -47,6 +47,15 @@ extension Memory.Buffer {
     /// let immutableBuffer: Memory.Buffer = mutableBuffer.immutable
     /// ```
     @safe
+    // WHY: Category D — structural Sendable workaround (SP-5).
+    // WHY: `Memory.Buffer.Mutable` is a Copyable descriptor struct (NOT ~Copyable).
+    // WHY: Same field shape as Memory.Buffer — Tagged-based address + count, both
+    // WHY: let, both pure value bytes. No mutex, no deinit. The type does NOT own
+    // WHY: its allocation — it describes a buffer the caller manages separately.
+    // WHY: @unchecked exists because Tagged phantom type blocks structural inference.
+    // WHEN TO REMOVE: When compiler gains structural Sendable inference through
+    // WHEN TO REMOVE: Tagged phantom type parameters.
+    // TRACKING: unsafe-audit-findings.md Category D SP-5.
     public struct Mutable: Hashable, @unchecked Sendable {
 
         // MARK: - Stored Properties

@@ -122,4 +122,26 @@ extension Memory.Arena {
 
 // MARK: - Sendable
 
-extension Memory.Arena: @unchecked Sendable {}
+/// Sendable conformance for `Memory.Arena`.
+///
+/// ## Safety Invariant
+///
+/// `Memory.Arena` is `@safe struct ~Copyable` owning an
+/// `UnsafeMutableRawPointer` that `deinit` deallocates. Unique ownership
+/// guarantees at most one thread accesses the bump pointer at any time;
+/// cross-thread transfer via move relinquishes the sender's access.
+///
+/// ## Intended Use
+///
+/// - Handing a populated arena to a worker thread for batch processing
+///   followed by bulk reset/drop.
+/// - Per-stage arena ownership in a processing pipeline.
+/// - Actor-owned bump allocators constructed outside the actor and moved
+///   in at init.
+///
+/// ## Non-Goals
+///
+/// - Not a shared allocator — arena is single-owner by construction.
+/// - Pointers returned by `allocate(count:alignment:)` are not themselves
+///   Sendable independently of the arena.
+extension Memory.Arena: @unsafe @unchecked Sendable {}

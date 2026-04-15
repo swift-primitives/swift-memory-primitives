@@ -67,6 +67,16 @@ extension Memory {
     /// mutableBuffer.deallocate()
     /// ```
     @safe
+    // WHY: Category D — structural Sendable workaround (SP-5).
+    // WHY: `Memory.Buffer` is a Copyable descriptor struct (NOT ~Copyable).
+    // WHY: Stored fields are `Memory.Address` (Tagged<Memory, Ordinal>) and
+    // WHY: `Memory.Address.Count` (Tagged<Memory, Cardinal>) — both let, both
+    // WHY: pure value bytes. No mutex, no deinit, no ownership invariant.
+    // WHY: @unchecked exists because Tagged<Tag, RawValue> + sentinel pointer
+    // WHY: construction blocks structural Sendable inference.
+    // WHEN TO REMOVE: When compiler gains structural Sendable inference through
+    // WHEN TO REMOVE: Tagged phantom type parameters.
+    // TRACKING: unsafe-audit-findings.md Category D SP-5.
     public struct Buffer: Hashable, @unchecked Sendable {
 
         // MARK: - Stored Properties

@@ -30,11 +30,31 @@ extension Memory {
     /// It is `~Copyable` (move-only) to prevent double-free. The deinit
     /// deallocates the buffer.
     ///
-    /// ## Thread Safety
+    /// ## Safety Invariant
     ///
-    /// `@unchecked Sendable` because the pointer is read-only after init.
-    /// The struct provides no mutation API — only borrowed read access
-    /// via ``span``.
+    /// `Memory.Contiguous` is `@frozen @safe struct ~Copyable` owning an
+    /// `UnsafePointer<Element>` that `deinit` deallocates. The pointer is
+    /// `internal let` (read-only after init) and the struct provides no
+    /// mutation API. Under unique ownership, the only reader at any time
+    /// is the current owner; cross-thread transfer via move relinquishes
+    /// the sender's access, so no concurrent read + deallocate race is
+    /// possible.
+    ///
+    /// ## Intended Use
+    ///
+    /// - Moving a loaded contiguous buffer to a worker or actor for
+    ///   read-only processing.
+    /// - Handing a `BitwiseCopyable` element region across isolation
+    ///   boundaries where bulk deallocation is the cleanup model.
+    ///
+    /// ## Non-Goals
+    ///
+    /// - Not shareable — only one owner exists at a time.
+    /// - Does not expose mutation; consumers that need mutable access must
+    ///   build on a different primitive.
+    /// - `unsafeBaseAddress` is a deliberate escape hatch; sharing the
+    ///   returned pointer independently of the `Memory.Contiguous` owner is
+    ///   unsafe and unsupported.
     ///
     /// ## Type/View Pattern
     ///
@@ -42,7 +62,7 @@ extension Memory {
     /// - `Memory.Contiguous<Element>.View` (= `Span<Element>`) — the borrowed form
     @frozen
     @safe
-    public struct Contiguous<Element: BitwiseCopyable>: ~Copyable, @unchecked Sendable {
+    public struct Contiguous<Element: BitwiseCopyable>: ~Copyable, @unsafe @unchecked Sendable {
         /// Preserves `Memory.Contiguous.Protocol` naming for all consumer code.
         public typealias `Protocol` = Memory.ContiguousProtocol
 

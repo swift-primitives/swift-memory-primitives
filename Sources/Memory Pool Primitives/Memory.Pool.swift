@@ -367,4 +367,25 @@ extension Memory.Pool {
 
 // MARK: - Sendable
 
-extension Memory.Pool: @unchecked Sendable {}
+/// Sendable conformance for `Memory.Pool`.
+///
+/// ## Safety Invariant
+///
+/// `Memory.Pool` is `@safe struct ~Copyable` owning an
+/// `UnsafeMutableRawPointer` backing buffer and a `Bit.Vector` allocation
+/// bitmap; `deinit` deallocates the backing buffer. Unique ownership
+/// guarantees at most one thread mutates pool state; cross-thread transfer
+/// via move relinquishes the sender's access.
+///
+/// ## Intended Use
+///
+/// - Handing a populated slot allocator to a worker thread for batch
+///   allocation/deallocation followed by bulk reset or drop.
+/// - Per-stage pool ownership in a processing pipeline.
+/// - Actor-owned pools constructed outside the actor and moved in at init.
+///
+/// ## Non-Goals
+///
+/// - Not a concurrent allocator — external synchronization required.
+/// - Pointers returned by `allocate()` are not Sendable independently.
+extension Memory.Pool: @unsafe @unchecked Sendable {}

@@ -69,9 +69,47 @@ extension Memory.Inline where Element: ~Copyable {
 
 // MARK: - Sendable
 
-/// `@_rawLayout` types bypass normal Sendable analysis.
-extension Memory.Inline._Raw: @unchecked Sendable where Element: Sendable {}
+/// Sendable conformance for `Memory.Inline._Raw`.
+///
+/// ## Safety Invariant
+///
+/// `Memory.Inline._Raw` is a `@_rawLayout` `~Copyable` package struct.
+/// `@_rawLayout` bypasses normal Sendable analysis — the type is a
+/// compile-time layout directive, not a conventional struct. Unique
+/// ownership (via `~Copyable`) guarantees the raw bytes transfer as one
+/// block; there is no aliasing path that could race.
+///
+/// ## Intended Use
+///
+/// - Internal raw storage for `Memory.Inline<Element, capacity>`; not a
+///   consumer-facing API.
+///
+/// ## Non-Goals
+///
+/// - Not intended for direct use outside `memory-primitives`; marked
+///   `package` for this reason.
+/// - Does not track element initialization — callers manage lifecycle
+///   through pointers.
+extension Memory.Inline._Raw: @unsafe @unchecked Sendable where Element: Sendable {}
 
-/// `Memory.Inline` is `Sendable` when its elements are `Sendable`.
-/// Requires `@unchecked` because `_Raw` uses `@unchecked Sendable`.
-extension Memory.Inline: @unchecked Sendable where Element: Sendable {}
+/// Sendable conformance for `Memory.Inline`.
+///
+/// ## Safety Invariant
+///
+/// `Memory.Inline<Element, capacity>` is `~Copyable` and holds its
+/// storage inline via `_Raw` (`@_rawLayout`). The actual safety argument
+/// is unique ownership. Transfer across isolation boundaries moves the
+/// inline bytes without aliasing.
+///
+/// ## Intended Use
+///
+/// - Fixed-capacity typed inline memory moved between phases of a
+///   pipeline (e.g., generating iterators, small buffers).
+/// - Stack-allocated raw-memory regions handed to worker threads.
+///
+/// ## Non-Goals
+///
+/// - Does not track per-slot initialization; callers retain that
+///   responsibility.
+/// - Not shareable — inline storage is bound to the current owner.
+extension Memory.Inline: @unsafe @unchecked Sendable where Element: Sendable {}
