@@ -19,9 +19,7 @@ extension Memory.Pool {
     @inlinable
     public var allocation: Property<Memory.Allocation, Self>.View.Read {
         _read {
-            yield Property<Memory.Allocation, Self>.View.Read(
-                borrowing: self
-            )
+            yield Property<Memory.Allocation, Self>.View.Read(self)
         }
     }
 }
