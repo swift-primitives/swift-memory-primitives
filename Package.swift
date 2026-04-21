@@ -13,6 +13,10 @@ let package = Package(
     ],
     products: [
         .library(
+            name: "Memory Namespace",
+            targets: ["Memory Namespace"]
+        ),
+        .library(
             name: "Memory Primitives",
             targets: ["Memory Primitives"]
         ),
@@ -54,10 +58,17 @@ let package = Package(
     ],
     targets: [
 
+        // MARK: - Namespace
+        .target(
+            name: "Memory Namespace",
+            dependencies: []
+        ),
+
         // MARK: - Umbrella
         .target(
             name: "Memory Primitives",
             dependencies: [
+                .target(name: "Memory Namespace"),
                 .target(name: "Memory Primitives Core"),
                 .target(name: "Memory Primitives Standard Library Integration"),
                 .target(name: "Memory Buffer Primitives"),
@@ -78,6 +89,7 @@ let package = Package(
         .target(
             name: "Memory Primitives Core",
             dependencies: [
+                .target(name: "Memory Namespace"),
                 .product(name: "Ordinal Primitives", package: "swift-ordinal-primitives"),
                 .product(name: "Cardinal Primitives", package: "swift-cardinal-primitives"),
                 .product(name: "Affine Primitives", package: "swift-affine-primitives"),
