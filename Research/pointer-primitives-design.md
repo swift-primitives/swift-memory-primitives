@@ -68,7 +68,7 @@ Pointers to `~Escapable` values are **structurally impossible**:
 - Acquiring a pointer to a `~Escapable` value constitutes an escape
 - This is not a missing feature; it's type-theoretically incoherent
 
-### Tagged Pattern (Identity_Primitives)
+### Tagged Pattern (Tagged_Primitives)
 
 ```swift
 public struct Tagged<Tag: ~Copyable, RawValue: ~Copyable>: ~Copyable {
@@ -164,7 +164,7 @@ public struct Pointer<Pointee: ~Copyable>: ~Copyable {
 
 **Approach:**
 ```swift
-// Use Tagged pattern from Identity_Primitives
+// Use Tagged pattern from Tagged_Primitives
 public typealias Pointer<Pointee: ~Copyable> =
     Tagged<Pointee, Swift.UnsafeMutablePointer<Pointee>>
 
@@ -420,7 +420,7 @@ extension Pointer where Pointee: ~Copyable {
 - All wrappers expose `.base` for stdlib boundary access
 
 **Dependency Direction**:
-- Pointer_Primitives depends only on Identity_Primitives
+- Pointer_Primitives depends only on Tagged_Primitives
 - Index integration lives in Index_Primitives (Index is smaller domain than Pointer)
 - Consumers import both and use `.base` at stdlib boundaries
 
@@ -436,7 +436,7 @@ Following the principle "N.M where N is larger conceptual domain than M means M 
 - `Raw.swift` - Namespace for raw pointers
 - `Raw.Pointer.swift` - Nested namespace
 - `Raw.Pointer.Mutable.swift` - Raw pointer wrapper
-- `exports.swift` - Re-exports Identity_Primitives
+- `exports.swift` - Re-exports Tagged_Primitives
 
 ## References
 

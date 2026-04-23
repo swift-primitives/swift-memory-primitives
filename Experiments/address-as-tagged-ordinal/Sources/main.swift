@@ -51,7 +51,7 @@
 public import Ordinal_Primitives
 public import Cardinal_Primitives
 public import Affine_Primitives
-public import Identity_Primitives
+public import Tagged_Primitives
 public import Index_Primitives
 
 // ============================================================================

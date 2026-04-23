@@ -12,7 +12,7 @@
 public import Ordinal_Primitives
 import Cardinal_Primitives
 import Affine_Primitives
-public import Identity_Primitives
+public import Tagged_Primitives
 
 extension Memory {
     /// A non-null memory address.

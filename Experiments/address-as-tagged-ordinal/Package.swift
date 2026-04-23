@@ -9,7 +9,7 @@ let package = Package(
         .package(path: "../../../swift-ordinal-primitives"),
         .package(path: "../../../swift-cardinal-primitives"),
         .package(path: "../../../swift-affine-primitives"),
-        .package(path: "../../../swift-identity-primitives"),
+        .package(path: "../../../swift-tagged-primitives"),
         .package(path: "../../../swift-index-primitives"),
     ],
     targets: [
@@ -19,7 +19,7 @@ let package = Package(
                 .product(name: "Ordinal Primitives", package: "swift-ordinal-primitives"),
                 .product(name: "Cardinal Primitives", package: "swift-cardinal-primitives"),
                 .product(name: "Affine Primitives", package: "swift-affine-primitives"),
-                .product(name: "Identity Primitives", package: "swift-identity-primitives"),
+                .product(name: "Tagged Primitives", package: "swift-tagged-primitives"),
                 .product(name: "Index Primitives", package: "swift-index-primitives"),
             ],
             swiftSettings: [

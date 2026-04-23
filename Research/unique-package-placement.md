@@ -234,7 +234,7 @@ This is fundamentally different from:
 **Description**: Create minimal `swift-unique-primitives` with just `Unique<T>`.
 
 **Advantages**:
-- Follows pattern of single-concept packages (like `swift-identity-primitives`)
+- Follows pattern of single-concept packages (like `swift-tagged-primitives`)
 - Clear, focused package
 - No namespace (`Ownership.Unique`), just `Unique`
 

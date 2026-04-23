@@ -381,7 +381,7 @@ Layer 0 (No Dependencies):
   ├── swift-index-primitives                                                                                        
   ├── swift-input-primitives                                                                                        
   ├── swift-algebra-primitives                                                                                      
-  └── swift-identity-primitives                                                                                     
+  └── swift-tagged-primitives                                                                                     
                                                                                                                     
 Layer 1 (Index/Algebra/Identity):                                                                                   
   └── swift-bit-primitives                                                                                          
