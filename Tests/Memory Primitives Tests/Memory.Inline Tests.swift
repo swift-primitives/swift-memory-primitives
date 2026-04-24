@@ -127,3 +127,54 @@ extension MemoryInlineTest.Unit {
         #expect(MemoryLayout<Memory.Inline<UInt8, 16>>.size == 16)
     }
 }
+
+// MARK: - Release-mode regression guard (Finding #12 narrow-shape watchflag)
+//
+// Permanent positive-assertion regression guard for the V11 narrow-shape
+// compiler bug documented at swift-institute/Audits/borrow-pointer-
+// storage-release-miscompile.md finding #12, archived in the experiment
+// at swift-institute/Experiments/borrow-pointer-storage-release-miscompile
+// V10/V11 (commit cee7a7a).
+//
+// The experiment's V11 reproducer — a non-generic ~Copyable container
+// with a plain stored ~Copyable field accessed via `@inlinable`
+// `withUnsafePointer(to: _storage)` returning the pointer past the
+// closure — fails cross-module in release mode (divergent per-call
+// borrow-local addresses, garbage dereferences). Memory.Inline's
+// production shape (`@_rawLayout`-backed `_storage`, generic over
+// Element, stride-advance arithmetic, precondition) does NOT exhibit
+// the bug. The structural difference — most likely the compile-time-
+// known `@_rawLayout` offset — protects the production path.
+//
+// This test asserts the protection holds. It is a positive guard:
+// assertions should pass unchanged. If a future refactor migrates
+// Memory.Inline toward the V11 shape (e.g., drops `@_rawLayout` or
+// changes generic structure), or a future optimizer regression breaks
+// the @_rawLayout discriminator, this test flips to failing and
+// catches the regression before it ships.
+
+extension MemoryInlineTest.Unit {
+    @Test
+    func `pointer(at:) returns stable addresses across repeated cross-module calls (finding #12 regression guard)`() {
+        var inline = Memory.Inline<Int, 4>()
+        for i in 0..<4 {
+            unsafe inline.pointer(at: i).initialize(to: (i + 1) * 11)
+        }
+
+        let addrA1 = unsafe inline.pointer(at: 0)
+        let addrA2 = unsafe inline.pointer(at: 0)
+        let addrB1 = unsafe inline.pointer(at: 3)
+        let addrB2 = unsafe inline.pointer(at: 3)
+
+        #expect(addrA1 == addrA2)
+        #expect(addrB1 == addrB2)
+        #expect(unsafe addrA1.pointee == 11)
+        #expect(unsafe addrA2.pointee == 11)
+        #expect(unsafe addrB1.pointee == 44)
+        #expect(unsafe addrB2.pointee == 44)
+
+        for i in 0..<4 {
+            unsafe inline.pointer(at: i).deinitialize(count: 1)
+        }
+    }
+}
