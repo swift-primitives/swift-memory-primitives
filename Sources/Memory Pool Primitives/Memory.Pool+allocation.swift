@@ -11,6 +11,7 @@
 
 // MARK: - Allocation Property Accessor
 
+
 extension Memory.Pool {
     /// Read-only allocation-level properties.
     ///
@@ -30,6 +31,6 @@ extension Property.View.Read where Tag == Memory.Allocation, Base == Memory.Pool
     /// Indices of all currently allocated slots.
     @inlinable
     public var indices: Bit.Vector.Ones.View {
-        unsafe base.pointee._allocationBits.ones
+        unsafe base.value._allocationBits.ones
     }
 }

@@ -11,6 +11,7 @@
 
 // MARK: - Slot Property Accessor
 
+
 extension Memory.Pool {
     /// Read-only slot-level properties.
     ///
@@ -31,12 +32,12 @@ extension Property.View.Read where Tag == Memory.Pool.Slot, Base == Memory.Pool 
     /// Scaling factor from slot domain to byte domain (stride-aligned).
     @inlinable
     public var stride: Affine.Discrete.Ratio<Memory.Pool.Slot, Memory> {
-        unsafe base.pointee._slotStride
+        unsafe base.value._slotStride
     }
 
     /// Alignment requirement for each slot.
     @inlinable
     public var alignment: Memory.Alignment {
-        unsafe base.pointee._slotAlignment
+        unsafe base.value._slotAlignment
     }
 }
