@@ -48,6 +48,7 @@ let package = Package(
     dependencies: [
         .package(path: "../swift-ordinal-primitives"),
         .package(path: "../swift-cardinal-primitives"),
+        .package(path: "../swift-carrier-primitives"),
         .package(path: "../swift-affine-primitives"),
         .package(path: "../swift-tagged-primitives"),
         .package(path: "../swift-property-primitives"),
@@ -92,6 +93,7 @@ let package = Package(
                 .target(name: "Memory Namespace"),
                 .product(name: "Ordinal Primitives", package: "swift-ordinal-primitives"),
                 .product(name: "Cardinal Primitives", package: "swift-cardinal-primitives"),
+                .product(name: "Carrier Primitives", package: "swift-carrier-primitives"),
                 .product(name: "Affine Primitives", package: "swift-affine-primitives"),
                 .product(name: "Tagged Primitives", package: "swift-tagged-primitives"),
                 .product(name: "Property Primitives", package: "swift-property-primitives"),

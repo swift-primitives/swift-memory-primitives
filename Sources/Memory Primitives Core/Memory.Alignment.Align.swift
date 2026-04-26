@@ -1,6 +1,8 @@
 // Memory.Alignment.Align.swift
 // Directional alignment operations on cardinal quantities.
 
+public import Carrier_Primitives
+
 extension Memory.Alignment {
     /// Tag for directional alignment operations.
     public enum Align {}
@@ -41,7 +43,7 @@ extension Property where Tag == Memory.Alignment.Align, Base == Memory.Alignment
     /// - Returns: The smallest aligned value ≥ input.
     /// - Precondition: `shift < UInt.bitWidth`
     @inlinable
-    public func up<C: Cardinal.`Protocol`>(_ value: C) -> C {
+    public func up<C: Carrier<Cardinal>>(_ value: C) -> C {
         let mask: UInt = base.shift.mask()
         return C(Cardinal((value.cardinal.rawValue &+ mask) & ~mask))
     }
@@ -54,7 +56,7 @@ extension Property where Tag == Memory.Alignment.Align, Base == Memory.Alignment
     /// - Returns: The largest aligned value ≤ input.
     /// - Precondition: `shift < UInt.bitWidth`
     @inlinable
-    public func down<C: Cardinal.`Protocol`>(_ value: C) -> C {
+    public func down<C: Carrier<Cardinal>>(_ value: C) -> C {
         C(Cardinal(value.cardinal.rawValue & ~base.shift.mask()))
     }
 }
