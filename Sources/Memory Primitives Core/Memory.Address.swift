@@ -173,3 +173,23 @@ extension UnsafeMutableRawPointer {
     }
 }
 
+// MARK: - Pointer Accessors
+
+extension Tagged where Tag == Memory, RawValue == Ordinal {
+    /// The mutable raw pointer for syscall interop.
+    ///
+    /// Memory.Address is non-null by design; conversion is always safe.
+    @inlinable
+    public var mutablePointer: UnsafeMutableRawPointer {
+        unsafe UnsafeMutableRawPointer(self)
+    }
+
+    /// The immutable raw pointer for syscall interop.
+    ///
+    /// Memory.Address is non-null by design; conversion is always safe.
+    @inlinable
+    public var pointer: UnsafeRawPointer {
+        unsafe UnsafeRawPointer(self)
+    }
+}
+
