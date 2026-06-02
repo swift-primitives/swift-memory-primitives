@@ -1,0 +1,34 @@
+{
+  "$schema": "https://swift-institute.org/schemas/experiments-index-v1.json",
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-04-30",
+  "title": "Experiments Index",
+  "blurb": "",
+  "scope": "swift-memory-primitives (swift-primitives)",
+  "experiments": [
+    {
+      "directory": "address-as-tagged-ordinal",
+      "displayName": "address-as-tagged-ordinal",
+      "purpose": "Define Memory.Address as Tagged\\<UInt8, Ordinal\\> to eliminate custom arithmetic",
+      "date": "2026-01-28",
+      "toolchain": "Swift 6.2",
+      "status": "SUPERSEDED",
+      "statusDetail": "API/package drift; experiment premise no longer expressible against current toolchain or peer-package API",
+      "statusRaw": "SUPERSEDED (Phase 7a 2026-04-30; previously CONFIRMED)",
+      "supersededBy": null,
+      "crossRefs": []
+    },
+    {
+      "directory": "unsafebufferpointer-noncopyable",
+      "displayName": "unsafebufferpointer-noncopyable",
+      "purpose": "Test UnsafeBufferPointer\\<T\\> with ~Copyable T under SuppressedAssociatedTypes",
+      "date": "2026-02-13",
+      "toolchain": "Swift 6.2.3",
+      "status": "SUPERSEDED",
+      "statusDetail": "UnsafeBufferPointer<~Copyable> conformance shipped in Memory.Contiguous.Protocol (Phase 1b stale-triage 2026-04-30)",
+      "statusRaw": "CONFIRMED -> SUPERSEDED (Phase 1b stale-triage 2026-04-30)",
+      "supersededBy": "UnsafeBufferPointer<~Copyable> conformance shipped in Memory.Contiguous.Protocol",
+      "crossRefs": []
+    }
+  ]
+}

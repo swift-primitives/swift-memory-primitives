@@ -1,0 +1,12 @@
+//
+//  exports.swift
+//  swift-memory-primitives
+//
+//  Created by Coen ten Thije Boonkkamp on 20/05/2026.
+//
+
+@_exported public import Affine_Primitives
+@_exported public import Cardinal_Primitives
+@_exported public import Memory_Primitive
+@_exported public import Ordinal_Primitives
+@_exported public import Tagged_Primitives

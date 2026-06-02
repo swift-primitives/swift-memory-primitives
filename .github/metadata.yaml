@@ -1,0 +1,9 @@
+# .github/metadata.yaml
+# Triaged by AI-assisted bulk pass (2026-04-29).
+description: "Non-null memory address wrappers with typed index integration for Swift."
+topics:
+  - primitives
+  - memory
+homepage: "https://swift-institute.org"
+readme:
+  family: E
