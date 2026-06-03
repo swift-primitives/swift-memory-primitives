@@ -23,9 +23,12 @@ extension Memory.Shift: Carrier.`Protocol` {
     public typealias Domain = Never
 
     /// The shift count as its underlying cardinal value.
+    ///
+    /// `rawValue` is a `Bit.Index.Count` (= `Tagged<Bit, Cardinal>`), so its
+    /// `.underlying` IS the carried `Cardinal`.
     @inlinable
     public var underlying: Cardinal {
-        Cardinal(UInt(rawValue))
+        rawValue.underlying
     }
 
     /// Creates a shift from its underlying cardinal value.

@@ -60,7 +60,7 @@ let package = Package(
         .package(url: "https://github.com/swift-primitives/swift-affine-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-tagged-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-index-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-bit-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-bit-index-primitives.git", branch: "main"),
         .package(path: "../swift-span-primitives"),
     ],
     targets: [
@@ -115,7 +115,7 @@ let package = Package(
             name: "Memory Shift Primitives",
             dependencies: [
                 .target(name: "Memory Primitive"),
-                .product(name: "Bit Primitives", package: "swift-bit-primitives"),
+                .product(name: "Bit Index Primitives", package: "swift-bit-index-primitives"),
                 .product(name: "Cardinal Primitives", package: "swift-cardinal-primitives"),
                 .product(name: "Carrier Primitives", package: "swift-carrier-primitives"),
             ]

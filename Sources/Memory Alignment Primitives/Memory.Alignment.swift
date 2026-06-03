@@ -135,8 +135,13 @@ extension Memory.Alignment {
     public func validated<Carrier: FixedWidthInteger>(
         for _: Carrier.Type
     ) throws(Memory.Alignment.Error) -> Self {
-        guard Int(shift.rawValue) < Carrier.bitWidth else {
-            throw .shiftExceedsBitWidth(shift: shift.rawValue, bitWidth: Carrier.bitWidth)
+        // `shift.rawValue` is a `Bit.Index.Count` (= `Tagged<Bit, Cardinal>`);
+        // reinterpret its bit pattern as `Int` for the bit-width comparison.
+        let shiftCount = Int(bitPattern: shift.rawValue)
+        guard shiftCount < Carrier.bitWidth else {
+            // The exponent is bounded `0...63`, so the narrowing to the
+            // `UInt8` report field is in range.
+            throw .shiftExceedsBitWidth(shift: UInt8(shiftCount), bitWidth: Carrier.bitWidth)
         }
         return self
     }

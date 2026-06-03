@@ -28,10 +28,15 @@ extension Memory {
     /// let alignment = shift.alignment      // 4096 (2^12)
     /// ```
     public struct Shift: Sendable, Equatable, Hashable {
-        /// The shift count (number of bit positions).
+        /// The shift count (number of bit positions), typed as a count of bit
+        /// positions.
+        ///
+        /// A shift IS semantically an unsigned count of bit positions, so it is
+        /// stored as `Bit.Index.Count` (= `Index<Bit>.Count` = `Tagged<Bit, Cardinal>`)
+        /// from `swift-bit-index-primitives` rather than an untyped `UInt8`.
         ///
         /// Always in range `0...63`.
-        public let rawValue: UInt8
+        public let rawValue: Bit.Index.Count
     }
 }
 
@@ -39,6 +44,12 @@ extension Memory {
 
 extension Memory.Shift {
     /// Maximum valid shift value (63 bits, covers UInt64).
+    ///
+    /// Kept as an untyped `UInt8` validation bound: it is compared against the
+    /// incoming `Int` / `UInt8` argument in the throwing initializers and is
+    /// surfaced as the `max:` field of `Memory.Shift.Error.outOfRange`. The
+    /// stored exponent (`rawValue`) is the typed `Bit.Index.Count`; this constant
+    /// is purely the construction-time range check.
     public static let maxValue: UInt8 = 63
 }
 
@@ -54,7 +65,8 @@ extension Memory.Shift {
         guard value >= 0, value <= Int(Self.maxValue) else {
             throw .outOfRange(value: value, max: Self.maxValue)
         }
-        self.rawValue = UInt8(value)
+        // Validated `0...63`, so `UInt(value)` is in range.
+        self.rawValue = Bit.Index.Count(UInt(value))
     }
 
     /// Creates a shift count from UInt8.
@@ -66,7 +78,7 @@ extension Memory.Shift {
         guard value <= Self.maxValue else {
             throw .outOfRange(value: Int(value), max: Self.maxValue)
         }
-        self.rawValue = value
+        self.rawValue = Bit.Index.Count(UInt(value))
     }
 }
 
@@ -79,7 +91,7 @@ extension Memory.Shift {
     @inlinable
     package init(unchecked value: UInt8) {
         assert(value <= Self.maxValue, "Shift value out of range")
-        self.rawValue = value
+        self.rawValue = Bit.Index.Count(UInt(value))
     }
 }
 
@@ -149,8 +161,9 @@ extension Memory.Shift {
     public func validated<Carrier: FixedWidthInteger>(
         for _: Carrier.Type
     ) throws(Memory.Shift.Error) -> Self {
-        guard Int(rawValue) < Carrier.bitWidth else {
-            throw .outOfRange(value: Int(rawValue), max: UInt8(Carrier.bitWidth - 1))
+        let count = Int(bitPattern: rawValue)
+        guard count < Carrier.bitWidth else {
+            throw .outOfRange(value: count, max: UInt8(Carrier.bitWidth - 1))
         }
         return self
     }
