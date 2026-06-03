@@ -59,21 +59,19 @@ extension Memory {
     ///   returned pointer independently of the `Memory.Contiguous` owner is
     ///   unsafe and unsupported.
     ///
-    /// ## Type/Borrowed Pattern
+    /// ## Owned / Borrowed Pattern
     ///
-    /// - `Memory.Contiguous<Element>` — the owned form (this type)
-    /// - `Memory.Contiguous<Element>.Borrowed` — the borrowed form
-    ///   (`~Copyable & ~Escapable` struct wrapping `Span<Element>`)
-    /// - `Memory.Contiguous.Borrowed.\`Protocol\`` — the protocol the
-    ///   borrowed form conforms to; also conformed by `Byte.Borrowed`,
-    ///   `Binary.Borrowed`, etc., enabling shared cursor-operation
-    ///   extensions parameterized on the protocol.
+    /// - `Memory.Contiguous<Element>` — the owned form (this type), which
+    ///   conforms to `Span.\`Protocol\`` (the namespace-neutral OWNED
+    ///   span-vending capability) and vends read access via ``span``.
+    /// - A borrowed contiguous view is a bare `Swift.Span<Element>`, surfaced
+    ///   through `Span.Borrowed.\`Protocol\`` (`Swift.Span` self-conforms). There
+    ///   is no nominal borrowed-contiguous type at this layer — the invariant-free
+    ///   nominal was pruned per the orthogonality decision (keep-nominal is
+    ///   reserved for Path/String).
     @frozen
     @safe
     public struct Contiguous<Element: BitwiseCopyable>: ~Copyable, @unsafe @unchecked Sendable {
-        /// Preserves `Memory.Contiguous.Protocol` naming for all consumer code.
-        public typealias `Protocol` = Memory.ContiguousProtocol
-
         @usableFromInline
         internal let pointer: UnsafePointer<Element>
 

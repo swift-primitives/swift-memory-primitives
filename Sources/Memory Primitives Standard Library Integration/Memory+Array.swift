@@ -9,6 +9,11 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Memory_Contiguous_Primitives
+public import Span_Protocol_Primitives
 
-extension Swift.Array: Memory.Contiguous.`Protocol` {}
+// `@retroactive`: both `Swift.Array` (stdlib) and `Span.\`Protocol\``
+// (swift-span-primitives) are foreign to this package — the conformance is
+// genuinely cross-package per [API-IMPL-018]. (The former conformance target
+// `Memory.Contiguous.\`Protocol\`` was a same-package typealias, hence needed
+// no attribute.)
+extension Swift.Array: @retroactive Span.`Protocol` {}

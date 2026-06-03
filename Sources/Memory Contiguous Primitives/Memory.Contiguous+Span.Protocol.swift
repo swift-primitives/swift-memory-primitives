@@ -9,26 +9,31 @@
 //
 // ===----------------------------------------------------------------------===//
 
-// Borrowed-view pairing: the borrowed counterpart of
-// ``Memory/Contiguous`` is the nominal struct ``Memory/Contiguous/Borrowed``
-// declared in `Memory.Contiguous.Borrowed.swift`. The prior
-// `Memory.Contiguous<Element>.View = Span<Element>` typealias was
-// retired in favour of the nominal struct, which can host the
-// `Memory.Contiguous.Borrowed.\`Protocol\`` typealias and matches the
-// institute Type/Type.Borrowed convention for passive borrow-views
-// (per `nested-view-vs-borrowed-naming.md` v1.2.0).
+// `Memory.Contiguous` is an OWNED contiguous region, so it conforms to the
+// namespace-neutral OWNED span-vending capability `Span.\`Protocol\`` from
+// `swift-span-primitives` (the institute-neutral lift of the former owned
+// Memory contiguous protocol, relocated out of the Memory namespace so
+// byte/binary/memory each conform without a cross-domain edge). Borrowed
+// contiguous views are bare `Swift.Span<Element>` surfaced via
+// `Span.Borrowed.\`Protocol\``; there is no nominal borrowed-contiguous type at
+// this layer (orthogonality decision — keep-nominal is reserved for
+// Path/String). See
+// swift-institute/Research/memory-byte-bit-domain-orthogonality.md and
+// cross-layer-capability-protocol-model.md §12.
 
-extension Memory.Contiguous: Memory.ContiguousProtocol {
+public import Span_Protocol_Primitives
+
+extension Memory.Contiguous: Span.`Protocol` {
     /// Safe, bounds-checked read access to the memory region.
     ///
     /// Returns a `Span` that borrows `self`, preventing the region from
     /// being destroyed while the span exists.
     ///
     /// - Complexity: O(1)
-    public var span: Span<Element> {
+    public var span: Swift.Span<Element> {
         @_lifetime(borrow self)
         borrowing get {
-            let s = unsafe Span(_unsafeStart: pointer, count: count)
+            let s = unsafe Swift.Span(_unsafeStart: pointer, count: count)
             return unsafe _overrideLifetime(s, borrowing: self)
         }
     }
