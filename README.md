@@ -6,7 +6,7 @@ Non-null memory address wrappers with typed index integration for Swift.
 
 ## Scope
 
-`swift-memory-primitives` provides the substrate for **addressable, aligned, allocatable storage with byte-level layout and mutation operations**.
+`swift-memory-primitives` provides the substrate for **addressable, aligned, allocatable storage with typed layout and mutation operations**. Memory is the *location* domain — orthogonal to the byte/bit *representation* domains; the byte couplings (`Byte` as the stored unit, byte-counted addressing) are bridges to `swift-byte-primitives`, not memory's identity.
 
 ### Core targets (in scope)
 
@@ -15,7 +15,7 @@ Non-null memory address wrappers with typed index integration for Swift.
 - **Memory Allocation** — creating regions
 - **Memory Contiguous** — typed layout interface
 - **Memory Inline** — in-line representation
-- **Memory Shift** — bit-level mutation
+- **Memory Shift** — alignment exponent (`alignment = 2^shift`; a typed bit-shift count, not a mutation operation)
 
 ### Out of scope
 
