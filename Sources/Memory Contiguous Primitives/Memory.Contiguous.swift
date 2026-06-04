@@ -65,7 +65,7 @@ extension Memory {
     ///   conforms to `Span.\`Protocol\`` (the namespace-neutral OWNED
     ///   span-vending capability) and vends read access via ``span``.
     /// - A borrowed contiguous view is a bare `Swift.Span<Element>`, surfaced
-    ///   through `Span.Borrowed.\`Protocol\`` (`Swift.Span` self-conforms). There
+    ///   through `Span.\`Protocol\`` (`Swift.Span` self-conforms). There
     ///   is no nominal borrowed-contiguous type at this layer — the invariant-free
     ///   nominal was pruned per the orthogonality decision (keep-nominal is
     ///   reserved for Path/String).

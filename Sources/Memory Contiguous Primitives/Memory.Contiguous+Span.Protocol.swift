@@ -15,7 +15,7 @@
 // Memory contiguous protocol, relocated out of the Memory namespace so
 // byte/binary/memory each conform without a cross-domain edge). Borrowed
 // contiguous views are bare `Swift.Span<Element>` surfaced via
-// `Span.Borrowed.\`Protocol\``; there is no nominal borrowed-contiguous type at
+// `Span.\`Protocol\``; there is no nominal borrowed-contiguous type at
 // this layer (orthogonality decision — keep-nominal is reserved for
 // Path/String). See
 // swift-institute/Research/memory-byte-bit-domain-orthogonality.md and
