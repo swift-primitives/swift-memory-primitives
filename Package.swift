@@ -45,6 +45,14 @@ let package = Package(
             targets: ["Memory Shift Primitives"]
         ),
         .library(
+            name: "Memory Tracked Primitives",
+            targets: ["Memory Tracked Primitives"]
+        ),
+        .library(
+            name: "Memory Allocatable Primitives",
+            targets: ["Memory Allocatable Primitives"]
+        ),
+        .library(
             name: "Memory Primitives Test Support",
             targets: ["Memory Primitives Test Support"]
         ),
@@ -58,6 +66,7 @@ let package = Package(
         .package(url: "https://github.com/swift-primitives/swift-index-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-bit-index-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-span-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-store-primitives.git", branch: "main"),
     ],
     targets: [
 
@@ -78,6 +87,8 @@ let package = Package(
                 .target(name: "Memory Allocation Primitives"),
                 .target(name: "Memory Contiguous Primitives"),
                 .target(name: "Memory Shift Primitives"),
+                .target(name: "Memory Tracked Primitives"),
+                .target(name: "Memory Allocatable Primitives"),
             ]
         ),
 
@@ -144,6 +155,29 @@ let package = Package(
             dependencies: [
                 .target(name: "Memory Primitive"),
                 .product(name: "Span Protocol Primitives", package: "swift-span-primitives"),
+            ]
+        ),
+
+        // MARK: - Tracked (ledger seam — narrow Store.Tracked replacement, leaf-tier)
+        .target(
+            name: "Memory Tracked Primitives",
+            dependencies: [
+                .target(name: "Memory Primitive"),
+                .product(name: "Index Primitives", package: "swift-index-primitives"),
+                .product(name: "Store Protocol Primitives", package: "swift-store-primitives"),
+                .product(name: "Store Initialization Primitives", package: "swift-store-primitives"),
+            ]
+        ),
+
+        // MARK: - Allocatable (create + bulk relocate — narrow Store.Creatable replacement)
+        .target(
+            name: "Memory Allocatable Primitives",
+            dependencies: [
+                .target(name: "Memory Primitive"),
+                .target(name: "Memory Tracked Primitives"),
+                .product(name: "Index Primitives", package: "swift-index-primitives"),
+                .product(name: "Store Protocol Primitives", package: "swift-store-primitives"),
+                .product(name: "Store Initialization Primitives", package: "swift-store-primitives"),
             ]
         ),
 

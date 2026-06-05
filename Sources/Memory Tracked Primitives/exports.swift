@@ -1,0 +1,14 @@
+// ===----------------------------------------------------------------------===//
+//
+// This source file is part of the swift-memory-primitives open source project
+//
+// Copyright (c) 2024-2026 Coen ten Thije Boonkkamp and the swift-memory-primitives project authors
+// Licensed under Apache License v2.0
+//
+// See LICENSE for license information
+//
+// ===----------------------------------------------------------------------===//
+
+@_exported public import Memory_Primitive
+@_exported public import Store_Initialization_Primitives
+@_exported public import Store_Protocol_Primitives
