@@ -41,10 +41,6 @@ let package = Package(
             targets: ["Memory Contiguous Primitives"]
         ),
         .library(
-            name: "Memory Inline Primitives",
-            targets: ["Memory Inline Primitives"]
-        ),
-        .library(
             name: "Memory Shift Primitives",
             targets: ["Memory Shift Primitives"]
         ),
@@ -81,7 +77,6 @@ let package = Package(
                 .target(name: "Memory Alignment Primitives"),
                 .target(name: "Memory Allocation Primitives"),
                 .target(name: "Memory Contiguous Primitives"),
-                .target(name: "Memory Inline Primitives"),
                 .target(name: "Memory Shift Primitives"),
             ]
         ),
@@ -149,14 +144,6 @@ let package = Package(
             dependencies: [
                 .target(name: "Memory Primitive"),
                 .product(name: "Span Protocol Primitives", package: "swift-span-primitives"),
-            ]
-        ),
-
-        // MARK: - Inline
-        .target(
-            name: "Memory Inline Primitives",
-            dependencies: [
-                .target(name: "Memory Primitive"),
             ]
         ),
 
