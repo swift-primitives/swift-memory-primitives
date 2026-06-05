@@ -53,6 +53,10 @@ let package = Package(
             targets: ["Memory Allocatable Primitives"]
         ),
         .library(
+            name: "Memory Unique Primitives",
+            targets: ["Memory Unique Primitives"]
+        ),
+        .library(
             name: "Memory Primitives Test Support",
             targets: ["Memory Primitives Test Support"]
         ),
@@ -89,6 +93,7 @@ let package = Package(
                 .target(name: "Memory Shift Primitives"),
                 .target(name: "Memory Tracked Primitives"),
                 .target(name: "Memory Allocatable Primitives"),
+                .target(name: "Memory Unique Primitives"),
             ]
         ),
 
@@ -178,6 +183,14 @@ let package = Package(
                 .product(name: "Index Primitives", package: "swift-index-primitives"),
                 .product(name: "Store Protocol Primitives", package: "swift-store-primitives"),
                 .product(name: "Store Initialization Primitives", package: "swift-store-primitives"),
+            ]
+        ),
+
+        // MARK: - Unique (copy-on-write capability — sharing leaves only)
+        .target(
+            name: "Memory Unique Primitives",
+            dependencies: [
+                .target(name: "Memory Primitive"),
             ]
         ),
 
