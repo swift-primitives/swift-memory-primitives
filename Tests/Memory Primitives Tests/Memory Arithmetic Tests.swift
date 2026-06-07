@@ -275,9 +275,10 @@ extension Memory.Arithmetic.Count {
     func `Count in store/read with correct byte size`() {
         let byteCount: Memory.Address.Count = .init(UInt(MemoryLayout<UInt64>.size))
         let alignment: Memory.Alignment = .`8`
-        let allocator = Memory.Allocator()
-        let address = allocator.allocate(count: byteCount, alignment: alignment)
-        defer { allocator.deallocate(address, count: byteCount, alignment: alignment) }
+        let address = unsafe Memory.Address(
+            UnsafeMutableRawPointer.allocate(count: byteCount, alignment: alignment)
+        )
+        defer { unsafe UnsafeMutableRawPointer(address).deallocate() }
 
         let ptr = unsafe UnsafeMutableRawPointer(address)
         unsafe ptr.storeBytes(of: UInt64(0xDEAD_BEEF), as: UInt64.self)
@@ -364,9 +365,10 @@ extension Memory.Arithmetic.Composition {
         let count = 4
         let alignment: Memory.Alignment = .`8`
         let byteCount: Memory.Address.Count = .init(UInt(intStride * count))
-        let allocator = Memory.Allocator()
-        let base = allocator.allocate(count: byteCount, alignment: alignment)
-        defer { allocator.deallocate(base, count: byteCount, alignment: alignment) }
+        let base = unsafe Memory.Address(
+            UnsafeMutableRawPointer.allocate(count: byteCount, alignment: alignment)
+        )
+        defer { unsafe UnsafeMutableRawPointer(base).deallocate() }
 
         let stride: Affine.Discrete.Ratio<Int, Memory> = .init(intStride)
 
@@ -389,9 +391,10 @@ extension Memory.Arithmetic.Composition {
         // Simulate a struct with two fields: UInt32 at offset 0, UInt64 at offset 8
         let size: Memory.Address.Count = 16
         let alignment: Memory.Alignment = .`8`
-        let allocator = Memory.Allocator()
-        let base = allocator.allocate(count: size, alignment: alignment)
-        defer { allocator.deallocate(base, count: size, alignment: alignment) }
+        let base = unsafe Memory.Address(
+            UnsafeMutableRawPointer.allocate(count: size, alignment: alignment)
+        )
+        defer { unsafe UnsafeMutableRawPointer(base).deallocate() }
 
         let field0Offset: Memory.Address.Offset = 0
         let field1Offset: Memory.Address.Offset = 8
@@ -416,12 +419,15 @@ extension Memory.Arithmetic.Composition {
         let byteCount: Memory.Address.Count = elementCount * stride
 
         let alignment: Memory.Alignment = .`8`
-        let allocator = Memory.Allocator()
-        let src = allocator.allocate(count: byteCount, alignment: alignment)
-        let dst = allocator.allocate(count: byteCount, alignment: alignment)
+        let src = unsafe Memory.Address(
+            UnsafeMutableRawPointer.allocate(count: byteCount, alignment: alignment)
+        )
+        let dst = unsafe Memory.Address(
+            UnsafeMutableRawPointer.allocate(count: byteCount, alignment: alignment)
+        )
         defer {
-            allocator.deallocate(src, count: byteCount, alignment: alignment)
-            allocator.deallocate(dst, count: byteCount, alignment: alignment)
+            unsafe UnsafeMutableRawPointer(src).deallocate()
+            unsafe UnsafeMutableRawPointer(dst).deallocate()
         }
 
         // Use raw pointers for memory operations
@@ -499,9 +505,10 @@ extension Memory.Arithmetic.Composition {
         #expect(totalBytes == 128)
 
         let alignment = try Memory.Alignment(64)
-        let allocator = Memory.Allocator()
-        let base: Memory.Address = allocator.allocate(count: totalBytes, alignment: alignment)
-        defer { allocator.deallocate(base, count: totalBytes, alignment: alignment) }
+        let base = unsafe Memory.Address(
+            UnsafeMutableRawPointer.allocate(count: totalBytes, alignment: alignment)
+        )
+        defer { unsafe UnsafeMutableRawPointer(base).deallocate() }
 
         // Write to element 3 of cache line 1 (absolute element index = 8 + 3 = 11)
         let lineOffset: Memory.Address.Offset = 1 * lineToByte

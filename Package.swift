@@ -33,10 +33,6 @@ let package = Package(
             targets: ["Memory Alignment Primitives"]
         ),
         .library(
-            name: "Memory Allocation Primitives",
-            targets: ["Memory Allocation Primitives"]
-        ),
-        .library(
             name: "Memory Contiguous Primitives",
             targets: ["Memory Contiguous Primitives"]
         ),
@@ -88,7 +84,6 @@ let package = Package(
                 .target(name: "Memory Primitives Standard Library Integration"),
                 .target(name: "Memory Address Primitives"),
                 .target(name: "Memory Alignment Primitives"),
-                .target(name: "Memory Allocation Primitives"),
                 .target(name: "Memory Contiguous Primitives"),
                 .target(name: "Memory Shift Primitives"),
                 .target(name: "Memory Tracked Primitives"),
@@ -139,18 +134,6 @@ let package = Package(
                 .target(name: "Memory Primitive"),
                 .target(name: "Memory Shift Primitives"),
                 .product(name: "Carrier Primitives", package: "swift-carrier-primitives"),
-            ]
-        ),
-
-        // MARK: - Allocation
-        .target(
-            name: "Memory Allocation Primitives",
-            dependencies: [
-                .target(name: "Memory Primitive"),
-                .target(name: "Memory Address Primitives"),
-                .target(name: "Memory Alignment Primitives"),
-                .target(name: "Memory Primitives Standard Library Integration"),
-                .product(name: "Tagged Primitives", package: "swift-tagged-primitives"),
             ]
         ),
 
