@@ -49,6 +49,10 @@ let package = Package(
             targets: ["Memory Allocatable Primitives"]
         ),
         .library(
+            name: "Memory Region Primitives",
+            targets: ["Memory Region Primitives"]
+        ),
+        .library(
             name: "Memory Unique Primitives",
             targets: ["Memory Unique Primitives"]
         ),
@@ -88,6 +92,7 @@ let package = Package(
                 .target(name: "Memory Shift Primitives"),
                 .target(name: "Memory Tracked Primitives"),
                 .target(name: "Memory Allocatable Primitives"),
+                .target(name: "Memory Region Primitives"),
                 .target(name: "Memory Unique Primitives"),
             ]
         ),
@@ -166,6 +171,15 @@ let package = Package(
                 .product(name: "Index Primitives", package: "swift-index-primitives"),
                 .product(name: "Store Protocol Primitives", package: "swift-store-primitives"),
                 .product(name: "Store Initialization Primitives", package: "swift-store-primitives"),
+            ]
+        ),
+
+        // MARK: - Region (element-free raw-region seam — base + byte capacity)
+        .target(
+            name: "Memory Region Primitives",
+            dependencies: [
+                .target(name: "Memory Primitive"),
+                .target(name: "Memory Address Primitives"),
             ]
         ),
 

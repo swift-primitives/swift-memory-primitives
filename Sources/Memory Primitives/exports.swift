@@ -13,4 +13,5 @@
 @_exported public import Memory_Shift_Primitives
 @_exported public import Memory_Tracked_Primitives
 @_exported public import Memory_Allocatable_Primitives
+@_exported public import Memory_Region_Primitives
 @_exported public import Memory_Unique_Primitives
