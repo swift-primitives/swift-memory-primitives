@@ -70,7 +70,7 @@ let package = Package(
         .package(url: "https://github.com/swift-primitives/swift-index-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-bit-index-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-span-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-store-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-storage-primitives.git", branch: "main"),
     ],
     targets: [
 
@@ -157,8 +157,8 @@ let package = Package(
             dependencies: [
                 .target(name: "Memory Primitive"),
                 .product(name: "Index Primitives", package: "swift-index-primitives"),
-                .product(name: "Store Protocol Primitives", package: "swift-store-primitives"),
-                .product(name: "Store Initialization Primitives", package: "swift-store-primitives"),
+                .product(name: "Store Protocol Primitives", package: "swift-storage-primitives"),
+                .product(name: "Store Initialization Primitives", package: "swift-storage-primitives"),
             ]
         ),
 
@@ -169,8 +169,8 @@ let package = Package(
                 .target(name: "Memory Primitive"),
                 .target(name: "Memory Tracked Primitives"),
                 .product(name: "Index Primitives", package: "swift-index-primitives"),
-                .product(name: "Store Protocol Primitives", package: "swift-store-primitives"),
-                .product(name: "Store Initialization Primitives", package: "swift-store-primitives"),
+                .product(name: "Store Protocol Primitives", package: "swift-storage-primitives"),
+                .product(name: "Store Initialization Primitives", package: "swift-storage-primitives"),
             ]
         ),
 
