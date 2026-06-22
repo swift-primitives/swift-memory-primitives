@@ -45,10 +45,6 @@ let package = Package(
             targets: ["Memory Tracked Primitives"]
         ),
         .library(
-            name: "Memory Allocatable Primitives",
-            targets: ["Memory Allocatable Primitives"]
-        ),
-        .library(
             name: "Memory Region Primitives",
             targets: ["Memory Region Primitives"]
         ),
@@ -91,7 +87,6 @@ let package = Package(
                 .target(name: "Memory Contiguous Primitives"),
                 .target(name: "Memory Shift Primitives"),
                 .target(name: "Memory Tracked Primitives"),
-                .target(name: "Memory Allocatable Primitives"),
                 .target(name: "Memory Region Primitives"),
                 .target(name: "Memory Unique Primitives"),
             ]
@@ -156,18 +151,6 @@ let package = Package(
             name: "Memory Tracked Primitives",
             dependencies: [
                 .target(name: "Memory Primitive"),
-                .product(name: "Index Primitives", package: "swift-index-primitives"),
-                .product(name: "Store Protocol Primitives", package: "swift-storage-primitives"),
-                .product(name: "Store Initialization Primitives", package: "swift-storage-primitives"),
-            ]
-        ),
-
-        // MARK: - Allocatable (create + bulk relocate — narrow Store.Creatable replacement)
-        .target(
-            name: "Memory Allocatable Primitives",
-            dependencies: [
-                .target(name: "Memory Primitive"),
-                .target(name: "Memory Tracked Primitives"),
                 .product(name: "Index Primitives", package: "swift-index-primitives"),
                 .product(name: "Store Protocol Primitives", package: "swift-storage-primitives"),
                 .product(name: "Store Initialization Primitives", package: "swift-storage-primitives"),
