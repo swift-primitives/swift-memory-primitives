@@ -1,6 +1,6 @@
 # Allocation & Alignment — Operation-Domain Naming
 
-> **Dissolution note (2026-06-23)**: `Memory.Contiguous` was dissolved — the typed contiguous tier is now `Storage.Contiguous`, the read-capability protocol is `Span.Protocol` (the renamed/relocated `Memory.Contiguous.Protocol`), and owned raw bytes are `Memory.Heap`. References below are retained as the pre-dissolution design record; see `swift-institute/Research/memory-contiguous-dissolution.md`.
+> **Note:** `Memory.Contiguous` was dissolved 2026-06-23 → `Storage.Contiguous` (typed) / `Span.Protocol` (read capability) / `Memory.Heap` (raw bytes). See `swift-institute/Research/memory-contiguous-dissolution.md`.
 
 <!--
 ---
@@ -197,7 +197,7 @@ The GAP-O arc relocates today's aligned byte region `Buffer.Aligned`
 `Buffer.Aligned` does **not** conform the former `Aligned` protocol today — so the rename touches it not at all.
 
 The coupling is forward-looking: the relocated region will **conform** `Memory.Alignable`
-(+ `Memory.Contiguous.\`Protocol\``) — it is a *user* of the alignment capability, not the
+(+ `Span.\`Protocol\``) — it is a *user* of the alignment capability, not the
 protocol and not an aligner. Its own subject-name is a **GAP-O open sub-decision** (not this
 note's; it is *not* `Memory.Alignable`, which is the capability-protocol slot).
 

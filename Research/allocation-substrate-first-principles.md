@@ -1,6 +1,6 @@
 # Allocation Substrate — First Principles
 
-> **Dissolution note (2026-06-23)**: `Memory.Contiguous` was dissolved — the typed contiguous tier is now `Storage.Contiguous`, the read-capability protocol is `Span.Protocol` (the renamed/relocated `Memory.Contiguous.Protocol`), and owned raw bytes are `Memory.Heap`. References below are retained as the pre-dissolution design record; see `swift-institute/Research/memory-contiguous-dissolution.md`.
+> **Note:** `Memory.Contiguous` was dissolved 2026-06-23 → `Storage.Contiguous` (typed) / `Span.Protocol` (read capability) / `Memory.Heap` (raw bytes). See `swift-institute/Research/memory-contiguous-dissolution.md`.
 
 <!--
 ---
@@ -68,8 +68,8 @@ Verified citations:
 - Only conformer is `Memory.Allocator` (system malloc wrapper, `throws(Never)`) —
   `…/Memory.Allocator.swift:14-36`. `Memory.Pool` / `Memory.Arena` do **not**
   conform. [Verified: 2026-05-25]
-- `Memory.Contiguous.Protocol` (a *separate* read-access protocol: `span` +
-  `withUnsafeBufferPointer`) — `…/Memory Contiguous Primitives/Memory.ContiguousProtocol.swift:90`.
+- `Span.Protocol` (a *separate* read-access protocol: `span` +
+  `withUnsafeBufferPointer`) — `…/Span Protocol Primitives/Memory.ContiguousProtocol.swift:90`.
   `Storage.Heap` / `Storage.Inline` conform to it. [Verified: 2026-05-25]
 - `Storage.Protocol` = `capacity: Index<Element>.Count` + `@unsafe pointer(at: Index<Element>)`
   — `swift-storage-primitives/Sources/Storage Protocol Primitives/Storage.Protocol.swift:20-37`. [Verified: 2026-05-25]
@@ -484,7 +484,7 @@ Transcript: `/tmp/allocation-substrate-transcript.md`.
 - Prior art (internal, this package): `pool-free-list-representation.md` (DECISION
   — Pool's in-band typed-sentinel free list; sits one level *below* this doc's
   allocator-contract topic); `memory-address-mutability.md` (`Memory.Address` =
-  position-only); `contiguous-memory-access-standardization.md` (`Memory.Contiguous.Protocol`).
+  position-only); `contiguous-memory-access-standardization.md` (`Span.Protocol`).
 - Storage arc: `swift-storage-primitives/Research/storage-protocol-capacity-pilot.md`;
   `swift-buffer-primitives/Research/storage-generic-buffer-core.md` (Lever-1).
 - Source (verified 2026-05-25): `Memory.Allocator.Protocol.swift:23-49`;
