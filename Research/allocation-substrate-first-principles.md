@@ -1,7 +1,5 @@
 # Allocation Substrate — First Principles
 
-> **Note:** `Memory.Contiguous` was dissolved 2026-06-23 → `Storage.Contiguous` (typed) / `Span.Protocol` (read capability) / `Memory.Heap` (raw bytes). See `swift-institute/Research/memory-contiguous-dissolution.md`.
-
 <!--
 ---
 version: 1.1.0
@@ -69,7 +67,7 @@ Verified citations:
   `…/Memory.Allocator.swift:14-36`. `Memory.Pool` / `Memory.Arena` do **not**
   conform. [Verified: 2026-05-25]
 - `Span.Protocol` (a *separate* read-access protocol: `span` +
-  `withUnsafeBufferPointer`) — `…/Span Protocol Primitives/Memory.ContiguousProtocol.swift:90`.
+  `withUnsafeBufferPointer`) — `…/Span Protocol Primitives/Span.Protocol.swift`.
   `Storage.Heap` / `Storage.Inline` conform to it. [Verified: 2026-05-25]
 - `Storage.Protocol` = `capacity: Index<Element>.Count` + `@unsafe pointer(at: Index<Element>)`
   — `swift-storage-primitives/Sources/Storage Protocol Primitives/Storage.Protocol.swift:20-37`. [Verified: 2026-05-25]
@@ -490,7 +488,7 @@ Transcript: `/tmp/allocation-substrate-transcript.md`.
 - Source (verified 2026-05-25): `Memory.Allocator.Protocol.swift:23-49`;
   `Memory.Allocator.swift:14-36`; `Memory.Buffer.Mutable.swift:61-151`;
   `Memory.Arena.swift:91,102`; `Memory.Pool.swift:238,299`;
-  `Storage.Protocol.swift:20-37`; `Memory.ContiguousProtocol.swift:90`.
+  `Storage.Protocol.swift:20-37`; `Span.Protocol.swift`.
 - Skill rules: [MEMP-003] (Allocator Protocol — to be repaired), [MEMP-002]
   (namespace-axis decomposition), [API-ERR-001] (typed throws), [API-NAME-001]
   (Nest.Name), [RES-018] case (b), `feedback_correctness_and_evergreen`.
