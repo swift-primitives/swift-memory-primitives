@@ -41,16 +41,8 @@ let package = Package(
             targets: ["Memory Shift Primitives"]
         ),
         .library(
-            name: "Memory Tracked Primitives",
-            targets: ["Memory Tracked Primitives"]
-        ),
-        .library(
             name: "Memory Region Primitives",
             targets: ["Memory Region Primitives"]
-        ),
-        .library(
-            name: "Memory Unique Primitives",
-            targets: ["Memory Unique Primitives"]
         ),
         .library(
             name: "Memory Primitives Test Support",
@@ -66,7 +58,6 @@ let package = Package(
         .package(url: "https://github.com/swift-primitives/swift-index-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-bit-index-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-span-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-storage-primitives.git", branch: "main"),
     ],
     targets: [
 
@@ -86,9 +77,7 @@ let package = Package(
                 .target(name: "Memory Alignment Primitives"),
                 .target(name: "Memory Contiguous Primitives"),
                 .target(name: "Memory Shift Primitives"),
-                .target(name: "Memory Tracked Primitives"),
                 .target(name: "Memory Region Primitives"),
-                .target(name: "Memory Unique Primitives"),
             ]
         ),
 
@@ -146,31 +135,12 @@ let package = Package(
             ]
         ),
 
-        // MARK: - Tracked (ledger seam — narrow Store.Tracked replacement, leaf-tier)
-        .target(
-            name: "Memory Tracked Primitives",
-            dependencies: [
-                .target(name: "Memory Primitive"),
-                .product(name: "Index Primitives", package: "swift-index-primitives"),
-                .product(name: "Store Protocol Primitives", package: "swift-storage-primitives"),
-                .product(name: "Store Initialization Primitives", package: "swift-storage-primitives"),
-            ]
-        ),
-
         // MARK: - Region (element-free raw-region seam — base + byte capacity)
         .target(
             name: "Memory Region Primitives",
             dependencies: [
                 .target(name: "Memory Primitive"),
                 .target(name: "Memory Address Primitives"),
-            ]
-        ),
-
-        // MARK: - Unique (copy-on-write capability — sharing leaves only)
-        .target(
-            name: "Memory Unique Primitives",
-            dependencies: [
-                .target(name: "Memory Primitive"),
             ]
         ),
 
