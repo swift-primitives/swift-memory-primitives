@@ -38,7 +38,7 @@ Sub-target additions are evaluated against this scope. If a proposed addition is
 - **Typed address arithmetic** — `Memory.Address` is a non-null typed position with `Memory.Address.Offset` (signed byte displacement) and `Memory.Address.Count`; `base + offset`, `b - a` (distance), and `index * stride` stay in typed-byte territory instead of bare `Int`.
 - **Stride-typed addressing** — `Affine.Discrete.Ratio<Element, Memory>` scales an `Index<Element>.Offset` into a byte offset, so `base + index * stride` computes element addresses without open-coded `* MemoryLayout<T>.stride`.
 - **Aligned allocation** — `Memory.Allocator` allocates and frees aligned regions (`allocate(count:alignment:)` / `deallocate`); `Memory.Alignment` is a checked alignment type.
-- **Contiguous & inline storage** — `Memory.Contiguous<Element>` is a typed contiguous region; `Memory.Inline<Element, capacity>` is fixed-capacity in-line storage (both `~Copyable`-aware).
+- **Inline storage** — `Memory.Inline<Element, capacity>` is fixed-capacity in-line storage (`~Copyable`-aware).
 - **Swift Embedded compatible** — no Foundation dependencies.
 - **Swift 6 strict memory safety** — the raw-pointer crossings are `unsafe`-marked with disclosed invariants.
 
@@ -96,9 +96,7 @@ let value = unsafe ptr.load(as: UInt64.self)   // 0xCAFE
 | `Memory.Address` | A non-null typed memory position (`Tagged<Memory, Ordinal>`) with byte-offset arithmetic |
 | `Memory.Address.Offset` / `.Count` | Signed byte displacement and unsigned byte count |
 | `Memory.Allocator` / `Memory.Alignment` | Aligned allocation/deallocation and the checked alignment type |
-| `Memory.Contiguous<Element>` | A typed contiguous memory region over a `BitwiseCopyable` element |
 | `Memory.Inline<Element, capacity>` | Fixed-capacity inline storage (`~Copyable`-aware) |
-| `Memory.Contiguous.Protocol` | Protocol for types providing contiguous memory access |
 
 `Memory.Address` bridges to Swift's `Unsafe[Mutable]RawPointer` at the store/load boundary; the typed arithmetic and allocation surface stays above that boundary.
 

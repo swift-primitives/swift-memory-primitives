@@ -25,9 +25,9 @@
       "date": "2026-02-13",
       "toolchain": "Swift 6.2.3",
       "status": "SUPERSEDED",
-      "statusDetail": "UnsafeBufferPointer<~Copyable> conformance shipped in Memory.Contiguous.Protocol (Phase 1b stale-triage 2026-04-30)",
+      "statusDetail": "UnsafeBufferPointer<~Copyable> conformance shipped in Span.Protocol (Phase 1b stale-triage 2026-04-30)",
       "statusRaw": "CONFIRMED -> SUPERSEDED (Phase 1b stale-triage 2026-04-30)",
-      "supersededBy": "UnsafeBufferPointer<~Copyable> conformance shipped in Memory.Contiguous.Protocol",
+      "supersededBy": "UnsafeBufferPointer<~Copyable> conformance shipped in Span.Protocol",
       "crossRefs": []
     }
   ]
