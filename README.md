@@ -13,7 +13,6 @@ Non-null memory address wrappers with typed index integration for Swift.
 - **Memory Address** — where things live
 - **Memory Alignment** — how they're laid out
 - **Memory Allocation** — creating regions
-- **Memory Contiguous** — typed layout interface
 - **Memory Inline** — in-line representation
 - **Memory Shift** — alignment exponent (`alignment = 2^shift`; a typed bit-shift count, not a mutation operation)
 
