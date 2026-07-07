@@ -61,7 +61,7 @@ extension Memory.Shift {
     /// - Parameter value: The number of bit positions. Must be in `0...63`.
     /// - Throws: `Memory.Shift.Error.outOfRange` if value is negative or > 63.
     @inlinable
-    public init(_ value: Int) throws(Memory.Shift.Error) {
+    public init(_ value: Int) throws(Self.Error) {
         guard value >= 0, value <= Int(Self.maxValue) else {
             throw .outOfRange(value: value, max: Self.maxValue)
         }
@@ -74,7 +74,7 @@ extension Memory.Shift {
     /// - Parameter value: The number of bit positions. Must be <= 63.
     /// - Throws: `Memory.Shift.Error.outOfRange` if value > 63.
     @inlinable
-    public init(_ value: UInt8) throws(Memory.Shift.Error) {
+    public init(_ value: UInt8) throws(Self.Error) {
         guard value <= Self.maxValue else {
             throw .outOfRange(value: Int(value), max: Self.maxValue)
         }
@@ -160,7 +160,7 @@ extension Memory.Shift {
     @inlinable
     public func validated<Carrier: FixedWidthInteger>(
         for _: Carrier.Type
-    ) throws(Memory.Shift.Error) -> Self {
+    ) throws(Self.Error) -> Self {
         let count = Int(bitPattern: rawValue)
         guard count < Carrier.bitWidth else {
             throw .outOfRange(value: count, max: UInt8(Carrier.bitWidth - 1))

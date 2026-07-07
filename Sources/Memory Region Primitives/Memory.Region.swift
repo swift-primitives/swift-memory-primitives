@@ -9,8 +9,8 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Memory_Primitive
 public import Memory_Address_Primitives
+public import Memory_Primitive
 
 extension Memory {
     /// The raw byte resource seam: a located run of raw bytes (`base` + `capacity` only).

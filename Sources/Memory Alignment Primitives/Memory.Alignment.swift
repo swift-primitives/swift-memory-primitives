@@ -47,7 +47,7 @@ extension Memory.Alignment {
     /// - Throws: `Memory.Alignment.Error.notPowerOfTwo` if invalid.
     public init(
         _ magnitude: Int
-    ) throws(Memory.Alignment.Error) {
+    ) throws(Self.Error) {
         guard magnitude > 0, magnitude & (magnitude - 1) == 0 else {
             throw .notPowerOfTwo(magnitude)
         }
@@ -134,9 +134,15 @@ extension Memory.Alignment {
     /// - Throws: `Memory.Alignment.Error.shiftExceedsBitWidth` if shift >= bit width.
     public func validated<Carrier: FixedWidthInteger>(
         for _: Carrier.Type
-    ) throws(Memory.Alignment.Error) -> Self {
+    ) throws(Self.Error) -> Self {
         // `shift.rawValue` is a `Bit.Index.Count` (= `Tagged<Bit, Cardinal>`);
         // reinterpret its bit pattern as `Int` for the bit-width comparison.
+        // `Memory.Shift` (unlike `Tagged<Tag, Cardinal>`) has no direct
+        // `Int(bitPattern:)` overload of its own, so `.rawValue` is the
+        // required single-hop unwrap to reach the exact typed argument
+        // ([INFRA-002] integration overload's bottom-out) — not a re-chain
+        // past it.
+        // swiftlint:disable:next bitpattern_rawvalue_chain_anti_pattern
         let shiftCount = Int(bitPattern: shift.rawValue)
         guard shiftCount < Carrier.bitWidth else {
             // The exponent is bounded `0...63`, so the narrowing to the

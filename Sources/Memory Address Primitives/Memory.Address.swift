@@ -92,7 +92,7 @@ extension Tagged where Tag == Memory, Underlying == Ordinal {
     /// - Parameter pointer: An optional raw pointer.
     /// - Throws: `Error.null` if the pointer is nil.
     @inlinable
-    public init(_ pointer: UnsafeRawPointer?) throws(Tagged.Error) {
+    public init(_ pointer: UnsafeRawPointer?) throws(Self.Error) {
         guard let pointer = unsafe pointer else { throw .null }
         unsafe self.init(pointer)
     }
@@ -102,7 +102,7 @@ extension Tagged where Tag == Memory, Underlying == Ordinal {
     /// - Parameter pointer: An optional typed pointer.
     /// - Throws: `Error.null` if the pointer is nil.
     @inlinable
-    public init<T>(_ pointer: UnsafePointer<T>?) throws(Tagged.Error) {
+    public init<T>(_ pointer: UnsafePointer<T>?) throws(Self.Error) {
         guard let pointer = unsafe pointer else { throw .null }
         unsafe self.init(pointer)
     }
@@ -112,7 +112,7 @@ extension Tagged where Tag == Memory, Underlying == Ordinal {
     /// - Parameter pointer: An optional mutable typed pointer.
     /// - Throws: `Error.null` if the pointer is nil.
     @inlinable
-    public init<T>(_ pointer: UnsafeMutablePointer<T>?) throws(Tagged.Error) {
+    public init<T>(_ pointer: UnsafeMutablePointer<T>?) throws(Self.Error) {
         guard let pointer = unsafe pointer else { throw .null }
         unsafe self.init(pointer)
     }
@@ -122,7 +122,7 @@ extension Tagged where Tag == Memory, Underlying == Ordinal {
     /// - Parameter pointer: An optional mutable raw pointer.
     /// - Throws: `Error.null` if the pointer is nil.
     @inlinable
-    public init(_ pointer: UnsafeMutableRawPointer?) throws(Tagged.Error) {
+    public init(_ pointer: UnsafeMutableRawPointer?) throws(Self.Error) {
         guard let pointer = unsafe pointer else { throw .null }
         unsafe self.init(pointer)
     }
