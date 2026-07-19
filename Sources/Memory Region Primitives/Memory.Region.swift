@@ -32,7 +32,9 @@ extension Memory {
     /// Conformers: `Memory.Heap`, `Memory.Inline`. Bound: `Memory.Allocator<Resource> where Resource:
     /// Memory.Region & ~Copyable`.
     public protocol Region: ~Copyable {
-        /// The stable base address of the region's first byte. Valid for the region's lifetime.
+        /// The stable base address of the region's first byte.
+        ///
+        /// Valid for the region's lifetime.
         var base: Memory.Address { get }
 
         /// The region's capacity in bytes.
