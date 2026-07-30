@@ -142,7 +142,9 @@ extension Memory.Shift {
     public func magnitude<Carrier: FixedWidthInteger>(
         as _: Carrier.Type = Carrier.self
     ) -> Carrier {
-        guard (try? validated(for: Carrier.self)) != nil else {
+        do throws(Self.Error) {
+            _ = try validated(for: Carrier.self)
+        } catch {
             preconditionFailure("Memory.Shift \(rawValue) exceeds \(Carrier.bitWidth)-bit carrier width")
         }
         return Carrier(1) << self
@@ -158,7 +160,9 @@ extension Memory.Shift {
     public func mask<Carrier: FixedWidthInteger>(
         as _: Carrier.Type = Carrier.self
     ) -> Carrier {
-        guard (try? validated(for: Carrier.self)) != nil else {
+        do throws(Self.Error) {
+            _ = try validated(for: Carrier.self)
+        } catch {
             preconditionFailure("Memory.Shift \(rawValue) exceeds \(Carrier.bitWidth)-bit carrier width")
         }
         return (Carrier(1) << self) &- 1
