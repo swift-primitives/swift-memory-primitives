@@ -135,23 +135,33 @@ extension Memory.Shift {
     /// Computes `2^shift` in the given carrier type.
     ///
     /// - Returns: The alignment magnitude in the carrier ring.
-    /// - Precondition: `rawValue < Carrier.bitWidth`
+    /// - Precondition: `rawValue < Carrier.bitWidth`, enforced through
+    ///   ``validated(for:)`` — an over-width shift traps here instead of
+    ///   silently producing `0`.
     @inlinable
     public func magnitude<Carrier: FixedWidthInteger>(
         as _: Carrier.Type = Carrier.self
     ) -> Carrier {
-        Carrier(1) << self
+        guard (try? validated(for: Carrier.self)) != nil else {
+            preconditionFailure("Memory.Shift \(rawValue) exceeds \(Carrier.bitWidth)-bit carrier width")
+        }
+        return Carrier(1) << self
     }
 
     /// Computes the mask `(2^shift) - 1` in the given carrier type.
     ///
     /// - Returns: The low-bit mask in the carrier ring.
-    /// - Precondition: `rawValue < Carrier.bitWidth`
+    /// - Precondition: `rawValue < Carrier.bitWidth`, enforced through
+    ///   ``validated(for:)`` — an over-width shift traps here instead of
+    ///   silently producing an all-ones mask.
     @inlinable
     public func mask<Carrier: FixedWidthInteger>(
         as _: Carrier.Type = Carrier.self
     ) -> Carrier {
-        (Carrier(1) << self) &- 1
+        guard (try? validated(for: Carrier.self)) != nil else {
+            preconditionFailure("Memory.Shift \(rawValue) exceeds \(Carrier.bitWidth)-bit carrier width")
+        }
+        return (Carrier(1) << self) &- 1
     }
 
     /// Validates that this shift is usable with the given carrier type.
