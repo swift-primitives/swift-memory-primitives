@@ -142,7 +142,6 @@ extension Memory.Alignment {
         // required single-hop unwrap to reach the exact typed argument
         // ([INFRA-002] integration overload's bottom-out) — not a re-chain
         // past it.
-        // swiftlint:disable:next bitpattern_rawvalue_chain_anti_pattern
         let shiftCount = Int(bitPattern: shift.rawValue)
         guard shiftCount < Carrier.bitWidth else {
             // The exponent is bounded `0...63`, so the narrowing to the
