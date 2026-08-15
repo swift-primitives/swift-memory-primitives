@@ -440,7 +440,10 @@ extension Memory.Arithmetic.Composition {
             unsafe ptr.storeBytes(of: UInt64(i * 100 + 1), as: UInt64.self)
         }
 
-        unsafe dstPtr.copyMemory(from: UnsafeRawPointer(srcPtr), byteCount: Int(bitPattern: byteCount))
+        unsafe dstPtr.copyMemory(
+            from: UnsafeRawPointer(srcPtr),
+            byteCount: Int(bitPattern: byteCount)
+        )
 
         for i in 0..<4 {
             let address = try dst + Index<UInt64>.Offset(i) * stride
@@ -496,7 +499,9 @@ extension Memory.Arithmetic.Composition {
         enum CacheLine {}
 
         let lineToElement: Affine.Discrete.Ratio<CacheLine, UInt64> = .init(Int(8))
-        let elementToByte: Affine.Discrete.Ratio<UInt64, Memory> = .init(MemoryLayout<UInt64>.stride)
+        let elementToByte: Affine.Discrete.Ratio<UInt64, Memory> = .init(
+            MemoryLayout<UInt64>.stride
+        )
         let lineToByte: Affine.Discrete.Ratio<CacheLine, Memory> = lineToElement * elementToByte
 
         let lineCount: Index<CacheLine>.Count = 2
