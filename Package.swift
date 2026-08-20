@@ -1,15 +1,15 @@
-// swift-tools-version: 6.3.3
+// swift-tools-version: 6.4
 
 import PackageDescription
 
 let package = Package(
     name: "swift-memory-primitives",
     platforms: [
-        .macOS("27"),
-        .iOS("27"),
-        .tvOS("27"),
-        .watchOS("27"),
-        .visionOS("27"),
+        .macOS(.v27),
+        .iOS(.v27),
+        .tvOS(.v27),
+        .watchOS(.v27),
+        .visionOS(.v27),
     ],
     products: [
         .library(
@@ -46,14 +46,38 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/swift-primitives/swift-ordinal-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-cardinal-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-carrier-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-affine-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-tagged-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-index-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-bit-index-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-span-primitives.git", branch: "main"),
+        .package(
+            url: "https://github.com/swift-primitives/swift-ordinal-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-cardinal-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-carrier-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-affine-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-tagged-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-index-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-bit-index-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-span-primitives.git",
+            branch: "main"
+        ),
     ],
     targets: [
 
@@ -134,11 +158,23 @@ let package = Package(
             name: "Memory Primitives Test Support",
             dependencies: [
                 "Memory Primitives",
-                .product(name: "Tagged Primitives Test Support", package: "swift-tagged-primitives"),
+                .product(
+                    name: "Tagged Primitives Test Support",
+                    package: "swift-tagged-primitives"
+                ),
                 .product(name: "Index Primitives Test Support", package: "swift-index-primitives"),
-                .product(name: "Ordinal Primitives Test Support", package: "swift-ordinal-primitives"),
-                .product(name: "Cardinal Primitives Test Support", package: "swift-cardinal-primitives"),
-                .product(name: "Affine Primitives Test Support", package: "swift-affine-primitives"),
+                .product(
+                    name: "Ordinal Primitives Test Support",
+                    package: "swift-ordinal-primitives"
+                ),
+                .product(
+                    name: "Cardinal Primitives Test Support",
+                    package: "swift-cardinal-primitives"
+                ),
+                .product(
+                    name: "Affine Primitives Test Support",
+                    package: "swift-affine-primitives"
+                ),
             ],
             path: "Tests/Support"
         ),
@@ -170,7 +206,7 @@ for target in package.targets where ![.system, .binary, .plugin, .macro].contain
     ]
 
     let package: [SwiftSetting] = [
-        .enableExperimentalFeature("RawLayout"),
+        .enableExperimentalFeature("RawLayout")
     ]
 
     target.swiftSettings = (target.swiftSettings ?? []) + ecosystem + package
