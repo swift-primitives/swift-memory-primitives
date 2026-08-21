@@ -81,13 +81,11 @@ let package = Package(
     ],
     targets: [
 
-        // MARK: - Namespace
         .target(
             name: "Memory Primitive",
             dependencies: []
         ),
 
-        // MARK: - Umbrella
         .target(
             name: "Memory Primitives",
             dependencies: [
@@ -100,7 +98,6 @@ let package = Package(
             ]
         ),
 
-        // MARK: - StdLib Integration
         .target(
             name: "Memory Primitives Standard Library Integration",
             dependencies: [
@@ -111,7 +108,6 @@ let package = Package(
             ]
         ),
 
-        // MARK: - Address
         .target(
             name: "Memory Address Primitives",
             dependencies: [
@@ -123,7 +119,6 @@ let package = Package(
             ]
         ),
 
-        // MARK: - Shift
         .target(
             name: "Memory Shift Primitives",
             dependencies: [
@@ -134,7 +129,6 @@ let package = Package(
             ]
         ),
 
-        // MARK: - Alignment
         .target(
             name: "Memory Alignment Primitives",
             dependencies: [
@@ -144,7 +138,6 @@ let package = Package(
             ]
         ),
 
-        // MARK: - Region (element-free raw-region seam — base + byte capacity)
         .target(
             name: "Memory Region Primitives",
             dependencies: [
@@ -153,7 +146,6 @@ let package = Package(
             ]
         ),
 
-        // MARK: - Test Support
         .target(
             name: "Memory Primitives Test Support",
             dependencies: [
@@ -179,7 +171,6 @@ let package = Package(
             path: "Tests/Support"
         ),
 
-        // MARK: - Tests
         .testTarget(
             name: "Memory Primitives Tests",
             dependencies: [

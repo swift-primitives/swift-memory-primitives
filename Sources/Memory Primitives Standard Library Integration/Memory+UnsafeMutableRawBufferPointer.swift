@@ -1,20 +1,9 @@
-//
-//  Index+UnsafeMutableRawBufferPointer.swift
-//  swift-index-primitives
-//
-//  Created by Coen ten Thije Boonkkamp on 27/01/2026.
-//
-
-// MARK: - UnsafeMutableRawBufferPointer + Index
-
 public import Index_Primitives
 public import Memory_Address_Primitives
 public import Memory_Alignment_Primitives
 
 extension UnsafeMutableRawBufferPointer {
-    /// Creates a mutable buffer pointer from a start address and typed count.
-    ///
-    /// Disfavored so stdlib's `init(start:count:)` is preferred when `.zero` is used.
+
     @inlinable
     @_disfavoredOverload
     public init(
@@ -27,9 +16,6 @@ extension UnsafeMutableRawBufferPointer {
         )
     }
 
-    /// Allocates uninitialized memory with typed count and alignment.
-    ///
-    /// Disfavored so stdlib's `allocate(byteCount:alignment:)` is preferred.
     @inlinable
     @_disfavoredOverload
     public static func allocate(
@@ -42,7 +28,6 @@ extension UnsafeMutableRawBufferPointer {
         )
     }
 
-    /// Accesses the byte at the given typed index.
     @inlinable
     public subscript(
         _ index: Index_Primitives.Index<Memory>
@@ -55,12 +40,6 @@ extension UnsafeMutableRawBufferPointer {
         }
     }
 
-    /// Returns a new instance of the given type, read from the specified offset.
-    ///
-    /// - Parameters:
-    ///   - offset: The offset from the start of the buffer at which to read.
-    ///   - type: The type of the value to read.
-    /// - Returns: A new instance of the given type.
     @inlinable
     public func load<T>(
         fromByteOffset offset: Memory.Address.Offset,

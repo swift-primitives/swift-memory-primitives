@@ -1,14 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-primitives open source project
-//
-// Copyright (c) 2024-2026 Coen ten Thije Boonkkamp and the swift-primitives project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 import Affine_Primitives
 import Index_Primitives
 import Memory_Primitives_Test_Support
@@ -33,8 +22,6 @@ extension Memory {
         struct Composition {}
     }
 }
-
-// MARK: - Basics
 
 extension Memory.Arithmetic.Basics {
     @Test
@@ -82,8 +69,6 @@ extension Memory.Arithmetic.Basics {
         }
     }
 }
-
-// MARK: - Offset
 
 extension Memory.Arithmetic.Offset {
     @Test
@@ -175,8 +160,6 @@ extension Memory.Arithmetic.Offset {
     }
 }
 
-// MARK: - Distance
-
 extension Memory.Arithmetic.Distance {
     @Test
     func `Subtraction computes signed byte distance`() throws {
@@ -237,15 +220,12 @@ extension Memory.Arithmetic.Distance {
             let a = unsafe Memory.Address(rawBuffer.baseAddress!)
             let b = unsafe Memory.Address(rawBuffer.baseAddress!.advanced(by: 3))
 
-            // Use subtraction to get distance (b - a = offset from a to b)
             let distance: Memory.Address.Offset = try b - a
             #expect(distance == 3)
             #expect(try a + distance == b)
         }
     }
 }
-
-// MARK: - Count
 
 extension Memory.Arithmetic.Count {
     @Test
@@ -287,8 +267,6 @@ extension Memory.Arithmetic.Count {
     }
 }
 
-// MARK: - Ratio
-
 extension Memory.Arithmetic.Ratio {
     @Test
     func `Ratio scales element offset to byte offset`() {
@@ -321,7 +299,7 @@ extension Memory.Arithmetic.Ratio {
 
     @Test
     func `Ratio composition: Ratio<A,B> * Ratio<B,C> → Ratio<A,C>`() {
-        // 1 UInt64 = 2 UInt32s, 1 UInt32 = 4 bytes
+
         let r1: Affine.Discrete.Ratio<UInt64, UInt32> = .init(Int(2))
         let r2: Affine.Discrete.Ratio<UInt32, Memory> = .init(MemoryLayout<UInt32>.stride)
 
@@ -339,8 +317,6 @@ extension Memory.Arithmetic.Ratio {
         #expect(scaled == offset)
     }
 }
-
-// MARK: - Composition
 
 extension Memory.Arithmetic.Composition {
     @Test
@@ -388,7 +364,7 @@ extension Memory.Arithmetic.Composition {
 
     @Test
     func `Struct field layout: compute addresses at known byte offsets`() throws {
-        // Simulate a struct with two fields: UInt32 at offset 0, UInt64 at offset 8
+
         let size: Memory.Address.Count = 16
         let alignment: Memory.Alignment = .`8`
         let base = unsafe Memory.Address(
@@ -430,7 +406,6 @@ extension Memory.Arithmetic.Composition {
             unsafe UnsafeMutableRawPointer(dst).deallocate()
         }
 
-        // Use raw pointers for memory operations
         let srcPtr = unsafe UnsafeMutableRawPointer(src)
         let dstPtr = unsafe UnsafeMutableRawPointer(dst)
 
@@ -482,7 +457,7 @@ extension Memory.Arithmetic.Composition {
             let mid: Memory.Address = base + 4 * stride
 
             let forwardAddr = mid + 2 * stride
-            let backwardAddr = try mid - 3 * stride  // Use subtraction to go backward
+            let backwardAddr = try mid - 3 * stride
             let forward: Int32 = unsafe UnsafeRawPointer(forwardAddr).load(as: Int32.self)
             let backward: Int32 = unsafe UnsafeRawPointer(backwardAddr).load(as: Int32.self)
 
@@ -493,8 +468,6 @@ extension Memory.Arithmetic.Composition {
 
     @Test
     func `Chained ratio composition for multi-level addressing`() throws {
-        // Model: 1 CacheLine = 8 UInt64s, 1 UInt64 = 8 bytes
-        // So 1 CacheLine = 64 bytes
 
         enum CacheLine {}
 
@@ -515,12 +488,10 @@ extension Memory.Arithmetic.Composition {
         )
         defer { unsafe UnsafeMutableRawPointer(base).deallocate() }
 
-        // Write to element 3 of cache line 1 (absolute element index = 8 + 3 = 11)
         let lineOffset: Memory.Address.Offset = 1 * lineToByte
         let elemOffset: Memory.Address.Offset = 3 * elementToByte
         let target: Memory.Address = try base + lineOffset + elemOffset
 
-        // Use raw pointer for memory operations (addresses are positions, not capabilities)
         let ptr = unsafe UnsafeMutableRawPointer(target)
         unsafe ptr.storeBytes(of: UInt64(0xBEEF), as: UInt64.self)
         #expect(unsafe ptr.load(as: UInt64.self) == 0xBEEF)
@@ -534,7 +505,6 @@ extension Memory.Arithmetic.Composition {
         try unsafe data.withUnsafeMutableBytes { rawBuffer in
             let base: Memory.Address = unsafe .init(rawBuffer.baseAddress!)
 
-            // Read every other element: indices 0, 2, 4, 6
             var evens: [UInt32] = []
             for i in Swift.stride(from: 0, to: 8, by: 2) {
                 let addr: Memory.Address = try base + Index.Offset(i) * stride

@@ -5,8 +5,6 @@ import Testing
 @Suite(.serialized)
 struct `Memory.Alignment - Performance` {
 
-    // MARK: - Alignment Check
-
     @Test(.timed(iterations: 20, warmup: 3))
     func `isAligned check 100_000 values`() {
         let alignment: Memory.Alignment = .`16`
@@ -18,8 +16,6 @@ struct `Memory.Alignment - Performance` {
         }
         _ = count
     }
-
-    // MARK: - Align Up
 
     @Test(.timed(iterations: 20, warmup: 3))
     func `align up 100_000 values to 16`() {
@@ -41,8 +37,6 @@ struct `Memory.Alignment - Performance` {
         _ = sum
     }
 
-    // MARK: - Align Down
-
     @Test(.timed(iterations: 20, warmup: 3))
     func `align down 100_000 values to 16`() {
         let alignment: Memory.Alignment = .`16`
@@ -52,8 +46,6 @@ struct `Memory.Alignment - Performance` {
         }
         _ = sum
     }
-
-    // MARK: - Mask Computation
 
     @Test(.timed(iterations: 20, warmup: 3))
     func `mask computation 100_000 times`() {
@@ -66,8 +58,6 @@ struct `Memory.Alignment - Performance` {
         }
         _ = sum
     }
-
-    // MARK: - Magnitude
 
     @Test(.timed(iterations: 20, warmup: 3))
     func `magnitude computation 100_000 times`() {

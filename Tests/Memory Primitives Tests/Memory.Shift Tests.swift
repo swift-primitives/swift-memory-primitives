@@ -1,14 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-primitives open source project
-//
-// Copyright (c) 2024-2026 Coen ten Thije Boonkkamp and the swift-primitives project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 import Testing
 
 @testable import Memory_Primitives
@@ -20,8 +9,6 @@ extension Memory.Shift {
         @Suite struct `Edge Case` {}
     }
 }
-
-// MARK: - Unit
 
 extension Memory.Shift.Tests.Unit {
     @Test
@@ -59,8 +46,6 @@ extension Memory.Shift.Tests.Unit {
         _ = try wide.validated(for: UInt64.self)
     }
 }
-
-// MARK: - Edge Case
 
 extension Memory.Shift.Tests.`Edge Case` {
     @Test

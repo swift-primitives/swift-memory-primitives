@@ -1,78 +1,27 @@
-// Memory.Shift.swift
-// Type-safe bit shift count (exponent for power-of-2 values).
-
 extension Memory {
-    /// A bit shift count (exponent for power-of-2 values).
-    ///
-    /// Shift values represent the number of bit positions to shift,
-    /// which is equivalent to log2 of the corresponding alignment.
-    ///
-    /// ## Invariant
-    ///
-    /// `rawValue` is always in `0...63` (sufficient for all fixed-width integers up to 64 bits).
-    ///
-    /// ## Relationship with Alignment
-    ///
-    /// - `alignment = 2^shift`
-    /// - `shift = log2(alignment)`
-    ///
-    /// ## API Pattern
-    ///
-    /// - **Primary**: `init(_:) throws(Memory.Shift.Error)` — validates at runtime
-    /// - **Constants**: Pre-validated static constants for common values
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// let shift = try Memory.Shift(12)     // 12 bits
-    /// let alignment = shift.alignment      // 4096 (2^12)
-    /// ```
+
     public struct Shift: Sendable, Equatable, Hashable {
-        /// The shift count (number of bit positions), typed as a count of bit
-        /// positions.
-        ///
-        /// A shift IS semantically an unsigned count of bit positions, so it is
-        /// stored as `Bit.Index.Count` (= `Index<Bit>.Count` = `Tagged<Bit, Cardinal>`)
-        /// from `swift-bit-index-primitives` rather than an untyped `UInt8`.
-        ///
-        /// Always in range `0...63`.
+
         public let rawValue: Bit.Index.Count
     }
 }
 
-// MARK: - Constants
-
 extension Memory.Shift {
-    /// Maximum valid shift value (63 bits, covers UInt64).
-    ///
-    /// Kept as an untyped `UInt8` validation bound: it is compared against the
-    /// incoming `Int` / `UInt8` argument in the throwing initializers and is
-    /// surfaced as the `max:` field of `Memory.Shift.Error.outOfRange`. The
-    /// stored exponent (`rawValue`) is the typed `Bit.Index.Count`; this constant
-    /// is purely the construction-time range check.
+
     public static let maxValue: UInt8 = 63
 }
 
-// MARK: - Throwing Initializer
-
 extension Memory.Shift {
-    /// Creates a shift count with validation.
-    ///
-    /// - Parameter value: The number of bit positions. Must be in `0...63`.
-    /// - Throws: `Memory.Shift.Error.outOfRange` if value is negative or > 63.
+
     @inlinable
     public init(_ value: Int) throws(Self.Error) {
         guard value >= 0, value <= Int(Self.maxValue) else {
             throw .outOfRange(value: value, max: Self.maxValue)
         }
-        // Validated `0...63`, so `UInt(value)` is in range.
+
         self.rawValue = Bit.Index.Count(UInt(value))
     }
 
-    /// Creates a shift count from UInt8.
-    ///
-    /// - Parameter value: The number of bit positions. Must be <= 63.
-    /// - Throws: `Memory.Shift.Error.outOfRange` if value > 63.
     @inlinable
     public init(_ value: UInt8) throws(Self.Error) {
         guard value <= Self.maxValue else {
@@ -82,12 +31,8 @@ extension Memory.Shift {
     }
 }
 
-// MARK: - Unchecked Initializer (Package)
-
 extension Memory.Shift {
-    /// Creates a shift count without validation.
-    ///
-    /// - Precondition: `value <= 63`
+
     @inlinable
     package init(unchecked value: UInt8) {
         assert(value <= Self.maxValue, "Shift value out of range")
@@ -95,49 +40,31 @@ extension Memory.Shift {
     }
 }
 
-// MARK: - Common Values
-
 extension Memory.Shift {
-    /// No shift (2^0 = 1).
+
     public static let zero = Memory.Shift(unchecked: 0)
 
-    /// 1-bit shift (2^1 = 2).
     public static let one = Memory.Shift(unchecked: 1)
 
-    /// 2-bit shift (2^2 = 4).
     public static let two = Memory.Shift(unchecked: 2)
 
-    /// 3-bit shift (2^3 = 8).
     public static let three = Memory.Shift(unchecked: 3)
 
-    /// 4-bit shift (2^4 = 16).
     public static let four = Memory.Shift(unchecked: 4)
 
-    /// 9-bit shift (2^9 = 512, legacy sector).
     public static let nine = Memory.Shift(unchecked: 9)
 
-    /// 10-bit shift (2^10 = 1024).
     public static let kilo = Memory.Shift(unchecked: 10)
 
-    /// 12-bit shift (2^12 = 4096, x86 page).
     public static let twelve = Memory.Shift(unchecked: 12)
 
-    /// 13-bit shift (2^13 = 8192).
     public static let `8k` = Memory.Shift(unchecked: 13)
 
-    /// 14-bit shift (2^14 = 16384, Apple Silicon page).
     public static let fourteen = Memory.Shift(unchecked: 14)
 }
 
-// MARK: - Carrier-Specific Operations
-
 extension Memory.Shift {
-    /// Computes `2^shift` in the given carrier type.
-    ///
-    /// - Returns: The alignment magnitude in the carrier ring.
-    /// - Precondition: `rawValue < Carrier.bitWidth`, enforced through
-    ///   ``validated(for:)`` — an over-width shift traps here instead of
-    ///   silently producing `0`.
+
     @inlinable
     public func magnitude<Carrier: FixedWidthInteger>(
         as _: Carrier.Type = Carrier.self
@@ -152,12 +79,6 @@ extension Memory.Shift {
         return Carrier(1) << self
     }
 
-    /// Computes the mask `(2^shift) - 1` in the given carrier type.
-    ///
-    /// - Returns: The low-bit mask in the carrier ring.
-    /// - Precondition: `rawValue < Carrier.bitWidth`, enforced through
-    ///   ``validated(for:)`` — an over-width shift traps here instead of
-    ///   silently producing an all-ones mask.
     @inlinable
     public func mask<Carrier: FixedWidthInteger>(
         as _: Carrier.Type = Carrier.self
@@ -172,9 +93,6 @@ extension Memory.Shift {
         return (Carrier(1) << self) &- 1
     }
 
-    /// Validates that this shift is usable with the given carrier type.
-    ///
-    /// - Throws: `Memory.Shift.Error.outOfRange` if shift >= carrier bit width.
     @inlinable
     public func validated<Carrier: FixedWidthInteger>(
         for _: Carrier.Type
@@ -187,19 +105,16 @@ extension Memory.Shift {
     }
 }
 
-// MARK: - Comparable
-
 extension Memory.Shift: Comparable {
-    /// Returns whether `lhs` orders before `rhs`.
+
     @inlinable
     public static func < (lhs: Memory.Shift, rhs: Memory.Shift) -> Bool {
         lhs.rawValue < rhs.rawValue
     }
 }
-// MARK: - CustomStringConvertible
 
 extension Memory.Shift: CustomStringConvertible {
-    /// A textual representation of the value.
+
     public var description: String {
         "\(rawValue)"
     }
